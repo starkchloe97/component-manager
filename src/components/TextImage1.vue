@@ -1,5 +1,5 @@
 <template>
-  <section id="overview" ref="sectionRef" class="overview">
+  <section id="overview" ref="sectionRef" class="overview" :style="styles">
     <div class="container">
       <div class="grid">
         <div class="col-left scroll-reveal">
@@ -36,41 +36,54 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, reactive } from "vue";
 import { CheckCircle } from "@lucide/vue";
 import { useScrollReveal } from "@/composables/useScrollReveal";
 import Brand from "@/assets/images/BrandsHeroImages.jpg";
-import { SITE_PHONE_RAW, SITE_NAME } from "@/config/siteInfo.js";
+import { SITE_NAME } from "@/config/siteInfo.js";
 
 const sectionRef = ref(null);
 useScrollReveal(sectionRef);
 const features = [
-  { 
-    title: "Comprehensive Search", 
-    desc: "We search federal, state, and common-law databases for conflicts." 
+  {
+    title: "Comprehensive Search",
+    desc: "We search federal, state, and common-law databases for conflicts."
   },
-  { 
-    title: "Expert Risk Analysis", 
-    desc: "Our attorneys evaluate your mark's approval likelihood before filing." 
+  {
+    title: "Expert Risk Analysis",
+    desc: "Our attorneys evaluate your mark's approval likelihood before filing."
   },
-  { 
-    title: "Save Time & Money", 
-    desc: "Avoid non-refundable USPTO fees by identifying issues early." 
+  {
+    title: "Save Time & Money",
+    desc: "Avoid non-refundable USPTO fees by identifying issues early."
   },
-  { 
-    title: "Strategic Guidance", 
-    desc: "Get recommendations to strengthen your application's chances." 
+  {
+    title: "Strategic Guidance",
+    desc: "Get recommendations to strengthen your application's chances."
   },
 ];
+
+const styles = reactive({
+  '--primary': '#0b55b6',
+  '--primary-light': '#e8f0fb',
+  '--primary-dark': '#083d82',
+  '--primary-mid': '#1a6fd4',
+  '--surface': '#ffffff',
+  '--ink': '#0f1d33',
+  '--muted': '#5a6d85',
+  '--border': '#d4e0f0',
+  '--font-display': '"Inter Tight", sans-serif',
+  '--font-body': '"Inter", sans-serif',
+});
 </script>
 
 <style scoped>
 
 .overview {
-  --brand: #0b55b6;
-  --brand-light: #e8f0fb;
-  --brand-dark: #083d82;
-  --brand-mid: #1a6fd4;
+  --primary: #0b55b6;
+  --primary-light: #e8f0fb;
+  --primary-dark: #083d82;
+  --primary-mid: #1a6fd4;
   --surface: #ffffff;
   --ink: #0f1d33;
   --muted: #5a6d85;
@@ -81,9 +94,9 @@ const features = [
 
 /* .overview {
   --primary: #0b55b6;
-  --brand-light: #e8f0fb;
-  --brand-dark: #083d82;
-  --brand-mid: #1a6fd4;
+  --primary-light: #e8f0fb;
+  --primary-dark: #083d82;
+  --primary-mid: #1a6fd4;
   --surface: #ffffff;
   --ink: #0f1d33;
   --muted: #5a6d85;
@@ -133,7 +146,7 @@ const features = [
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.15em;
-  color: var(--brand);
+  color: var(--primary);
   margin-bottom: 16px;
 }
 .section-title {
@@ -188,7 +201,7 @@ const features = [
   border: 1px solid var(--border);
 }
 .feature-check {
-  color: var(--brand);
+  color: var(--primary);
   margin-top: 2px;
   flex-shrink: 0;
 }
@@ -232,13 +245,13 @@ const features = [
   margin-bottom: 8px;
 }
 .badge-header .iconify {
-  color: var(--brand);
+  color: var(--primary);
 }
 .badge-title {
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 14px;
-  color: var(--brand);
+  color: var(--primary);
 }
 .badge-text {
   font-size: 12px;
@@ -248,7 +261,7 @@ const features = [
   position: absolute;
   top: -16px;
   right: -16px;
-  background: var(--brand);
+  background: var(--primary);
   color: #fff;
   padding: 7px 15px;
   border-radius: 42px;
