@@ -22,11 +22,7 @@
           </p>
           <div class="features">
             <div v-for="(item, i) in features" :key="i" class="feature-card">
-              <span
-                class="iconify feature-check"
-                data-icon="lucide:check-circle"
-                data-width="18"
-              ></span>
+              <CheckCircle :size="18" class="feature-check" />
               <div>
                 <div class="feature-title">{{ item.title }}</div>
                 <div class="feature-desc">{{ item.desc }}</div>
@@ -41,6 +37,7 @@
 
 <script setup>
 import { ref } from "vue";
+import { CheckCircle } from "@lucide/vue";
 import { useScrollReveal } from "@/composables/useScrollReveal";
 import Brand from "@/assets/images/tgirl1.png";
 
@@ -57,6 +54,44 @@ const features = [
 </script>
 
 <style scoped>
+
+@import url("https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap");
+
+.overview {
+  --brand: #0b55b6;
+  --brand-light: #e8f0fb;
+  --brand-dark: #083d82;
+  --brand-mid: #1a6fd4;
+  --surface: #ffffff;
+  --ink: #0f1d33;
+  --muted: #5a6d85;
+  --border: #d4e0f0;
+  --font-display: "Inter Tight", sans-serif;
+  --font-body: "Inter", sans-serif;
+}
+
+/* .overview {
+  --primary: #0b55b6;
+  --brand-light: #e8f0fb;
+  --brand-dark: #083d82;
+  --brand-mid: #1a6fd4;
+  --surface: #ffffff;
+  --ink: #0f1d33;
+  --muted: #5a6d85;
+  --border: #d4e0f0;
+  --font-display: "Inter Tight", sans-serif;
+  --font-body: "Inter", sans-serif;
+} */
+
+
+.overview {
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--surface);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
 .overview {
   padding: 96px 0;
   background: rgba(232, 240, 251, 0.4);

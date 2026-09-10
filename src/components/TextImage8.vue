@@ -140,7 +140,8 @@ export default {
 }
 
 .section-title {
-  font-family: 'Inter Tight', sans-serif;
+  /* font-family: 'Inter Tight', sans-serif; */
+  font-family: Instrument Sans, sans-serif !important;
   font-weight: 600;
   font-size: 36px;
   line-height: 0.95;

@@ -13,7 +13,7 @@ import { SITE_NAME } from "@/config/siteInfo.js";
 <template>
   <main id="main-content">
 
-     <section class="page-header">
+     <!-- <section class="page-header">
   <div class="container">
     <div class="hero-bg">
       <div class="hero-blob-1"></div>
@@ -36,7 +36,7 @@ import { SITE_NAME } from "@/config/siteInfo.js";
       </div>
     </div>
   </div>
-</section>
+</section> -->
 
    
 
@@ -153,7 +153,7 @@ import { SITE_NAME } from "@/config/siteInfo.js";
 <style scoped>
 
 /* Page Header Styles */
-.page-header {
+/* .page-header {
   position: relative;
   padding: 100px 0  60px 0;
   overflow: hidden;
@@ -206,7 +206,7 @@ import { SITE_NAME } from "@/config/siteInfo.js";
   transition: transform 0.3s ease, box-shadow 0.3s ease;
       top: -60px;
       position: absolute;
-}
+} */
 
 
 
@@ -257,7 +257,7 @@ import { SITE_NAME } from "@/config/siteInfo.js";
   background: rgb(14, 16, 26) !important;
   padding: 8px 22px;
   display: inline-block;
-  font-family: "InstrumentSans", sans-serif;
+  font-family: "InstrumentSans", sans-serif !important;
   color: #fff !important;
   position: relative;
   text-decoration: none;
@@ -295,17 +295,36 @@ import { SITE_NAME } from "@/config/siteInfo.js";
    ========================================= */
 
 /* Main Section Wrapper */
+
+body {
+   font-family: "Inter", sans-serif;
+   margin: 0;
+ }
 .sidebar_template {
     background-color: white;
     position: relative;
     overflow: hidden;
     padding: 75px 0 ;
 }
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+   }
 
 /* Center columns vertically on desktop */
 .sidebar_template .row {
   align-items: center;
 }
+
+.row {
+    display: flex;
+    margin: 0 -1rem;
+}
+
+.row {
+    padding: 0 1rem; 
+  } 
 
 /* Text Content Styling */
 .section_head {
@@ -316,6 +335,7 @@ import { SITE_NAME } from "@/config/siteInfo.js";
 
 .section_head h2.fade-h {
   color: #020617; /* Theme Dark */
+  font-family: Instrument Sans, sans-serif !important;
   font-size: 2.75rem;
   font-weight: 500;
   margin-bottom: 1.5rem;
@@ -325,6 +345,7 @@ import { SITE_NAME } from "@/config/siteInfo.js";
 
 .section_head p {
   color: #4a5568; /* Soft dark gray for readability */
+      font-family: Instrument Sans, sans-serif !important;
   font-size: 1.1rem;
   line-height: 1.8;
   margin-bottom: 1rem;
