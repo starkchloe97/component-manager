@@ -37,6 +37,36 @@ import img4 from "@/assets/images/web/r-m-14.png";
 </template>
 
 <style scoped>
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0;font-family: "Instrument Sans", sans-serif !important;}
+html { scroll-behavior: smooth; }
+.atlas-standard {
+  --primary: #003dc7bd;
+  --secondary: #081fecc1;
+  --on-surface: #131b2e;
+  --on-surface-variant: #44474f;
+  --background: #faf8ff;
+  --surface: #faf8ff;
+  --surface-container-high: #e2e7ff;
+  --surface-container-low: #f2f3ff;
+  --outline-variant: #c3c5d9;
+  --white: #ffffff;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+  --radius-4xl: 2rem;
+  --radius-pill: 9999px;
+  --radius-card: 2rem;
+}
+
+.atlas-standard {
+  font-family: "Instrument Sans", sans-serif !important;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--on-surface);
+  background: var(--background);
+  overflow-x: hidden;
+}
+
 .section-dark {
   background: var(--on-surface);
 }
@@ -121,6 +151,10 @@ import img4 from "@/assets/images/web/r-m-14.png";
 
 .atlas-title {
   margin-bottom: 16px;
+      font-size: clamp(1.6rem, 3.2vw, 2.6rem);
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    line-height: 1.12;
 }
 
 .atlas-body {
@@ -180,6 +214,7 @@ import img4 from "@/assets/images/web/r-m-14.png";
   letter-spacing: 0.15em;
   color: var(--primary);
   font-weight: 700;
+  font-family: "Instrument Sans", sans-serif !important;
 }
 
 .atlas-stats {

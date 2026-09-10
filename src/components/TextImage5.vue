@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { Star } from '@lucide/vue'
 import mainImage from "@/assets/VersionTwo/main1.webp";
 import {
   SITE_NAME,
@@ -50,11 +51,7 @@ onMounted(() => {
 
           <div class="review-card">
             <div class="review-stars" aria-label="5 star review">
-              <i class="fas fa-star"></i>
-              <i class="fas fa-star"></i>
-              <i class="fas fa-star"></i>
-              <i class="fas fa-star"></i>
-              <i class="fas fa-star"></i>
+              <Star v-for="star in 5" :key="star" :size="16" fill="currentColor" />
             </div>
             <div class="review-person">
               <div class="avatar">AT</div>
@@ -84,6 +81,109 @@ onMounted(() => {
 </template>
 
 <style scoped>
+
+*,
+ *::before,
+ *::after {
+   margin: 0;
+   padding: 0;
+   box-sizing: border-box;
+   max-width: 100%;
+ }
+
+.section {
+
+   --brand-50: #fff7ed;
+   --brand-100: #ffedd5;
+   --brand-200: #fed7aa;
+   --brand-300: #fdba74;
+   --brand-400: #fb923c;
+   --brand-500: #f97316;
+   --brand-600: #ea580c;
+   --brand-700: #c2410c;
+   --navy-800: #1e293b;
+   --navy-900: #0f172a;
+   --navy-950: #020617;
+   --neutral-50: #fafafa;
+   --neutral-100: #f5f5f5;
+   --neutral-200: #e5e5e5;
+   --neutral-300: #d4d4d4;
+   --neutral-400: #a3a3a3;
+   --neutral-500: #737373;
+   --neutral-600: #525252;
+   --neutral-700: #404040;
+   --neutral-800: #262626;
+   --neutral-900: #171717;
+   --neutral-950: #0a0a0a;
+   --green-400: #4ade80;
+   --green-500: #22c55e;
+   --green-600: #16a34a;
+   --blue-400: #60a5fa;
+   --blue-500: #3b82f6;
+   --emerald-400: #34d399;
+   --emerald-500: #10b981;
+   --violet-400: #a78bfa;
+   --violet-500: #8b5cf6;
+   --amber-400: #fbbf24;
+   --rose-400: #fb7185;
+
+
+
+   --primary: #1a237e;
+   --primary-light: #3949ab;
+   --primary-lighter: #7986cb;
+   --accent: #ff6d00;
+
+
+   --accent-light: #ff9e40;
+   --accent-glow: rgba(255, 109, 0, 0.15);
+   --teal: #00897b;
+   --teal-light: #4db6ac;
+   --bg: #fafbff;
+   --bg-card: #ffffff;
+   --bg-alt: #f0f2ff;
+   --bg-gradient: linear-gradient(135deg, #fafbff 0%, #f0f2ff 50%, #fff8f0 100%);
+   --text: #1a1a2e;
+   --text-secondary: #5c6283;
+   --text-muted: #8b90a8;
+   --border: #e2e5f1;
+   --border-light: #eef0f8;
+   --shadow-sm: 0 1px 3px rgba(26, 35, 126, 0.06);
+   --shadow-md: 0 4px 16px rgba(26, 35, 126, 0.08);
+   --shadow-lg: 0 8px 40px rgba(26, 35, 126, 0.1);
+   --shadow-xl: 0 16px 60px rgba(26, 35, 126, 0.12);
+   --radius: 12px;
+   --radius-lg: 20px;
+   --radius-xl: 28px;
+   --brand-50: #fff7ed
+ }
+h1,
+ h2,
+ h3,
+ h4,
+ h5,
+ h6,
+ p,
+ span,
+ div,
+ button,
+ input,
+ label,
+ a,
+ li,
+ ul,
+ ol {
+   font-family: 'Inter', sans-serif;
+ }
+
+
+ .section {
+   background: var(--bg-gradient);
+   color: var(--text);
+   line-height: 1.6;
+   overflow-x: hidden;
+ }
+
 .section {
   padding: 80px 24px;
   /* max-width: 1280px; */
@@ -168,7 +268,7 @@ onMounted(() => {
   font-size: 14px;
 }
 
-.review-stars i {
+.review-stars svg {
   font-size: 16px;
 }
 
