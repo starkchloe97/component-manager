@@ -1,31 +1,33 @@
 <script setup>
+import { ChartLine, Gavel, Info, LockKeyhole } from '@lucide/vue'
+import main from "@/assets/VersionTwo/main.webp";
+
 const features = [
   {
-    icon: 'fas fa-lock',
+    icon: LockKeyhole,
     iconClass: 'orange',
     title: 'Exclusive Rights',
     desc: 'Sole ownership to use the mark for registered goods/services'
   },
   {
-    icon: 'fas fa-gavel',
+    icon: Gavel,
     iconClass: 'orange',
     title: 'Legal Protection',
     desc: 'Ability to take legal action against infringers'
   },
   {
-    icon: 'fas fa-chart-line',
+    icon: ChartLine,
     iconClass: 'orange',
     title: 'Business Value',
     desc: 'Trademarks are intangible assets that increase company valuation'
   }
 ]
-import main from "@/assets/VersionTwo/main.webp";
 </script>
 
 <template>
   <section class="section">
     <div class="animate-on-scroll">
-      <div class="section-label"><i class="fas fa-info-circle"></i> Overview</div>
+      <div class="section-label"><Info :size="16" /> Overview</div>
       <div class="section-title">What Is Trademark Registration?</div>
       <div class="section-desc">Trademark registration is the legal process of securing exclusive rights to your brand identity.</div>
     </div>
@@ -37,7 +39,9 @@ import main from "@/assets/VersionTwo/main.webp";
         </div>
         <div class="what-tm-features">
           <div v-for="feature in features" :key="feature.title" class="what-tm-feature animate-on-scroll" :class="feature.delay">
-            <div class="what-tm-feature-icon" :class="feature.iconClass"><i :class="feature.icon"></i></div>
+            <div class="what-tm-feature-icon" :class="feature.iconClass">
+              <component :is="feature.icon" :size="18" />
+            </div>
             <div class="what-tm-feature-text">
               <h4>{{ feature.title }}</h4>
               <p>{{ feature.desc }}</p>
@@ -52,7 +56,56 @@ import main from "@/assets/VersionTwo/main.webp";
   </section>
 </template>
 
-<style scoped>.section {
+<style scoped>
+
+.section {
+    --primary: #1a237e;
+    --primary-light: #3949ab;
+    --primary-lighter: #7986cb;
+    --accent: #ff6d00;
+    --accent-light: #ff9e40;
+    --accent-glow: rgba(255, 109, 0, 0.15);
+    --teal: #00897b;
+    --teal-light: #4db6ac;
+    --bg: #fafbff;
+    --bg-card: #ffffff;
+    --bg-alt: #f0f2ff;
+    --bg-gradient: linear-gradient(135deg, #fafbff 0%, #f0f2ff 50%, #fff8f0 100%);
+    --text: #1a1a2e;
+    --text-secondary: #5c6283;
+    --text-muted: #8b90a8;
+    --border: #e2e5f1;
+    --border-light: #eef0f8;
+    --shadow-sm: 0 1px 3px rgba(26, 35, 126, 0.06);
+    --shadow-md: 0 4px 16px rgba(26, 35, 126, 0.08);
+    --shadow-lg: 0 8px 40px rgba(26, 35, 126, 0.1);
+    --shadow-xl: 0 16px 60px rgba(26, 35, 126, 0.12);
+    --radius: 12px;
+    --radius-lg: 20px;
+    --radius-xl: 28px;
+}
+
+.section {
+    font-family: "Inter", sans-serif;
+    background-color: #ffffff;
+    color: var(--neutral-900);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+}
+
+.animate-on-scroll.visible {
+    opacity: 1;
+    transform: translateY(0);
+
+}
+.v-two *::before, .v-two *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  
+  }
+ .section {
   padding: 80px 24px;
   max-width: 1280px;
   margin: 0 auto;
@@ -73,9 +126,9 @@ import main from "@/assets/VersionTwo/main.webp";
   margin-bottom: 16px;
 }
 .section-title {
-  font-family: 'Space Grotesk', sans-serif;
+  /* font-family: 'Space Grotesk', sans-serif !important; */
   font-size: clamp(28px, 3.5vw, 40px);
-  font-weight: 800;
+  font-weight: 800 ;
   color: var(--text);
   letter-spacing: -1.5px;
   line-height: 1.15;
@@ -109,7 +162,7 @@ import main from "@/assets/VersionTwo/main.webp";
 }
 .what-tm-feature {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 14px;
   padding: 14px 18px;
   background: var(--bg-card);
@@ -133,7 +186,7 @@ import main from "@/assets/VersionTwo/main.webp";
   flex-shrink: 0;
 }
 .what-tm-feature-icon.blue { background: rgba(26,35,126,0.08); color: var(--primary); }.what-tm-feature-icon.orange { background: var(--accent-glow); color: var(--accent); }.what-tm-feature-icon.teal { background: rgba(0,137,123,0.08); color: var(--teal); }
-.what-tm-feature-text h4 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 2px; }.what-tm-feature-text p { font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 0; }
+.what-tm-feature-text h4 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 2px; margin-top: 0px;}.what-tm-feature-text p { font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 0; }
 .what-tm-visual {
   position: relative;
 }
