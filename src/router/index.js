@@ -11,7 +11,7 @@ const router = createRouter({
       component: Home,
     },
     {
-      path: '/text-image',
+      path: '/TextImage',
       name: 'TextImage',
       component: TextImagesSectionView,
     },
