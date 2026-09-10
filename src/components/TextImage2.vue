@@ -99,7 +99,7 @@ const features = [
     transform: translateY(0);
 
 }
-.v-two *::before, .v-two *::after {
+*::before , *::after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -126,9 +126,9 @@ const features = [
   margin-bottom: 16px;
 }
 .section-title {
-  /* font-family: 'Space Grotesk', sans-serif !important; */
+  /* font-family: 'Space Grotesk', sans-serif; */
   font-size: clamp(28px, 3.5vw, 40px);
-  font-weight: 800 ;
+  font-weight: 800;
   color: var(--text);
   letter-spacing: -1.5px;
   line-height: 1.15;
@@ -186,7 +186,7 @@ const features = [
   flex-shrink: 0;
 }
 .what-tm-feature-icon.blue { background: rgba(26,35,126,0.08); color: var(--primary); }.what-tm-feature-icon.orange { background: var(--accent-glow); color: var(--accent); }.what-tm-feature-icon.teal { background: rgba(0,137,123,0.08); color: var(--teal); }
-.what-tm-feature-text h4 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 2px; margin-top: 0px;}.what-tm-feature-text p { font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 0; }
+.what-tm-feature-text h4 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 2px;margin-top: 0px;}.what-tm-feature-text p { font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 0; }
 .what-tm-visual {
   position: relative;
 }
