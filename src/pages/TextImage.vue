@@ -11,23 +11,23 @@ import TextImage9 from '@/components/TextImage9.vue'
 import StyleDrawer from '@/components/StyleDrawer.vue'
 import { useStyleManager } from '@/composables/useStyleManager'
 
-const { selectComponent, openDrawer } = useStyleManager()
+const { registerComponent, selectComponent } = useStyleManager()
 
 const components = [
-  { id: 'TextImage1', component: TextImage1 },
-  { id: 'TextImage2', component: TextImage2 },
-  { id: 'TextImage3', component: TextImage3 },
-  { id: 'TextImage4', component: TextImage4 },
-  { id: 'TextImage5', component: TextImage5 },
-  { id: 'TextImage6', component: TextImage6 },
-  { id: 'TextImage7', component: TextImage7 },
-  { id: 'TextImage8', component: TextImage8 },
-  { id: 'TextImage9', component: TextImage9 },
+  { id: 'TextImage1', name: 'Text Image 1', component: TextImage1 },
+  { id: 'TextImage2', name: 'Text Image 2', component: TextImage2 },
+  { id: 'TextImage3', name: 'Text Image 3', component: TextImage3 },
+  { id: 'TextImage4', name: 'Text Image 4', component: TextImage4 },
+  { id: 'TextImage5', name: 'Text Image 5', component: TextImage5 },
+  { id: 'TextImage6', name: 'Text Image 6', component: TextImage6 },
+  { id: 'TextImage7', name: 'Text Image 7', component: TextImage7 },
+  { id: 'TextImage8', name: 'Text Image 8', component: TextImage8 },
+  { id: 'TextImage9', name: 'Text Image 9', component: TextImage9 },
 ]
 
-const select = (id) => {
-  selectComponent(id)
-}
+components.forEach(({ id, name }) => registerComponent(id, { name }))
+
+const select = (id) => selectComponent(id)
 </script>
 
 <template>
@@ -46,12 +46,6 @@ const select = (id) => {
 </template>
 
 <style scoped>
-.component-page {
-  position: relative;
-}
-
-.component-frame {
-  position: relative;
-  cursor: pointer;
-}
+.component-page { position: relative; }
+.component-frame { position: relative; cursor: pointer; }
 </style>
