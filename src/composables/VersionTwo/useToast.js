@@ -1,0 +1,19 @@
+import { ref } from 'vue'
+
+const toasts = ref([])
+let toastId = 0
+
+export function useToast() {
+  const showToast = (message) => {
+    const id = ++toastId
+    toasts.value.push({ id, message })
+    setTimeout(() => {
+      const index = toasts.value.findIndex(t => t.id === id)
+      if (index !== -1) {
+        toasts.value.splice(index, 1)
+      }
+    }, 3000)
+  }
+
+  return { toasts, showToast }
+}

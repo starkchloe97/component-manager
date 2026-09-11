@@ -1,5 +1,4 @@
 <template>
-  <>
     <button class="style-trigger" type="button" @click="openDrawer()">Customize</button>
     <div v-if="drawerOpen" class="drawer-backdrop" @click="closeDrawer" />
 
@@ -31,7 +30,7 @@
         </button>
       </div>
     </aside>
-  </>
+
 </template>
 
 <script setup>
