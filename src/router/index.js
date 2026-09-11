@@ -10,6 +10,7 @@ const router = createRouter({
       name: 'Home',
       component: Home,
     },
+    
     {
       path: '/TextImage',
       name: 'TextImage',
