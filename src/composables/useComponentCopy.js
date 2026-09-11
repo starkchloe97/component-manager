@@ -7,49 +7,39 @@ export function useComponentCopy() {
   const copySelectedComponent = async () => {
     const component = selectedComponent.value;
 
-    if (!component) {
-      return;
-    }
+    if (!component) return false;
 
     const registryEntry = componentRegistry[component.id];
 
     if (!registryEntry) {
-      console.error(
-        `Component "${component.id}" is not registered.`
-      );
-
-      return;
+      console.error(`Component "${component.id}" is not registered.`);
+      return false;
     }
 
-    const response = await registryEntry.source();
-    const source = response.default;
+    try {
+      const response = await registryEntry.source();
+      const source = response.default;
+      const updatedSource = applyStyleValues(source, component.styles || {});
 
-    const updatedSource = applyStyleValues(
-      source,
-      component.styles
-    );
-
-    await navigator.clipboard.writeText(updatedSource);
+      await navigator.clipboard.writeText(updatedSource);
+      return true;
+    } catch (error) {
+      console.error("Failed to copy component:", error);
+      return false;
+    }
   };
 
-  return {
-    copySelectedComponent
-  };
+  return { copySelectedComponent };
 }
 
 function applyStyleValues(source, styles) {
   let updatedSource = source;
 
   Object.entries(styles).forEach(([name, value]) => {
-    const pattern = new RegExp(
-      `(${name}:\\s*["'])[^"']*(["'])`,
-      "g"
-    );
+    const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const pattern = new RegExp(`(${escapedName}\\s*:\\s*["'])[^"']*(["'])`, "g");
 
-    updatedSource = updatedSource.replace(
-      pattern,
-      `$1${value}$2`
-    );
+    updatedSource = updatedSource.replace(pattern, `$1${value}$2`);
   });
 
   return updatedSource;
