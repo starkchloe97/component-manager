@@ -1,4 +1,3 @@
-```vue
 <template>
   <section id="cta" class="cta v-five">
     <div class="bg-grid"></div>
@@ -75,9 +74,6 @@ function handleConsult() {
 </script>
 
 <style scoped>
-
-/* ─── VARIABLES ─── */
-
 .v-five {
   --brand-400: #fb923c;
   --brand-500: #f97316;
@@ -88,7 +84,6 @@ function handleConsult() {
 
   --neutral-400: #a3a3a3;
   --neutral-500: #737373;
-  --neutral-900: #171717;
 
   --green-400: #4ade80;
   --blue-400: #60a5fa;
@@ -99,13 +94,12 @@ function handleConsult() {
 .v-five.cta {
   position: relative;
   padding: 96px 0;
+  overflow: hidden;
   background: linear-gradient(
     135deg,
     var(--navy-900) 0%,
     var(--navy-800) 100%
   );
-  color: var(--neutral-900);
-  overflow: hidden;
 }
 
 @media (min-width: 768px) {
@@ -133,13 +127,13 @@ function handleConsult() {
   left: 50%;
   width: 600px;
   height: 600px;
-  transform: translate(-50%, -50%);
   background: radial-gradient(
     ellipse at center,
     rgba(249, 115, 22, 0.15) 0%,
     transparent 70%
   );
   opacity: 0.2;
+  transform: translate(-50%, -50%);
 }
 
 /* ─── CONTAINER ─── */
@@ -164,23 +158,23 @@ function handleConsult() {
 .v-five .cta-badge {
   display: inline-flex;
   align-items: center;
-  background: rgba(249, 115, 22, 0.1);
-  border: 1px solid rgba(249, 115, 22, 0.2);
+  padding: 6px 16px;
+  margin-bottom: 16px;
   color: var(--brand-400);
   font-size: 11px;
   font-weight: 600;
-  text-transform: uppercase;
   letter-spacing: 0.1em;
-  padding: 6px 16px;
+  text-transform: uppercase;
+  background: rgba(249, 115, 22, 0.1);
+  border: 1px solid rgba(249, 115, 22, 0.2);
   border-radius: 9999px;
-  margin-bottom: 16px;
 }
 
 /* ─── TITLE ─── */
 
 .v-five .cta-title {
   margin-bottom: 24px;
-  color: #ffffff;
+  color: #fff;
   font-size: 1.875rem;
   font-weight: 500;
   line-height: 1.1;
@@ -227,12 +221,12 @@ function handleConsult() {
   align-items: center;
   gap: 8px;
   padding: 16px 40px;
-  background: var(--brand-500);
-  color: #ffffff;
-  border: none;
-  border-radius: 9999px;
+  color: #fff;
   font-size: 1rem;
   font-weight: 500;
+  background: var(--brand-500);
+  border: none;
+  border-radius: 9999px;
   cursor: pointer;
   transition: all 0.3s;
 }
@@ -249,12 +243,12 @@ function handleConsult() {
   align-items: center;
   gap: 8px;
   padding: 16px 40px;
-  background: rgba(255, 255, 255, 0.05);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 9999px;
+  color: #fff;
   font-size: 1rem;
   font-weight: 500;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
   cursor: pointer;
   transition: all 0.3s;
 }
@@ -311,5 +305,4 @@ function handleConsult() {
   opacity: 1;
   transform: translateY(0);
 }
-
 </style>

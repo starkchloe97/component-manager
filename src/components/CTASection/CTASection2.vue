@@ -1,6 +1,6 @@
 <script setup>
 import { Rocket } from '@lucide/vue'
-import { useToast } from '../../composables/VersionTwo/useToast.js'
+import { useToast } from '../../composables/useToast.js'
 
 const { showToast } = useToast()
 
@@ -59,26 +59,8 @@ const handleStart = () => {
     --radius-xl: 28px;
 }
 
-.cta-section html {
-    scroll-behavior: smooth;
-}
-
-.cta-section h1,
-.cta-section h2,
-.cta-section h3,
-.cta-section h4,
-.cta-section h5,
-.cta-section h6,
-.cta-section p,
-.cta-section span,
 .cta-section div,
-.cta-section button,
-.cta-section input,
-.cta-section label,
-.cta-section a,
-.cta-section li,
-.cta-section ul,
-.cta-section ol {
+.cta-section button {
     font-family: 'Inter', sans-serif;
 }
 
@@ -89,12 +71,6 @@ const handleStart = () => {
     overflow-x: hidden;
 }
 
-.cta-section {
-    /* padding: 0 24px 80px; */
-    /* max-width: 1280px; */
-    margin: 0 auto;
-}
-
 .cta-box {
     background: linear-gradient(135deg, var(--accent-light) 0%, #ff6d00 50%, var(--accent-light) 100%);
     /* border-radius: var(--radius-xl); */
@@ -102,28 +78,6 @@ const handleStart = () => {
     text-align: center;
     position: relative;
     overflow: hidden;
-}
-
-.cta-box::before {
-    content: '';
-    position: absolute;
-    width: 400px;
-    height: 400px;
-    background: radial-gradient(circle, rgba(255, 109, 0, 0.2), transparent 70%);
-    top: -200px;
-    right: -100px;
-    animation: blob 8s ease-in-out infinite;
-}
-
-.cta-box::after {
-    content: '';
-    position: absolute;
-    width: 300px;
-    height: 300px;
-    background: radial-gradient(circle, rgba(77, 182, 172, 0.15), transparent 70%);
-    bottom: -150px;
-    left: -50px;
-    animation: blob 10s ease-in-out infinite reverse;
 }
 
 .cta-box * {

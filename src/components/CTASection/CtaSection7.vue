@@ -1,5 +1,5 @@
 <script setup>
-import { useToast } from '../../composables/VersionTwo/useToast.js'
+import { useToast } from '../../composables/useToast.js'
 
 const { showToast } = useToast()
 

@@ -16,18 +16,19 @@ const isTrademarkOverview = computed(() => {
 </script>
 
 <template>
-  <section
-    class="get_trademark_sec has_elem gray_bg"
-    :style="{ background: '#00122c', color: '#fff' }"
-    :class="{ 'trademark-overview-page': isTrademarkOverview }"
-    id="call-action-ff-not-all"
-  >
+  <section class="get_trademark_sec has_elem gray_bg" :style="{ background: '#00122c', color: '#fff' }"
+    :class="{ 'trademark-overview-page': isTrademarkOverview }" id="call-action-ff-not-all">
     <div class="container">
       <div class="row midxx">
         <div class="col-md-7 call-to-footer">
           <h2>Ready to get your trademark registered?</h2>
 
-          <div data-v-0f8fa859="" class="btn_group justify-content-center" style="justify-content: flex-start !important;"><button data-v-8e7847e8="" data-v-0f8fa859="" class="popup-trigger" confirm-button-text="Get Started" style="background: rgb(255, 255, 255); margin: 0px 20px 0px 0px; color: rgb(0, 0, 0);">Get Started</button><a data-v-0f8fa859="" href="/trademark-registration" class="fom-text">Find out more</a></div>
+          <div data-v-0f8fa859="" class="btn_group justify-content-center"
+            style="justify-content: flex-start !important;"><button data-v-8e7847e8="" data-v-0f8fa859=""
+              class="popup-trigger" confirm-button-text="Get Started"
+              style="background: rgb(255, 255, 255); margin: 0px 20px 0px 0px; color: rgb(0, 0, 0);">Get
+              Started</button><a data-v-0f8fa859="" href="/trademark-registration" class="fom-text">Find out more</a>
+          </div>
         </div>
         <div class="col-md-5">
           <div class="inner-img1">
@@ -45,44 +46,48 @@ const isTrademarkOverview = computed(() => {
 .popup-trigger {
   padding: 12px 24px;
 }
+
 .popup-trigger {
-    background: #0b55b6;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: 600;
-    transition: all 0.3s ease;
+  background: #0b55b6;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.3s ease;
 }
+
 .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .midxx {
-    align-items: center;
+  align-items: center;
 }
 
 .row {
-    display: flex;
-    margin: 0 -1rem;
+  display: flex;
+  margin: 0 -1rem;
 }
+
 .col-md-7.call-to-footer {
-    margin: 40px 0 0 0;
+  margin: 40px 0 0 0;
 }
 
 .row {
-    padding: 0 1rem;
+  padding: 0 1rem;
 }
 
 @media (min-width: 768px) {
-    .col-md-7 {
-        width: 58.333333%;
-    }
+  .col-md-7 {
+    width: 58.333333%;
+  }
 }
+
 .btn_group.justify-content-center {
   margin: 30px 0 0 0;
 }
@@ -100,6 +105,7 @@ const isTrademarkOverview = computed(() => {
   padding: 0px !important;
   background: linear-gradient(180deg, transparent 20%, #00122c 20%);
 }
+
 .midxx {
   align-items: center;
 }
@@ -124,7 +130,8 @@ section#call-action-ff-not-all::before {
 
 /* Route-specific state - red background */
 section#call-action-ff-not-all.trademark-overview-page::before {
-  background: #f8f9fa; /* Red */
+  background: #f8f9fa;
+  /* Red */
 }
 
 .col-md-7.call-to-footer {
@@ -146,3 +153,4 @@ section#call-action-ff-not-all.trademark-overview-page::before {
   }
 }
 </style>
+  

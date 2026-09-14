@@ -50,7 +50,7 @@
 import { ref } from "vue";
 import { Phone } from "@lucide/vue";
 import { useScrollReveal } from "@/composables/useScrollReveal";
-import { useToast } from "@/composables/VersionTwo/useToast.js";
+import { useToast } from "@/composables/useToast.js";
 import img from "@/assets/images/businessgirl.webp";
 
 const sectionRef = ref(null);
