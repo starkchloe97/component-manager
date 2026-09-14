@@ -4,6 +4,19 @@ export const componentRegistry = {
     name: "Text Image 1",
     source: () => import("@/components/TextImage/TextImage1.vue?raw"),
   },
+
+  TextImage1:{
+  name: "TextImage1",
+  component: TextImage1,
+
+  editor: TextImage1Editor
+},
+
+  TextImage2: {
+    component: TextImage2,
+
+    editor: TextImage2Editor,
+  },
   TextImage2: {
     id: "TextImage2",
     name: "Text Image 2",

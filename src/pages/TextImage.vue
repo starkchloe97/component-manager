@@ -1,4 +1,4 @@
-<script setup>
+<!-- <script setup>
 import TextImage1 from '@/components/TextImage/TextImage1.vue'
 import TextImage2 from '@/components/TextImage/TextImage2.vue'
 import TextImage3 from '@/components/TextImage/TextImage3.vue'
@@ -48,4 +48,13 @@ const select = (id) => selectComponent(id)
 <style scoped>
 .component-page { position: relative; }
 .component-frame { position: relative; cursor: pointer; }
-</style>
+</style> -->
+
+
+<script setup>
+import Editor from "@/components/editor/Editor.vue";
+</script>
+
+<template>
+  <Editor />
+</template>
