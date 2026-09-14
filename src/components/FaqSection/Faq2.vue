@@ -4,7 +4,7 @@ import { ref, computed } from 'vue'
 const openIndex = ref(0)
 const searchQuery = ref('')
 
-import faqVector from "../../assets/VersionTwo/main.webp";
+import faqVector from "../../assets/main.webp";
 
 const faqs = [
   {

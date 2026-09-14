@@ -6,7 +6,7 @@ export const SITE_ADDRESS_LINE1 = "Test Street #00000"
 export const SITE_ADDRESS_LINE2 = "Test, TX 00000"
 export const SITE_DOMAIN = "abc.com"
 
-import logo from "@/assets/images/logo.svg";
+import logo from "@/assets/logo.svg";
 export const SITE_LOGO = logo;
 
 export const BASE_URL = 'https://trademarkcharter.com'

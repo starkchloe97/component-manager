@@ -1,7 +1,7 @@
 <script setup>
 // Import only the images that are actually used in the template
-import brandsHero16 from "@/assets/images/Brands-HeroImages-16.webp";
-import brandsHero20 from "@/assets/images/Brands-HeroImages-20.webp";
+import brandsHero16 from "@/assets/Brands-HeroImages-16.webp";
+import brandsHero20 from "@/assets/Brands-HeroImages-20.webp";
 
 import { SITE_NAME } from "@/config/siteInfo.js";
 // import CtaSection from "../components/VersionFive/CtaSection.vue"

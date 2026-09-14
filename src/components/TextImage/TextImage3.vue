@@ -1,7 +1,7 @@
 <script setup>
 import { Star, TrendingUp } from '@lucide/vue'
-import tmblock from "@/assets/images/web/tm-block.webp"
-import img4 from "@/assets/images/web/r-m-14.png";
+import tmblock from "@/assets/tm-block.webp"
+import img4 from "@/assets/r-m-14.png";
 </script>
 
 <template>

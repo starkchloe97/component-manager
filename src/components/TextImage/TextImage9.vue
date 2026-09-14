@@ -113,10 +113,10 @@
 <script setup>
 import { Type, Image as ImageIcon, Music, Palette, Check } from "@lucide/vue";
 
-import wordmarkSample from "@/assets/VersionFive/wordmark-sample.png";
-import logoSample from "@/assets/VersionFive/logo-sample.png";
-import soundSample from "@/assets/VersionFive/corp-girl.jpg";
-import packagingSample from "@/assets/VersionFive/corp-boy.jpg";
+import wordmarkSample from "@/assets/wordmark-sample.png";
+import logoSample from "@/assets/logo-sample.png";
+import soundSample from "@/assets/corp-girl.jpg";
+import packagingSample from "@/assets/corp-boy.jpg";
 
 </script>
 

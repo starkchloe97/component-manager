@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Star } from '@lucide/vue'
-import mainImage from "@/assets/VersionTwo/main1.webp";
+import mainImage from "@/assets/main1.webp";
 import {
   SITE_NAME,
 } from "@/config/siteInfo.js";

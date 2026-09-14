@@ -39,7 +39,7 @@
 import { ref } from "vue";
 import { CheckCircle } from "@lucide/vue";
 import { useScrollReveal } from "@/composables/useScrollReveal";
-import Brand from "@/assets/images/tgirl1.png";
+import Brand from "@/assets/tgirl1.png";
 
 import { SITE_NAME } from "@/config/siteInfo.js";
 

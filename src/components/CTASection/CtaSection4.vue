@@ -1,6 +1,6 @@
 ```vue
 <script setup>
-import ctaImage from "@/assets/VersionFour/cta-img.png";
+import ctaImage from "@/assets/cta-img.png";
 </script>
 
 <template>

@@ -1,7 +1,7 @@
 <script setup>
 import { useRoute } from "vue-router";
 import { computed } from "vue";
-import callto from "@/assets/images/call-to.webp";
+import callto from "@/assets/call-to.webp";
 
 const route = useRoute();
 

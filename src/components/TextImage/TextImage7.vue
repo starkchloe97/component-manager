@@ -1,7 +1,7 @@
 <script setup>
 import { CheckCircle } from '@lucide/vue'
-import tmblock2 from "@/assets/VersionFour/tm-block-2.webp"
-import tmblock3 from "@/assets/VersionFour/tm-block-3.jpg"
+import tmblock2 from "@/assets/tm-block-2.webp"
+import tmblock3 from "@/assets/tm-block-3.jpg"
 </script>
 
 <template>

@@ -37,7 +37,7 @@ import { ref } from "vue";
 import { CheckCircle } from "@lucide/vue";
 import { useScrollReveal } from "@/composables/useScrollReveal";
 import { useComponentStyles } from "@/composables/useComponentStyles";
-import Brand from "@/assets/images/BrandsHeroImages.jpg";
+import Brand from "@/assets/BrandsHeroImages.jpg";
 import { SITE_NAME } from "@/config/siteInfo.js";
 
 const sectionRef = ref(null);

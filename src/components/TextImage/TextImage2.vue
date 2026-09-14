@@ -1,6 +1,6 @@
 <script setup>
 import { ChartLine, Gavel, Info, LockKeyhole } from '@lucide/vue'
-import main from "@/assets/VersionTwo/main.webp";
+import main from "@/assets/main.webp";
 
 const features = [
   {
