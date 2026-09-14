@@ -15,7 +15,7 @@ const handleStart = () => {
             <!-- <div class="cta-desc">Start your trademark registration today. Free search included with every plan. No
                 obligation, no hidden costs.</div> -->
             <button class="btn-cta" @click="handleStart">
-                Get Started 
+                Get Started
             </button>
         </div>
     </section>
@@ -131,7 +131,7 @@ const handleStart = () => {
 
 .cta-title {
     /* font-family: 'Space Grotesk', sans-serif !important; */
-    font-size: clamp(26px, 3vw, 38px)!important;
+    font-size: clamp(26px, 3vw, 38px) !important;
     font-weight: 800;
     color: #fff;
     letter-spacing: -1px;

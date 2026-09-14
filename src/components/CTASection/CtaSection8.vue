@@ -1,50 +1,50 @@
   <template>
-  <section ref="sectionRef" class="cta">
-    <div class="container">
-      <!-- Original reveal wrapper: <div class="scroll-reveal cta-card" :style="{ backgroundImage: `url(${img})` }"> -->
-      <div class="cta-card" :style="{ backgroundImage: `url(${img})` }">
-        <div class="glow-1"></div>
-        <div class="glow-2"></div>
-        <div class="dots"></div>
-        <div class="cta-overlay"></div>
-        <div class="cta-inner">
-          <span class="section-label">Free Trademark Search Included</span>
-          <h2>Ready to get your <br />trademark registered?</h2>
-          <p>
-            Every day you wait is a day someone else could register your mark.
-            Start your trademark application in minutes.
-          </p>
-          <div class="cta-buttons">
-            <!-- Original PopUp component (not available or registered in this project):
+    <section ref="sectionRef" class="cta">
+      <div class="container">
+        <!-- Original reveal wrapper: <div class="scroll-reveal cta-card" :style="{ backgroundImage: `url(${img})` }"> -->
+        <div class="cta-card" :style="{ backgroundImage: `url(${img})` }">
+          <div class="glow-1"></div>
+          <div class="glow-2"></div>
+          <div class="dots"></div>
+          <div class="cta-overlay"></div>
+          <div class="cta-inner">
+            <span class="section-label">Free Trademark Search Included</span>
+            <h2>Ready to get your <br />trademark registered?</h2>
+            <p>
+              Every day you wait is a day someone else could register your mark.
+              Start your trademark application in minutes.
+            </p>
+            <div class="cta-buttons">
+              <!-- Original PopUp component (not available or registered in this project):
             <PopUp
               buttonClass="btn-primary"
               trigger-text="Get Started"
             /> -->
-            <button class="btn-primary" type="button" @click="handleStart">
-              Get Started
-            </button>
-            <!-- Original RouterLink target: :to="{ name: 'trademarkregistration' }"
+              <button class="btn-primary" type="button" @click="handleStart">
+                Get Started
+              </button>
+              <!-- Original RouterLink target: :to="{ name: 'trademarkregistration' }"
                  That named route is not defined in src/router/index.js. -->
-            <a href="#" class="btn-outline cta-outline" @click.prevent="handleStart">
-              <!-- Original Iconify icon (Iconify is not configured in this project):
+              <a href="#" class="btn-outline cta-outline" @click.prevent="handleStart">
+                <!-- Original Iconify icon (Iconify is not configured in this project):
               <span
                 class="iconify"
                 data-icon="lucide:phone"
                 data-width="14"
               ></span> -->
-              <Phone :size="14" aria-hidden="true" />
-              Find out more
-            </a>
-            <!-- Original closing tag: </RouterLink> -->
-          </div>
-          <div class="cta-note">
-            No commitment required · Free trademark search · Attorney-reviewed
+                <Phone :size="14" aria-hidden="true" />
+                Find out more
+              </a>
+              <!-- Original closing tag: </RouterLink> -->
+            </div>
+            <div class="cta-note">
+              No commitment required · Free trademark search · Attorney-reviewed
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
-</template>
+    </section>
+  </template>
 
 <script setup>
 import { ref } from "vue";
@@ -71,16 +71,19 @@ const handleStart = () => {
   padding: 96px 0;
   background: var(--surface);
 }
+
 @media (min-width: 768px) {
   .cta {
     padding: 128px 0;
   }
 }
+
 .container {
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 24px;
 }
+
 .cta-card {
   position: relative;
   min-height: 420px;
@@ -93,6 +96,7 @@ const handleStart = () => {
   overflow: hidden;
   text-align: right;
 }
+
 @media (min-width: 768px) {
   .cta-card {
     padding: 80px;
@@ -121,6 +125,7 @@ const handleStart = () => {
   transform: translate(30%, -30%);
   z-index: 1;
 }
+
 .glow-2 {
   position: absolute;
   bottom: 0;
@@ -134,24 +139,25 @@ const handleStart = () => {
   transform: translate(-30%, 30%);
   z-index: 1;
 }
+
 .dots {
   position: absolute;
   inset: 0;
   opacity: 0.03;
-  background-image: radial-gradient(
-    circle at 1px 1px,
-    #000 1px,
-    transparent 0
-  );
+  background-image: radial-gradient(circle at 1px 1px,
+      #000 1px,
+      transparent 0);
   background-size: 24px 24px;
   z-index: 1;
 }
+
 .cta-inner {
   position: relative;
   z-index: 2;
   max-width: 560px;
   margin-left: auto;
 }
+
 .section-label {
   display: block;
   font-size: 10px;
@@ -161,6 +167,7 @@ const handleStart = () => {
   color: var(--brand);
   margin-bottom: 16px;
 }
+
 .cta-badge {
   display: inline-flex;
   align-items: center;
@@ -175,6 +182,7 @@ const handleStart = () => {
   border-radius: 9999px;
   margin-bottom: 32px;
 }
+
 .pulse-dot {
   position: relative;
   width: 8px;
@@ -182,6 +190,7 @@ const handleStart = () => {
   border-radius: 50%;
   background: var(--brand-mid);
 }
+
 .pulse-dot::before {
   content: "";
   position: absolute;
@@ -190,6 +199,7 @@ const handleStart = () => {
   border: 2px solid var(--brand-mid);
   animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
 .cta-inner h2 {
   font-family: var(--font-display);
   font-weight: 600;
@@ -199,11 +209,13 @@ const handleStart = () => {
   color: #0a0a0a;
   margin-bottom: 24px;
 }
+
 @media (min-width: 768px) {
   .cta-inner h2 {
     font-size: 48px;
   }
 }
+
 .cta-inner p {
   font-size: 16px;
   font-weight: 300;
@@ -211,12 +223,14 @@ const handleStart = () => {
   max-width: 500px;
   margin: 0 0 40px auto;
 }
+
 .cta-buttons {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 16px;
 }
+
 .btn-primary,
 .btn-outline {
   display: inline-flex;
@@ -233,24 +247,29 @@ const handleStart = () => {
   cursor: pointer;
   transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
 }
+
 .btn-primary {
   background: #0b55b6;
   color: #ffffff;
 }
+
 .btn-primary:hover {
   transform: translateY(-2px);
   background: #083d82;
 }
+
 .cta-outline {
   border-style: solid;
   border-color: rgba(0, 0, 0, 0.2);
   color: #0a0a0a;
 }
+
 .cta-outline:hover {
   background: #0a0a0a;
   color: #fff;
   border-color: #0a0a0a;
 }
+
 .cta-note {
   font-size: 12px;
   color: rgba(0, 0, 0, 0.4);
@@ -261,43 +280,61 @@ const handleStart = () => {
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
   .cta {
-    padding: 64px 0; 
+    padding: 64px 0;
   }
+
   .cta-card {
-    padding: 48px 32px; 
-    background-color: #0F1D33; /* Dark background requested */
+    padding: 48px 32px;
+    background-color: #0F1D33;
+    /* Dark background requested */
     background-position: center;
-    background-size: cover; 
-    text-align: center; /* Centered text */
+    background-size: cover;
+    text-align: center;
+    /* Centered text */
   }
+
   .cta-overlay {
-    background: #0F1D33; /* Solid dark overlay so image blends into the dark bg */
+    background: #0F1D33;
+    /* Solid dark overlay so image blends into the dark bg */
   }
+
   .cta-inner {
     max-width: 100%;
-    margin: 0 auto; /* Centers the content block */
+    margin: 0 auto;
+    /* Centers the content block */
   }
+
   .cta-inner h2 {
     font-size: 26px;
     line-height: 32px;
-    color: #ffffff; /* Changed to white for dark background readability */
+    color: #ffffff;
+    /* Changed to white for dark background readability */
   }
+
   .cta-inner p {
-    margin: 0 auto 40px; /* Centers the paragraph block */
-    color: rgba(255, 255, 255, 0.7); /* Light text for dark background */
+    margin: 0 auto 40px;
+    /* Centers the paragraph block */
+    color: rgba(255, 255, 255, 0.7);
+    /* Light text for dark background */
   }
+
   .cta-buttons {
     margin-left: 0;
-    justify-content: center; /* Centers buttons */
+    justify-content: center;
+    /* Centers buttons */
   }
+
   .cta-note {
-    color: rgba(255, 255, 255, 0.4); /* Light text for dark background */
+    color: rgba(255, 255, 255, 0.4);
+    /* Light text for dark background */
   }
+
   /* Adjusting the outline button styles for the dark mobile background */
   .cta-outline {
     color: #ffffff;
     border-color: rgba(255, 255, 255, 0.3);
   }
+
   .cta-outline:hover {
     background: #ffffff;
     color: #0F1D33;
@@ -309,7 +346,8 @@ const handleStart = () => {
 @media (max-width: 480px) {
   .cta-buttons {
     flex-direction: column;
-    align-items: center; /* Keeps buttons centered */
+    align-items: center;
+    /* Keeps buttons centered */
   }
 }
 </style>

@@ -52,9 +52,8 @@
 <script setup>
 import { ref } from "vue";
 import { ArrowRight, Phone } from "@lucide/vue";
-import { useScrollReveal } from "@/composables/VersionOne/useScrollReveal";
-import { useToast } from "@/composables/VersionOne/useToast";
-
+import { useScrollReveal } from "@/composables/useScrollReveal";
+import { useToast } from "@/composables/useToast";
 const sectionRef = ref(null);
 
 useScrollReveal(sectionRef);
@@ -249,3 +248,6 @@ const { showToast } = useToast();
   }
 }
 </style>
+
+
+
