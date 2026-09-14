@@ -14,10 +14,14 @@ const activeId = ref(registry[0]?.id || null);
 const preview = ref(false);
 const { clearElement } = useComponentEditor();
 const { registerComponent } = useComponentManager();
-const { selectComponent } = useStyleManager();
+const { registerComponent: registerStyleComponent, selectComponent } = useStyleManager();
 const { copySelectedComponent } = useComponentCopy();
 
-registry.forEach((entry) => registerComponent(entry.id, { name: entry.name, component: entry.component, source: entry.source }));
+registry.forEach((entry) => {
+  const config = { name: entry.name, component: entry.component, source: entry.source, styles: {} };
+  registerComponent(entry.id, config);
+  registerStyleComponent(entry.id, config);
+});
 selectComponent(activeId.value);
 
 const activeComponent = computed(() => componentRegistry[activeId.value] || null);
