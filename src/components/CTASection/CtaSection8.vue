@@ -52,6 +52,7 @@ import { Phone } from "@lucide/vue";
 import { useScrollReveal } from "@/composables/useScrollReveal";
 import { useToast } from "@/composables/useToast.js";
 import img from "@/assets/businessgirl.webp";
+import { useComponentStyles } from "@/composables/useComponentStyles";
 
 const sectionRef = ref(null);
 useScrollReveal(sectionRef);
@@ -60,16 +61,27 @@ const { showToast } = useToast();
 const handleStart = () => {
   showToast("Launching trademark search tool...");
 };
+
+const styles = useComponentStyles("CtaSection8", {
+  primary: "#0b55b6",
+  background: "#ffffff",
+  muted:"#1a6fd4",
+  fontSize: "48px",
+  fontSizeBody: "16px",
+});
+
 </script>
 
 <style scoped>
 .cta {
-  --surface: #ffffff;
-  --brand: #0b55b6;
-  --brand-mid: #1a6fd4;
+  --primary: v-bind("styles.primary");
+  --bg: v-bind("styles.background");
+  --muted: v-bind("styles.muted");
+  --font-size: v-bind("styles.fontSize");
+  --font-size-des:v-bind("styles.fontSizeBody");
   --font-display: "Inter Tight", sans-serif;
   padding: 96px 0;
-  background: var(--surface);
+  background: var(--bg);
 }
 
 @media (min-width: 768px) {
@@ -87,7 +99,7 @@ const handleStart = () => {
 .cta-card {
   position: relative;
   min-height: 420px;
-  background-color: #ffffff;
+  background-color: var(--bg);
   background-position: left center;
   background-size: contain;
   background-repeat: no-repeat;
@@ -108,7 +120,7 @@ const handleStart = () => {
 .cta-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to right, transparent 0%, rgb(255 255 255) 49%, rgb(255 255 255) 29%, #fff 95%);
+  background: linear-gradient(to right, transparent 0%, var(--bg) 49% , var(--bg) 29%, var(--bg) 95%);
   z-index: 1;
 }
 
@@ -164,7 +176,7 @@ const handleStart = () => {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.15em;
-  color: var(--brand);
+  color: var(--primary);
   margin-bottom: 16px;
 }
 
@@ -176,7 +188,7 @@ const handleStart = () => {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.15em;
-  color: var(--brand-mid);
+  color: var(--muted);
   background: rgba(0, 0, 0, 0.05);
   padding: 8px 16px;
   border-radius: 9999px;
@@ -188,7 +200,7 @@ const handleStart = () => {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--brand-mid);
+  background: var(--muted);
 }
 
 .pulse-dot::before {
@@ -196,7 +208,7 @@ const handleStart = () => {
   position: absolute;
   inset: -4px;
   border-radius: 50%;
-  border: 2px solid var(--brand-mid);
+  border: 2px solid var(--muted);
   animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
@@ -212,12 +224,12 @@ const handleStart = () => {
 
 @media (min-width: 768px) {
   .cta-inner h2 {
-    font-size: 48px;
+    font-size: var(--font-size);
   }
 }
 
 .cta-inner p {
-  font-size: 16px;
+  font-size: var(--font-size-des);
   font-weight: 300;
   color: rgba(0, 0, 0, 0.6);
   max-width: 500px;

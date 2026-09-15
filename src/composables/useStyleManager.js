@@ -1,4 +1,4 @@
-import { computed, reactive, ref } from "vue";
+  import { computed, reactive, ref } from "vue";
 
 const components = reactive({});
 const selectedComponentId = ref(null);

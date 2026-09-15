@@ -54,25 +54,45 @@ import { ref } from "vue";
 import { ArrowRight, Phone } from "@lucide/vue";
 import { useScrollReveal } from "@/composables/useScrollReveal";
 import { useToast } from "@/composables/useToast";
+import { useComponentStyles } from "@/composables/useComponentStyles";
 const sectionRef = ref(null);
 
 useScrollReveal(sectionRef);
 
 const { showToast } = useToast();
+
+const styles = useComponentStyles("CtaSection1.vue", {
+  primary: "#1a6fd4",
+  background: "#0f1d33",
+  pdtop: "96px",
+  pdbottom: "96px",
+  pdleft: "0px",
+  pdright: "0px",
+  fontSize: "60px",
+  fontSizeBody: "18px",
+  surface: "#ffffff",
+  muted: "#0b55b6"
+});
+
 </script>
 
 <style scoped>
 .cta {
-  --brand: #0b55b6;
-  --brand-mid: #1a6fd4;
-  --surface: #ffffff;
-  --ink: #0f1d33;
-  --font-display: "Inter Tight", sans-serif;
-  --font-body: "Inter", sans-serif;
-
-  padding: 96px 0;
-  font-family: var(--font-body);
-  color: var(--ink);
+  --primary: v-bind("styles.primary");
+  --muted: v-bind("styles.muted");
+  --surface: v-bind("styles.surface");
+  --bg: v-bind("styles.background");
+  --pd-top: v-bind("styles.pdtop");
+  --pd-bottom: v-bind("styles.pdbottom");
+  --pd-left: v-bind("styles.pdleft");
+  --pd-right: v-bind("styles.pdright");
+  --font-size: v-bind("styles.fontSize");
+  --font-size-body: v-bind("styles.fontSizeBody");
+  padding-top: var(--pd-top);
+  padding-bottom: var(--pd-bottom);
+  padding-left: var(--pd-left);
+  padding-right: var(--pd-right);
+  color: var(--bg);
   background: var(--surface);
 }
 
@@ -87,7 +107,7 @@ const { showToast } = useToast();
   padding: 48px;
   overflow: hidden;
   text-align: center;
-  background: var(--ink);
+  background: var(--bg);
   border-radius: 24px;
 }
 
@@ -139,7 +159,7 @@ const { showToast } = useToast();
   gap: 8px;
   padding: 8px 16px;
   margin-bottom: 24px;
-  color: var(--brand-mid);
+  color: var(--primary);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.15em;
@@ -151,7 +171,7 @@ const { showToast } = useToast();
 .pulse-dot {
   width: 8px;
   height: 8px;
-  background: var(--brand-mid);
+  background: var(--primary);
   border-radius: 50%;
 }
 
@@ -197,7 +217,7 @@ const { showToast } = useToast();
   color: #fff;
   font-weight: 500;
   letter-spacing: 0.06em;
-  background: var(--brand);
+  background: var(--muted);
   border: none;
   transition: transform 300ms ease, box-shadow 300ms ease;
 }
@@ -217,7 +237,7 @@ const { showToast } = useToast();
 }
 
 .btn-outline:hover {
-  color: var(--ink);
+  color: var(--bg);
   background: #fff;
   border-color: #fff;
 }
@@ -244,7 +264,7 @@ const { showToast } = useToast();
 
 @media (min-width: 1024px) {
   .cta-inner h2 {
-    font-size: 60px;
+    font-size: var(--font-size);
   }
 }
 </style>

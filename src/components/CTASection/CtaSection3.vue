@@ -58,22 +58,49 @@
 </template>
 
 <script setup>
+import { useComponentStyles } from "@/composables/useComponentStyles";
 function callExpert() {
   if (window.showToast) window.showToast('Our team will call you shortly!')
 }
+
+const styles = useComponentStyles("CTASection3", {
+  primary: "#fff",
+  background: "linear-gradient(135deg, #067e73 0%, #019e8e 55%, #06c4ac 100%)",
+  surface: "#ffffff",
+  pdtop: "3rem",
+  pdbottom: "3rem",
+  pdleft: "2.5rem",
+  pdright: "2.5rem",
+  fontSize: "2rem",
+  fontSizeBody: "1.05rem",
+  muted: "rgba(255,255,255,0.82)"
+});
+
 </script>
 
 <style>
-.final-cta { margin: 0; padding: 0; box-sizing: border-box; font-family: Inter, sans-serif;}
- /* .final-cta { font-family: 'Inter' , sans-serif ; background: #fcfcfd; color: #1e293b; overflow-x: hidden; margin: 0; line-height: inherit; } */
 
-/* .cta-wrap {
-  font-family: var(--font-sans);
-} */
+.final-cta { margin: 0; padding: 0; box-sizing: border-box; font-family: Inter, sans-serif;}
+.final-cta{
+  --primary: v-bind("styles.primary");
+  --bg: v-bind("styles.background");
+  --surface: v-bind("styles.surface");
+  --font-size: v-bind("styles.fontSize");
+  --font-size-body: v-bind("styles.fontSizeBody");
+  --pd-top: v-bind("styles.pdtop");
+  --pd-bottom: v-bind("styles.pdbottom");
+  --pd-left: v-bind("styles.pdleft");
+  --pd-right: v-bind("styles.pdright");
+  --muted: v-bind("styles.muted")
+}
 .cta-box {
   position: relative;
-  background: linear-gradient(135deg, #067e73 0%, #019e8e 55%, #06c4ac 100%);
-  padding: 3rem 2.5rem;
+  background:var(--bg);
+  padding-top: var(--pd-top);
+  padding-bottom: var(--pd-bottom);
+  padding-left: var(--pd-left);
+  padding-right: var(--pd-right);
+  /* padding: 3rem 2.5rem; */
   text-align: center;
   overflow: hidden;
   max-width: 100%;
@@ -115,7 +142,7 @@ function callExpert() {
 .cta-title {
   font-size: 2rem;
   font-weight: 800;
-  color: #fff;
+  color:var(--primary);
   letter-spacing: -0.025em;
   line-height: 1.2;
   margin: 0 0 1rem;
@@ -124,7 +151,7 @@ function callExpert() {
 @media (min-width: 1024px) { .cta-title { font-size: 3rem; } }
 
 .cta-desc {
-  color: rgba(255,255,255,0.82);
+  color:var(--muted);
   font-size: 1.05rem;
   line-height: 1.65;
   max-width: 34rem;

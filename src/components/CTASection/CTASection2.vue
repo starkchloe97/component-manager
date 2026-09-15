@@ -1,12 +1,28 @@
 <script setup>
 import { Rocket } from '@lucide/vue'
 import { useToast } from '../../composables/useToast.js'
-
+import { useComponentStyles } from "@/composables/useComponentStyles";
 const { showToast } = useToast()
 
 const handleStart = () => {
     showToast('Launching trademark search tool...')
 }
+
+const styles = useComponentStyles("CTA", {
+  primary: "#ff6d00",
+  background: "#ff9e40",
+  surface: "#ffffff",
+  pdtop: "64px",
+  pdbottom: "64px",
+  pdleft: "0px",
+  pdright: "0px",
+  fontSize: "clamp(26px, 3vw, 38px)",
+  fontSizeBody: "16px",
+  muted: "rgba(255, 255, 255, 0.7)",
+  shadow: "rgba(255, 109, 0, 0.4)",
+  shadowHover: "rgba(255, 109, 0, 0.5)"
+});
+
 </script>
 
 <template>
@@ -33,48 +49,31 @@ const handleStart = () => {
 }
 
 .cta-section {
-    --primary: #1a237e;
-    --primary-light: #3949ab;
-    --primary-lighter: #7986cb;
-    --accent: #ff6d00;
-    --accent-light: #ff9e40;
-    --accent-glow: rgba(255, 109, 0, 0.15);
-    --teal: #00897b;
-    --teal-light: #4db6ac;
-    --bg: #fafbff;
-    --bg-card: #ffffff;
-    --bg-alt: #f0f2ff;
-    --bg-gradient: linear-gradient(135deg, #fafbff 0%, #f0f2ff 50%, #fff8f0 100%);
-    --text: #1a1a2e;
-    --text-secondary: #5c6283;
-    --text-muted: #8b90a8;
-    --border: #e2e5f1;
-    --border-light: #eef0f8;
-    --shadow-sm: 0 1px 3px rgba(26, 35, 126, 0.06);
-    --shadow-md: 0 4px 16px rgba(26, 35, 126, 0.08);
-    --shadow-lg: 0 8px 40px rgba(26, 35, 126, 0.1);
-    --shadow-xl: 0 16px 60px rgba(26, 35, 126, 0.12);
-    --radius: 12px;
-    --radius-lg: 20px;
-    --radius-xl: 28px;
+  --primary: v-bind("styles.primary");
+  --bg: v-bind("styles.background");
+  --surface: v-bind("styles.surface");
+  --muted: v-bind("styles.muted");
+  --shadow: v-bind("styles.shadow");
+  --shadow-hover: v-bind("styles.shadowHover");
+  --font-size: v-bind("styles.fontSize");
+  --font-size-body: v-bind("styles.fontSizeBody");
+  --pd-top: v-bind("styles.pdtop");
+  --pd-bottom: v-bind("styles.pdbottom");
+  --pd-left: v-bind("styles.pdleft");
+  --pd-right: v-bind("styles.pdright");
 }
 
 .cta-section div,
 .cta-section button {
     font-family: 'Inter', sans-serif;
 }
-
-.cta-section {
-    background: var(--bg-gradient);
-    color: var(--text);
-    line-height: 1.6;
-    overflow-x: hidden;
-}
-
-.cta-box {
-    background: linear-gradient(135deg, var(--accent-light) 0%, #ff6d00 50%, var(--accent-light) 100%);
+.cta-box {  
+    background: linear-gradient(135deg, var(--bg) 0%,  var(--primary)  50%, var(--bg) 100%);
     /* border-radius: var(--radius-xl); */
-    padding: 64px;
+    padding-top: var(--pd-top);
+    padding-bottom: var(--pd-bottom);
+    padding-left: var(--pd-left);
+    padding-right: var(--pd-right);
     text-align: center;
     position: relative;
     overflow: hidden;
@@ -87,16 +86,16 @@ const handleStart = () => {
 
 .cta-title {
     font-family: 'Space Grotesk', sans-serif;
-    font-size: clamp(26px, 3vw, 38px);
+    font-size: var(--font-size);
     font-weight: 800;
-    color: #fff;
+    color:var(--surface);
     letter-spacing: -1px;
     margin-bottom: 12px;
 }
 
 .cta-desc {
-    font-size: 16px;
-    color: rgba(255, 255, 255, 0.7);
+    font-size: var(--font-size-body);
+    color:var(--muted);
     max-width: 500px;
     margin: 0 auto 32px;
     line-height: 1.7;
@@ -109,20 +108,20 @@ const handleStart = () => {
     padding: 16px 36px;
     border-radius: 12px;
     border: none;
-    background: linear-gradient(135deg, var(--accent), var(--accent-light));
-    color: #fff;
+    background: linear-gradient(135deg, var(--primary), var(--bg));
+    color:var(--surface);
     font-size: 16px;
     font-weight: 700;
     cursor: pointer;
     font-family: inherit;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 24px rgba(255, 109, 0, 0.4);
+    box-shadow: 0 4px 24px var(--shadow);
     border: 1px solid;
 }
 
 .btn-cta:hover {
     transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 8px 32px rgba(255, 109, 0, 0.5);
+    box-shadow: 0 8px 32px var(--shadow-hover);
 }
 
 @keyframes blob {

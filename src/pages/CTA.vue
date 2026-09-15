@@ -13,8 +13,9 @@ import CtaSection8 from '@/components/CTASection/CtaSection8.vue';
 
 <template>
     
-    <CtaSection1/>
-    <CtaSection8/>
+<CtaSection1/>
+
+<CtaSection8/>
     
 <CtaSection2/>
 
@@ -25,7 +26,6 @@ import CtaSection8 from '@/components/CTASection/CtaSection8.vue';
 <CtaSection5/>
 
 <CtaSection6/>
-
 
 <CtaSection7/>
 
