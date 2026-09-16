@@ -5,6 +5,8 @@ const links = [
   { name: 'Home', label: 'Home', path: '/' },
   { name: 'TextImage', label: 'Text Image', path: '/TextImage' },
   { name: 'CTA', label: 'CTA', path: '/CTA' },
+  { name: 'Testimonial', label: 'Testimonial', path: '/Testimonial' },
+  { name: 'Hero', label: 'Hero', path: '/HEROView' },
   { name: 'FAQ', label: 'FAQ', path: '/FAQ' },
 ]
 </script>
@@ -63,6 +65,7 @@ const links = [
   display: flex;
   align-items: center;
   gap: 4px;
+  flex-wrap: wrap;
 }
 
 .header__link {

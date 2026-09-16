@@ -5,6 +5,8 @@ import { componentRegistry } from '@/config/componentRegistry'
 const sections = [
   { name: 'TextImage', label: 'Text Image Components', path: '/TextImage', count: Object.keys(componentRegistry).length },
   { name: 'CTA', label: 'CTA Components', path: '/CTA', count: 8 },
+  { name: 'Testimonial', label: 'Testimonial Components', path: '/Testimonial', count: 5 },
+  { name: 'Hero', label: 'Hero Components', path: '/HEROView', count: 2 },
   { name: 'FAQ', label: 'FAQ Components', path: '/FAQ', count: 5 },
 ]
 
