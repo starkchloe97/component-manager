@@ -7,24 +7,98 @@ const canvas = ref(null);
 const stage = ref(null);
 const { selectedElement, selectElement, clearElement, applyOverrides } = useComponentEditor();
 const componentName = computed(() => props.component?.name || props.component?.id || "Component");
-const elementMap = { "section-title":"Heading", "section-label":"Label", "body-text":"Text", "feature-title":"Feature title", "feature-desc":"Feature description", "feature-card":"Feature card", "image-box":"Image", "image-wrap":"Image", button:"Button", overview:"Section", container:"Container", grid:"Layout" };
-const tagMap = { h1:"Heading", h2:"Heading", h3:"Heading", h4:"Heading", h5:"Heading", p:"Text", img:"Image", a:"Link", button:"Button", section:"Section" };
+const selectableTags = "section, div, h1, h2, h3, h4, h5, h6, p, span, a, button, img, ul, ol, li, form, input, textarea, label";
+
+const elementMap = {
+  "section-title": "Heading",
+  "section-label": "Label",
+  "body-text": "Text",
+  "feature-title": "Feature title",
+  "feature-desc": "Feature description",
+  "feature-card": "Feature card",
+  "image-box": "Image",
+  "image-wrap": "Image",
+  button: "Button",
+  overview: "Section",
+  container: "Container",
+  grid: "Layout",
+};
+
+const tagMap = {
+  h1: "Heading",
+  h2: "Heading",
+  h3: "Heading",
+  h4: "Heading",
+  h5: "Heading",
+  h6: "Heading",
+  p: "Text",
+  img: "Image",
+  a: "Link",
+  button: "Button",
+  section: "Section",
+  div: "Container",
+  span: "Text",
+  ul: "List",
+  ol: "List",
+  li: "List item",
+  form: "Form",
+  input: "Input",
+  textarea: "Text area",
+  label: "Label",
+};
+
+function elementPath(element) {
+  const parts = [];
+  let current = element;
+
+  while (current && current !== stage.value) {
+    const parent = current.parentElement;
+    if (!parent) break;
+    parts.unshift(Array.from(parent.children).indexOf(current));
+    current = parent;
+  }
+
+  return parts.join("-");
+}
 
 function describeElement(element) {
   if (!element) return null;
-  const classes = typeof element.className === "string" ? element.className.split(/\s+/).filter(Boolean) : [];
+
+  const classes = typeof element.className === "string"
+    ? element.className.split(/\s+/).filter(Boolean)
+    : [];
   const className = classes.find((name) => elementMap[name]);
   const tag = element.tagName?.toLowerCase();
-  if (!className && !tagMap[tag]) return null;
-  return { label: className ? elementMap[className] : tagMap[tag], selector: className || tag, tag, element, componentId: props.component.id };
+
+  if (!tagMap[tag] && !className) return null;
+
+  let selector;
+  if (className) {
+    selector = `.${className}`;
+  } else {
+    const key = element.getAttribute("data-editor-element") || elementPath(element);
+    element.setAttribute("data-editor-element", key);
+    selector = `[data-editor-element="${CSS.escape(key)}"]`;
+  }
+
+  return {
+    label: className ? elementMap[className] : tagMap[tag],
+    selector,
+    tag,
+    element,
+    componentId: props.component.id,
+  };
 }
 
 function handleClick(event) {
   if (!(event.target instanceof Element)) return;
-  const target = event.target.closest("section, div, h1, h2, h3, h4, h5, p, span, a, button, img");
+
+  const target = event.target.closest(selectableTags);
   if (!target || !stage.value?.contains(target)) return;
+
   const descriptor = describeElement(target);
   if (!descriptor) return;
+
   event.preventDefault();
   event.stopPropagation();
   selectElement(descriptor);
@@ -40,6 +114,7 @@ function refreshOverrides() {
 
 onMounted(refreshOverrides);
 watch(() => props.component.id, refreshOverrides);
+onUnmounted(clearElement);
 </script>
 
 <template>
