@@ -12,13 +12,13 @@ export function createEditorNode(type, overrides = {}) {
 
   return createNode(type, {
     props: {
-      ...(defaults.props || {}),
-      ...(overrides.props || {}),
+      ...defaults.props,
+      ...overrides.props,
     },
 
     styles: {
-      ...(defaults.styles || {}),
-      ...(overrides.styles || {}),
+      ...defaults.styles,
+      ...overrides.styles,
     },
 
     children: overrides.children || [],

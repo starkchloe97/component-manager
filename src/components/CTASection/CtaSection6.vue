@@ -11,7 +11,7 @@ const route = useRoute();
 // });
 
 const isTrademarkOverview = computed(() => {
-  return /^\/trademark-registration-overview/.test(route.path);
+  return route.path.startsWith('/trademark-registration-overview');
 });
 </script>
 

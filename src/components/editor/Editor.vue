@@ -46,7 +46,7 @@ async function copyComponent() { await copySelectedComponent(); }
       </div>
     </header>
     <div class="editor-body">
-      <ElementPanel v-if="!preview" @select="selectComponentById" />
+      <!-- <ElementPanel v-if="!preview" @select="selectComponentById" /> -->
       <ComponentCanvas v-if="activeComponent" :component="activeComponent" />
       <SettingsPanel v-if="!preview" />
     </div>
@@ -54,5 +54,74 @@ async function copyComponent() { await copySelectedComponent(); }
 </template>
 
 <style scoped>
-.editor{width:100%;height:100%;display:flex;flex-direction:column;background:#eef1f5}.editor-toolbar{min-height:56px;display:flex;align-items:center;gap:12px;padding:0 14px;box-sizing:border-box;background:#111827;color:#fff}.close-button{width:30px;height:30px;border:0;border-radius:6px;background:#374151;color:#fff;font-size:22px;line-height:1;cursor:pointer}.active-name{font-size:11px;color:#94a3b8}.toolbar-spacer{flex:1}.toolbar-actions{display:flex;gap:4px}.toolbar-actions button{border:0;border-radius:6px;padding:7px 10px;background:#1f2937;color:#cbd5e1;cursor:pointer;white-space:nowrap}.toolbar-actions .copy-button{background:#2563eb;color:#fff}.editor-body{flex:1;display:flex;min-height:0;overflow:hidden}.editor--preview :deep(.component-stage){margin-top:0}
+.editor {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #eef1f5
+}
+
+.editor-toolbar {
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 14px;
+  box-sizing: border-box;
+  background: #111827;
+  color: #fff
+}
+
+.close-button {
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 6px;
+  background: #374151;
+  color: #fff;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer
+}
+
+.active-name {
+  font-size: 11px;
+  color: #94a3b8
+}
+
+.toolbar-spacer {
+  flex: 1
+}
+
+.toolbar-actions {
+  display: flex;
+  gap: 4px
+}
+
+.toolbar-actions button {
+  border: 0;
+  border-radius: 6px;
+  padding: 7px 10px;
+  background: #1f2937;
+  color: #cbd5e1;
+  cursor: pointer;
+  white-space: nowrap
+}
+
+.toolbar-actions .copy-button {
+  background: #2563eb;
+  color: #fff
+}
+
+.editor-body {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  overflow: hidden
+}
+
+.editor--preview :deep(.component-stage) {
+  margin-top: 0
+}
 </style>
