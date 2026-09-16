@@ -111,4 +111,4 @@ const layouts = [
 .layouts small {
   font-size: 10px;
 }
-</style>
+</style>  
