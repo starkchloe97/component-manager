@@ -79,7 +79,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section class="hero">
+  <section class="hero v-two">
     <div class="hero-bg">
       <div class="hero-blob-1"></div>
       <div class="hero-blob-2"></div>
@@ -568,49 +568,6 @@ onUnmounted(() => {
 .v-two .floating-text { font-size: 12px; font-weight: 600; color: var(--text); }
 .v-two .floating-subtext { font-size: 10px; color: var(--text-muted); }
 
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(40px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.85); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-@keyframes gradient-shift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-@keyframes blob {
-  0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
-  25% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
-  50% { border-radius: 50% 60% 30% 60% / 30% 60% 70% 40%; }
-  75% { border-radius: 60% 40% 60% 30% / 60% 40% 30% 70%; }
-}
-
-@keyframes pulse-ring {
-  0% { transform: scale(0.8); opacity: 1; }
-  100% { transform: scale(2.2); opacity: 0; }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-20px) rotate(3deg); }
-}
-
-@keyframes floatReverse {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-15px) rotate(-2deg); }
-}
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
 @media (max-width: 1024px) {
   .v-two .hero-inner { grid-template-columns: 1fr; gap: 40px; }
   .v-two .hero-visual { max-width: 480px; margin: 0 auto; }
@@ -626,5 +583,78 @@ onUnmounted(() => {
 @media (max-width: 480px) {
   .v-two .hero-actions { flex-direction: column; }
   .v-two .hero-stats { flex-direction: column; gap: 12px; }
+}
+
+/* V-TWO */
+
+.v-two *, .v-two *::before, .v-two *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+.v-two {
+  --primary: #1a237e;
+  --primary-light: #3949ab;
+  --primary-lighter: #7986cb;
+  --accent: #ff6d00;
+  --accent-light: #ff9e40;
+  --accent-glow: rgba(255, 109, 0, 0.15);
+  --teal: #00897b;
+  --teal-light: #4db6ac;
+  --bg: #fafbff;
+  --bg-card: #ffffff;
+  --bg-alt: #f0f2ff;
+  --bg-gradient: linear-gradient(135deg, #fafbff 0%, #f0f2ff 50%, #fff8f0 100%);
+  --text: #1a1a2e;
+  --text-secondary: #5c6283;
+  --text-muted: #8b90a8;
+  --border: #e2e5f1;
+  --border-light: #eef0f8;
+  --shadow-sm: 0 1px 3px rgba(26,35,126,0.06);
+  --shadow-md: 0 4px 16px rgba(26,35,126,0.08);
+  --shadow-lg: 0 8px 40px rgba(26,35,126,0.1);
+  --shadow-xl: 0 16px 60px rgba(26,35,126,0.12);
+  --radius: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+}
+
+.v-two html { scroll-behavior: smooth; }
+
+.v-two h1, .v-two h2, .v-two h3, .v-two h4, .v-two h5, .v-two h6,
+.v-two p, .v-two span, .v-two div, .v-two button, .v-two input,
+.v-two label, .v-two a, .v-two li, .v-two ul, .v-two ol {
+  font-family: 'Inter', sans-serif;
+}
+
+.v-two body {
+  background: var(--bg-gradient);
+  color: var(--text);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes blob {
+  0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+  25% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+  50% { border-radius: 50% 60% 30% 60% / 30% 60% 70% 40%; }
+  75% { border-radius: 60% 40% 60% 30% / 60% 40% 30% 70%; }
+}
+
+.v-two .animate-on-scroll.delay-6 { transition-delay: 0.6s; }
+
+@media (max-width: 1024px) {
+  .v-two body { --bp-tablet: true; }
+}
+@media (max-width: 768px) {
+  .v-two body { --bp-mobile: true; }
+}
+@media (max-width: 480px) {
+  .v-two body { --bp-small: true; }
 }
 </style>
