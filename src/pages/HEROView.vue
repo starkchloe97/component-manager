@@ -1,13 +1,11 @@
 <script setup>
-
-    import Hero1 from '@/components/HeroSection.vue/Hero1.vue';
-    import Hero2 from '@/components/HeroSection.vue/Hero2.vue';
-
+import ComponentLibraryPage from "@/components/editor/ComponentLibraryPage.vue";
 </script>
 
 <template>
-
-<Hero1 />
-<Hero2 />
-
+  <ComponentLibraryPage
+    title="Hero Components"
+    prefix="Hero"
+    description="Browse every hero component and open the shared editor to customize any element inside it."
+  />
 </template>
