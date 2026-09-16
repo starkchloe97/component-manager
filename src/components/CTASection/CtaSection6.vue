@@ -2,6 +2,7 @@
 import { useRoute } from "vue-router";
 import { computed } from "vue";
 import callto from "@/assets/call-to.webp";
+import { useComponentStyles } from "@/composables/useComponentStyles";
 
 const route = useRoute();
 
@@ -13,10 +14,18 @@ const route = useRoute();
 const isTrademarkOverview = computed(() => {
   return route.path.startsWith('/trademark-registration-overview');
 });
+
+const styles = useComponentStyles("CtaSection6", {
+  primary: "#ffffff",
+  background: "rgb(0, 18, 44)",
+  fontSize: " 3rem",
+  fontSizeBody: "1.125rem",
+});
+
 </script>
 
 <template>
-  <section class="get_trademark_sec has_elem gray_bg" :style="{ background: '#00122c', color: '#fff' }"
+  <section class="get_trademark_sec has_elem gray_bg cta-new" :style="{ background: '#00122c', color: '#fff' }"
     :class="{ 'trademark-overview-page': isTrademarkOverview }" id="call-action-ff-not-all">
     <div class="container">
       <div class="row midxx">
@@ -42,7 +51,11 @@ const isTrademarkOverview = computed(() => {
 
 <style scoped>
 /* Your existing CSS styles */
-
+.cta-new{
+  --primary: v-bind("styles.primary");
+  --bg: v-bind("styles.background");
+  background-color: var(--bg);
+}
 .popup-trigger {
   padding: 12px 24px;
 }

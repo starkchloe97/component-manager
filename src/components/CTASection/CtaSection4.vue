@@ -1,6 +1,19 @@
-```vue
 <script setup>
 import ctaImage from "@/assets/cta-img.png";
+import { useComponentStyles } from "@/composables/useComponentStyles";
+
+const styles = useComponentStyles("CtaSection4", {
+  primary: "#003dc7bd",
+  background: "#131b2e",
+  surface: "#ffffff",
+  pdtop: "64px",
+  pdbottom: "64px",
+  pdleft: "0px",
+  pdright: "0px",
+  fontSize: "clamp(1.6rem, 3.2vw, 2.6rem)",
+  fontSizeBody: "1rem",
+  muted: "rgba(255, 255, 255, 0.6)"
+});
 </script>
 
 <template>
@@ -36,15 +49,22 @@ import ctaImage from "@/assets/cta-img.png";
 
 <style scoped>
 .v-four {
-  --primary: #003dc7bd;
-  --on-surface: #131b2e;
-  --white: #ffffff;
+  --primary: v-bind("styles.primary");
+  --bg: v-bind("styles.background");
+  --surface: v-bind("styles.surface");
+  --font-size: v-bind("styles.fontSize");
+  --font-size-body: v-bind("styles.fontSizeBody");
+  --muted: v-bind("styles.muted");
+  --pd-top: v-bind("styles.pdtop");
+  --pd-bottom: v-bind("styles.pdbottom");
+  --pd-left: v-bind("styles.pdleft");
+  --pd-right: v-bind("styles.pdright");
 }
 
 /* ─── TYPOGRAPHY ─── */
 
 .v-four .display-lg {
-  font-size: clamp(1.6rem, 3.2vw, 2.6rem);
+  font-size: var(--font-size);
   font-weight: 500;
   letter-spacing: -0.03em;
   line-height: 1.12;
@@ -140,9 +160,8 @@ import ctaImage from "@/assets/cta-img.png";
   inset: 0;
   background: linear-gradient(
     to right,
-    var(--on-surface),
-    rgba(19, 27, 46, 0.8),
-    transparent
+    var(--bg),
+    rgba(19, 27, 46, 0.9)
   );
 }
 
@@ -158,8 +177,8 @@ import ctaImage from "@/assets/cta-img.png";
 
 .v-four .cta-sub {
   margin-bottom: 28px;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 1rem;
+  color: var(--muted);
+  font-size: var(--font-size-body);
   font-weight: 300;
 }
 
@@ -198,4 +217,3 @@ import ctaImage from "@/assets/cta-img.png";
   }
 }
 </style>
-```

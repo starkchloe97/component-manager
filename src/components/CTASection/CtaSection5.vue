@@ -53,6 +53,7 @@
 </template>
 
 <script setup>
+import { useComponentStyles } from "@/composables/useComponentStyles";
 import { inject } from "vue";
 import {
   Search,
@@ -71,16 +72,42 @@ function handleSearch() {
 function handleConsult() {
   showToast("Scheduling a free consultation...", "info");
 }
+
+const styles = useComponentStyles("CtaSection5", {
+  primary: "#fb923c",
+  background: "linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);",
+  mainbackground:"#0f172a",
+  mainbackgroundtwo:"#1e293b",
+  surface: "#ffffff",
+  fontSize: " 3rem",
+  fontSizeBody: "1.125rem",
+});
+
 </script>
 
-<style scoped>
+<style scoped>  
+
+.cta{
+  --primary: v-bind("styles.primary");
+  --bg: v-bind("styles.background");
+  --bgone: v-bind("styles. mainbackground");
+  --bgtwo: v-bind("styles.mainbackgroundtwo");
+  --surface: v-bind("styles.surface");
+  --font-size: v-bind("styles.fontSize");
+  --font-size-body: v-bind("styles.fontSizeBody");
+  --pd-top: v-bind("styles.pdtop");
+  --pd-bottom: v-bind("styles.pdbottom");
+  --pd-left: v-bind("styles.pdleft");
+  --pd-right: v-bind("styles.pdright");
+}
+
 .v-five {
-  --brand-400: #fb923c;
+  /* --brand-400: #fb923c; */
   --brand-500: #f97316;
   --brand-600: #ea580c;
 
-  --navy-800: #1e293b;
-  --navy-900: #0f172a;
+  /* --navy-800: #1e293b;
+  --navy-900: #0f172a; */
 
   --neutral-400: #a3a3a3;
   --neutral-500: #737373;
@@ -97,8 +124,8 @@ function handleConsult() {
   overflow: hidden;
   background: linear-gradient(
     135deg,
-    var(--navy-900) 0%,
-    var(--navy-800) 100%
+    var(--bgone) 0%,
+    var(--bgtwo) 100%
   );
 }
 
@@ -114,8 +141,7 @@ function handleConsult() {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+   var(--bg);
   background-size: 60px 60px;
 }
 
@@ -160,7 +186,7 @@ function handleConsult() {
   align-items: center;
   padding: 6px 16px;
   margin-bottom: 16px;
-  color: var(--brand-400);
+  color: var( --primary);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.1em;
@@ -183,7 +209,7 @@ function handleConsult() {
 
 @media (min-width: 768px) {
   .v-five .cta-title {
-    font-size: 3rem;
+    font-size: var(--font-size);
   }
 }
 
@@ -193,7 +219,7 @@ function handleConsult() {
   max-width: 42rem;
   margin: 0 auto 40px;
   color: var(--neutral-400);
-  font-size: 1.125rem;
+  font-size: var(--font-size-body);
   line-height: 1.625;
 }
 
@@ -292,7 +318,7 @@ function handleConsult() {
 }
 
 .v-five .trust-icon.orange {
-  color: var(--brand-400);
+  color: var( --primary);
 }
 
 .v-five .trust-icon.blue {
