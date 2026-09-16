@@ -54,7 +54,7 @@ const styles = useComponentStyles("CtaSection6", {
 .cta-new{
   --primary: v-bind("styles.primary");
   --bg: v-bind("styles.background");
-  background-color: var(--bg);
+    background-color: var(--bg);
 }
 .popup-trigger {
   padding: 12px 24px;
