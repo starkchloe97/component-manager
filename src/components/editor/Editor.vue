@@ -5,6 +5,7 @@ import EditorCanvas from "./EditorCanvas.vue";
 import SectionLayoutPicker from "./SectionLayoutPicker.vue";
 import SettingsPanel from "./SettingsPanel.vue";
 import NodeSettingsPanel from "./NodeSettingsPanel.vue";
+import ElementSettingsPanel from "./ElementSettingsPanel.vue";
 import { componentRegistry } from "@/config/componentRegistry";
 import { useComponentEditor } from "@/composables/useComponentEditor";
 import { useComponentManager } from "@/composables/useComponentManager";
@@ -96,6 +97,7 @@ function addSectionToPage(layout) { addSection(layout); showAddSection.value = f
             <button type="button" class="drawer-close" aria-label="Close settings" @click="closeDrawer">×</button>
           </div>
           <NodeSettingsPanel v-if="selectedNodeId" />
+          <ElementSettingsPanel v-else-if="selectedElement" />
           <SettingsPanel v-else />
         </aside>
       </div>
