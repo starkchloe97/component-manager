@@ -12,9 +12,13 @@ export function useEditor() {
   function addSection(layout = "100", index = document.children.length) {
     const section = createEditorNode("section");
     const columns = layout.split("-").map(Number);
-    section.children.push(...columns.map((width) => {
+    section.styles.display = "grid";
+    section.styles.gridTemplateColumns = columns.map((width) => `${width}fr`).join(" ");
+    section.styles.gap = section.styles.gap || "12px";
+    section.children.push(...columns.map(() => {
       const column = createEditorNode("column");
-      column.styles.width = `${width}%`;
+      column.styles.width = "auto";
+      column.styles.minWidth = "0";
       return column;
     }));
     document.children.splice(Math.max(0, index), 0, section);
