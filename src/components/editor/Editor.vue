@@ -55,11 +55,13 @@ function addSectionToPage(layout) { addSection(layout); showAddSection.value = f
 <template>
   <div class="editor" :class="{ 'editor--preview': preview, 'drawer-open': drawerOpen }">
     <div class="editor-backdrop" aria-hidden="true" @click="closeEditor"></div>
-    <section class="editor-shell" role="dialog" aria-modal="true" :aria-label="`Edit ${activeComponent?.name || 'component'}`">
+    <section class="editor-shell" role="dialog" aria-modal="true"
+      :aria-label="`Edit ${activeComponent?.name || 'component'}`">
       <header class="editor-toolbar">
         <div class="toolbar-brand">
           <button type="button" class="close-button" aria-label="Close editor" @click="closeEditor">×</button>
-          <div class="toolbar-title"><strong>Edit component</strong><span class="active-name">{{ activeComponent?.name }}</span></div>
+          <div class="toolbar-title"><strong>Edit component</strong><span class="active-name">{{ activeComponent?.name
+              }}</span></div>
         </div>
         <div class="toolbar-actions">
           <button type="button" class="toolbar-button add-section-button" @click="openAddSection">Add section</button>
@@ -71,29 +73,31 @@ function addSectionToPage(layout) { addSection(layout); showAddSection.value = f
 
       <div class="editor-body">
         <div class="editor-workspace">
-          <ComponentCanvas
-            v-if="activeComponent"
-            :component="activeComponent"
-            :drawer-open="drawerOpen"
-            :preview="preview"
-            @element-selected="handleElementSelected"
-          />
+          <ComponentCanvas v-if="activeComponent" :component="activeComponent" :drawer-open="drawerOpen"
+            :preview="preview" @element-selected="handleElementSelected" />
 
           <section v-if="!preview" class="page-builder-area">
             <div class="page-builder-header">
-              <div><span class="eyebrow">PAGE BUILDER</span><strong>Sections</strong><small>Build additional content underneath the component</small></div>
+              <div><span class="eyebrow">PAGE BUILDER</span><strong>Sections</strong><small>Build additional content
+                  underneath the component</small></div>
               <button type="button" @click="openAddSection">+ Add section</button>
             </div>
             <EditorCanvas :component="activeComponent" />
-            <div v-if="!document.children.length" class="page-builder-hint">Use <strong>Add section</strong> to start building. Select a column to add elements.</div>
+            <div v-if="!document.children.length" class="page-builder-hint">Use <strong>Add section</strong> to start
+              building. Select a column to add elements.</div>
           </section>
         </div>
 
-        <button v-if="!preview && !drawerOpen" type="button" class="drawer-tab drawer-tab--closed" aria-label="Open element settings" @click="openDrawer"><span class="drawer-tab-icon">‹</span><span>Settings</span></button>
+        <button v-if="!preview && !drawerOpen" type="button" class="drawer-tab drawer-tab--closed"
+          aria-label="Open element settings" @click="openDrawer"><span
+            class="drawer-tab-icon">‹</span><span>Settings</span></button>
         <aside v-if="!preview" class="settings-drawer" :class="{ 'settings-drawer--open': drawerOpen }">
-          <button v-if="drawerOpen" type="button" class="drawer-tab drawer-tab--open" aria-label="Close element settings" @click="closeDrawer"><span>›</span></button>
+          <button v-if="drawerOpen" type="button" class="drawer-tab drawer-tab--open"
+            aria-label="Close element settings" @click="closeDrawer"><span>›</span></button>
           <div class="drawer-topbar">
-            <div class="drawer-heading"><span>Element settings</span><small v-if="selectedElement">{{ selectedElement.label }}</small><small v-else-if="selectedNode">{{ selectedNode.type }}</small><small v-else>Select an element</small></div>
+            <div class="drawer-heading"><span>Element settings</span><small v-if="selectedElement">{{
+                selectedElement.label }}</small><small v-else-if="selectedNode">{{ selectedNode.type }}</small><small
+                v-else>Select an element</small></div>
             <button type="button" class="drawer-close" aria-label="Close settings" @click="closeDrawer">×</button>
           </div>
           <NodeSettingsPanel v-if="selectedNodeId" />
@@ -108,5 +112,378 @@ function addSectionToPage(layout) { addSection(layout); showAddSection.value = f
 </template>
 
 <style scoped>
-.editor{position:fixed;inset:0;z-index:10000;overflow:hidden;background:rgba(15,23,42,.48)}.editor-backdrop{position:absolute;inset:0;background:rgba(15,23,42,.42);backdrop-filter:blur(2px)}.editor-shell{position:absolute;inset:0;display:flex;flex-direction:column;min-width:0;background:#eef1f5;box-shadow:0 24px 80px rgba(15,23,42,.24)}.editor-toolbar{position:relative;z-index:1000;min-height:54px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 14px;box-sizing:border-box;background:#111827;color:#fff;border-bottom:1px solid #273244}.toolbar-brand,.toolbar-actions{display:flex;align-items:center}.toolbar-brand{gap:10px;min-width:0}.toolbar-actions{gap:5px}.close-button{width:31px;height:31px;flex:0 0 31px;border:0;border-radius:7px;background:#374151;color:#fff;font-size:21px;line-height:1;cursor:pointer}.close-button:hover{background:#4b5563}.toolbar-title{display:flex;align-items:baseline;gap:9px;min-width:0}.toolbar-title strong{font-size:12px;white-space:nowrap}.active-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#94a3b8;font-size:11px}.toolbar-button{min-height:30px;border:0;border-radius:6px;padding:6px 10px;background:#1f2937;color:#cbd5e1;font-size:11px;cursor:pointer;white-space:nowrap}.toolbar-button:hover:not(:disabled){background:#2b3648;color:#fff}.toolbar-button:disabled{opacity:.45;cursor:default}.add-section-button{background:#334155;color:#fff}.copy-button{background:#2563eb;color:#fff}.editor-body{position:relative;flex:1;min-height:0;min-width:0;overflow:hidden}.editor-workspace{position:absolute;inset:0;overflow:auto;background:#eef1f5}.page-builder-area{width:min(1400px,calc(100% - 48px));margin:0 auto 40px;background:#fff;box-shadow:0 8px 30px rgba(15,23,42,.06)}.page-builder-header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 18px;border-bottom:1px solid #e5e7eb;background:#fff}.page-builder-header div{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.eyebrow{font-size:8px;font-weight:800;letter-spacing:.1em;color:#94a3b8}.page-builder-header strong{font-size:12px;color:#334155}.page-builder-header small{font-size:10px;color:#94a3b8}.page-builder-header button{border:1px solid #bfdbfe;border-radius:6px;padding:6px 10px;background:#eff6ff;color:#2563eb;font-size:10px;font-weight:700;cursor:pointer}.page-builder-header button:hover{background:#dbeafe}.page-builder-area :deep(.editor-canvas){min-height:180px;overflow:visible;background:#fff}.page-builder-area :deep(.editor-canvas > .editor-node){margin:0}.page-builder-hint{padding:18px;text-align:center;color:#94a3b8;font-size:10px;border-top:1px dashed #e2e8f0}.settings-drawer{position:absolute;top:0;right:0;bottom:0;z-index:900;width:360px;max-width:min(360px,92vw);transform:translateX(100%);display:flex;flex-direction:column;box-sizing:border-box;background:#fff;border-left:1px solid #dbe3ee;box-shadow:-16px 0 40px rgba(15,23,42,.16);overflow:visible;transition:transform .28s cubic-bezier(.22,.61,.36,1)}.settings-drawer--open{transform:translateX(0)}.settings-drawer :deep(.settings-panel){width:100%;flex:1;min-height:0;border:0;box-shadow:none;overflow:auto}.drawer-topbar{height:48px;flex:0 0 48px;display:flex;align-items:center;justify-content:space-between;padding:0 10px 0 15px;box-sizing:border-box;background:#f8fafc;border-bottom:1px solid #e5e7eb;color:#334155}.drawer-heading{display:flex;align-items:baseline;gap:8px;min-width:0}.drawer-heading span{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.drawer-heading small{color:#2563eb;font-size:10px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.drawer-close{width:26px;height:26px;border:0;border-radius:6px;background:transparent;color:#64748b;font-size:19px;cursor:pointer}.drawer-close:hover{background:#e2e8f0}.drawer-tab{position:absolute;z-index:950;display:flex;align-items:center;justify-content:center;border:1px solid #dbe3ee;background:#fff;color:#475569;box-shadow:-6px 8px 22px rgba(15,23,42,.12);cursor:pointer}.drawer-tab--closed{top:50%;right:0;width:34px;height:88px;transform:translateY(-50%);flex-direction:column;gap:3px;border-right:0;border-radius:9px 0 0 9px}.drawer-tab--closed .drawer-tab-icon{font-size:20px;line-height:12px}.drawer-tab--closed span:last-child{font-size:9px;font-weight:700;writing-mode:vertical-rl;text-transform:uppercase;letter-spacing:.08em}.drawer-tab--open{left:-30px;top:50%;width:30px;height:64px;transform:translateY(-50%);border-right:0;border-radius:8px 0 0 8px;font-size:20px}.node-settings-note{margin:12px;padding:10px;border-radius:7px;background:#f8fafc;color:#64748b;font-size:10px;line-height:1.5;border:1px solid #e2e8f0}.editor--preview .page-builder-area{display:none}@media(max-width:760px){.toolbar-actions .toolbar-button:not(.copy-button):not(.add-section-button){display:none}.toolbar-title{flex-direction:column;gap:1px}.page-builder-area{width:calc(100% - 24px)} }
+.editor {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  overflow: hidden;
+  background: rgba(15, 23, 42, .48)
+}
+
+.editor-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, .42);
+  backdrop-filter: blur(2px)
+}
+
+.editor-shell {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: #eef1f5;
+  box-shadow: 0 24px 80px rgba(15, 23, 42, .24)
+}
+
+.editor-toolbar {
+  position: relative;
+  z-index: 1000;
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 14px;
+  box-sizing: border-box;
+  background: #111827;
+  color: #fff;
+  border-bottom: 1px solid #273244
+}
+
+.toolbar-brand,
+.toolbar-actions {
+  display: flex;
+  align-items: center
+}
+
+.toolbar-brand {
+  gap: 10px;
+  min-width: 0
+}
+
+.toolbar-actions {
+  gap: 5px
+}
+
+.close-button {
+  width: 31px;
+  height: 31px;
+  flex: 0 0 31px;
+  border: 0;
+  border-radius: 7px;
+  background: #374151;
+  color: #fff;
+  font-size: 21px;
+  line-height: 1;
+  cursor: pointer
+}
+
+.close-button:hover {
+  background: #4b5563
+}
+
+.toolbar-title {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  min-width: 0
+}
+
+.toolbar-title strong {
+  font-size: 12px;
+  white-space: nowrap
+}
+
+.active-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #94a3b8;
+  font-size: 11px
+}
+
+.toolbar-button {
+  min-height: 30px;
+  border: 0;
+  border-radius: 6px;
+  padding: 6px 10px;
+  background: #1f2937;
+  color: #cbd5e1;
+  font-size: 11px;
+  cursor: pointer;
+  white-space: nowrap
+}
+
+.toolbar-button:hover:not(:disabled) {
+  background: #2b3648;
+  color: #fff
+}
+
+.toolbar-button:disabled {
+  opacity: .45;
+  cursor: default
+}
+
+.add-section-button {
+  background: #334155;
+  color: #fff
+}
+
+.copy-button {
+  background: #2563eb;
+  color: #fff
+}
+
+.editor-body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden
+}
+
+.editor-workspace {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+  background: #eef1f5
+}
+
+.page-builder-area {
+  width: auto;
+  margin: 0 0 40px;
+  background: #fff;
+  box-shadow: 0 8px 30px rgba(15, 23, 42, .06)
+}
+
+.page-builder-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fff
+}
+
+.page-builder-header div {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap
+}
+
+.eyebrow {
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .1em;
+  color: #94a3b8
+}
+
+.page-builder-header strong {
+  font-size: 12px;
+  color: #334155
+}
+
+.page-builder-header small {
+  font-size: 10px;
+  color: #94a3b8
+}
+
+.page-builder-header button {
+  border: 1px solid #bfdbfe;
+  border-radius: 6px;
+  padding: 6px 10px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer
+}
+
+.page-builder-header button:hover {
+  background: #dbeafe
+}
+
+.page-builder-area :deep(.editor-canvas) {
+  min-height: 180px;
+  overflow: visible;
+  background: #fff
+}
+
+.page-builder-area :deep(.editor-canvas > .editor-node) {
+  margin: 0
+}
+
+.page-builder-hint {
+  padding: 18px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 10px;
+  border-top: 1px dashed #e2e8f0
+}
+
+.settings-drawer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 900;
+  width: 360px;
+  max-width: min(360px, 92vw);
+  transform: translateX(100%);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  background: #fff;
+  border-left: 1px solid #dbe3ee;
+  box-shadow: -16px 0 40px rgba(15, 23, 42, .16);
+  overflow: visible;
+  transition: transform .28s cubic-bezier(.22, .61, .36, 1)
+}
+
+.settings-drawer--open {
+  transform: translateX(0)
+}
+
+.settings-drawer :deep(.settings-panel) {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  border: 0;
+  box-shadow: none;
+  overflow: auto
+}
+
+.drawer-topbar {
+  height: 48px;
+  flex: 0 0 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px 0 15px;
+  box-sizing: border-box;
+  background: #f8fafc;
+  border-bottom: 1px solid #e5e7eb;
+  color: #334155
+}
+
+.drawer-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0
+}
+
+.drawer-heading span {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase
+}
+
+.drawer-heading small {
+  color: #2563eb;
+  font-size: 10px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap
+}
+
+.drawer-close {
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #64748b;
+  font-size: 19px;
+  cursor: pointer
+}
+
+.drawer-close:hover {
+  background: #e2e8f0
+}
+
+.drawer-tab {
+  position: absolute;
+  z-index: 950;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dbe3ee;
+  background: #fff;
+  color: #475569;
+  box-shadow: -6px 8px 22px rgba(15, 23, 42, .12);
+  cursor: pointer
+}
+
+.drawer-tab--closed {
+  top: 50%;
+  right: 0;
+  width: 34px;
+  height: 88px;
+  transform: translateY(-50%);
+  flex-direction: column;
+  gap: 3px;
+  border-right: 0;
+  border-radius: 9px 0 0 9px
+}
+
+.drawer-tab--closed .drawer-tab-icon {
+  font-size: 20px;
+  line-height: 12px
+}
+
+.drawer-tab--closed span:last-child {
+  font-size: 9px;
+  font-weight: 700;
+  writing-mode: vertical-rl;
+  text-transform: uppercase;
+  letter-spacing: .08em
+}
+
+.drawer-tab--open {
+  left: -30px;
+  top: 50%;
+  width: 30px;
+  height: 64px;
+  transform: translateY(-50%);
+  border-right: 0;
+  border-radius: 8px 0 0 8px;
+  font-size: 20px
+}
+
+.node-settings-note {
+  margin: 12px;
+  padding: 10px;
+  border-radius: 7px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 10px;
+  line-height: 1.5;
+  border: 1px solid #e2e8f0
+}
+
+.editor--preview .page-builder-area {
+  display: none
+}
+
+@media(max-width:760px) {
+  .toolbar-actions .toolbar-button:not(.copy-button):not(.add-section-button) {
+    display: none
+  }
+
+  .toolbar-title {
+    flex-direction: column;
+    gap: 1px
+  }
+
+  .page-builder-area {
+    width: calc(100% - 24px)
+  }
+}
 </style>

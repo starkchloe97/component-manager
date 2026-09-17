@@ -176,7 +176,6 @@ onUnmounted(() => {
   overflow-y: auto;
   overflow-x: hidden;
   background: #eef1f5;
-  scrollbar-gutter: stable;
 }
 
 .canvas-header {
@@ -200,9 +199,9 @@ onUnmounted(() => {
 
 .component-stage {
   position: relative;
-  width: min(1400px, calc(100% - 48px));
-  max-width: 1400px;
-  margin: 24px auto 60px;
+  width: 100%;
+  /* max-width: 1400px; */
+  margin: 24px 0 60px;
   background: #fff;
   box-shadow: 0 8px 30px rgba(15,23,42,.08);
 }
