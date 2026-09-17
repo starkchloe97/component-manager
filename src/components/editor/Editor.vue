@@ -4,6 +4,7 @@ import ComponentCanvas from "./ComponentCanvas.vue";
 import EditorCanvas from "./EditorCanvas.vue";
 import SectionLayoutPicker from "./SectionLayoutPicker.vue";
 import SettingsPanel from "./SettingsPanel.vue";
+import NodeSettingsPanel from "./NodeSettingsPanel.vue";
 import { componentRegistry } from "@/config/componentRegistry";
 import { useComponentEditor } from "@/composables/useComponentEditor";
 import { useComponentManager } from "@/composables/useComponentManager";
@@ -94,8 +95,8 @@ function addSectionToPage(layout) { addSection(layout); showAddSection.value = f
             <div class="drawer-heading"><span>Element settings</span><small v-if="selectedElement">{{ selectedElement.label }}</small><small v-else-if="selectedNode">{{ selectedNode.type }}</small><small v-else>Select an element</small></div>
             <button type="button" class="drawer-close" aria-label="Close settings" @click="closeDrawer">×</button>
           </div>
-          <SettingsPanel />
-          <div v-if="selectedNodeId && !selectedElement" class="node-settings-note">The page-builder node is selected. Its structure and component content are controlled by the canvas; element-level styling can be connected here next without changing the document model.</div>
+          <NodeSettingsPanel v-if="selectedNodeId" />
+          <SettingsPanel v-else />
         </aside>
       </div>
 
