@@ -46,7 +46,9 @@ const {
 
 <style scoped>
 .editor-canvas {
-  min-height: 100vh;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
   background: #f3f4f6;
 }
 

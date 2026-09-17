@@ -129,13 +129,6 @@ function select(event) {
     Delete
   </button>
 </div>
-
-<button
-  type="button"
-  @click="copyComponent"
->
-  Copy Vue Component
-</button>
 </template>
 
 <style scoped>
