@@ -82,9 +82,9 @@ async function copyComponent() {
         <div class="toolbar-actions">
           <button type="button" class="toolbar-button">Undo</button>
           <button type="button" class="toolbar-button">Redo</button>
-          <button type="button" class="toolbar-button preview-button" :class="{ active: preview }" @click="togglePreview">
+          <!-- <button type="button" class="toolbar-button preview-button" :class="{ active: preview }" @click="togglePreview">
             {{ preview ? "Edit" : "Preview" }}
-          </button>
+          </button> -->
           <button type="button" class="toolbar-button copy-button" @click="copyComponent">Copy Vue</button>
         </div>
       </header>
