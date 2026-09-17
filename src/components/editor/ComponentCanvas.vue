@@ -1,6 +1,7 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { useComponentEditor } from "@/composables/useComponentEditor";
+import { useEditor } from "@/composables/useEditor";
 
 const props = defineProps({
   component: { type: Object, required: true },
@@ -13,6 +14,7 @@ const stage = ref(null);
 const hoveredElement = ref(null);
 const selectedDomElement = ref(null);
 const { selectedElement, selectElement, clearElement, applyOverrides } = useComponentEditor();
+const { selectNode } = useEditor();
 const componentName = computed(() => props.component?.name || props.component?.id || "Component");
 const selectableTags = "section, div, h1, h2, h3, h4, h5, h6, p, span, a, button, img, ul, ol, li, form, input, textarea, label";
 
@@ -112,6 +114,7 @@ function handleClick(event) {
   if (!descriptor) return;
   event.preventDefault();
   event.stopPropagation();
+  selectNode(null);
   setSelectedElement(target);
   selectElement(descriptor);
   setHoverElement(target);
@@ -122,6 +125,7 @@ function handleStageClick(event) {
   if (event.target === stage.value && !props.preview) {
     clearVisualState();
     clearElement();
+    selectNode(null);
   }
 }
 
