@@ -1,7 +1,6 @@
 <script setup>
 import { computed, ref } from "vue";
 import ComponentCanvas from "./ComponentCanvas.vue";
-import ElementPanel from "./ElementPanel.vue";
 import SettingsPanel from "./SettingsPanel.vue";
 import { componentRegistry } from "@/config/componentRegistry";
 import { useComponentEditor } from "@/composables/useComponentEditor";
@@ -27,101 +26,245 @@ registry.forEach((entry) => {
 selectComponent(activeId.value);
 
 const activeComponent = computed(() => componentRegistry[activeId.value] || null);
-function selectComponentById(id) { activeId.value = id; selectComponent(id); clearElement(); }
-async function copyComponent() { await copySelectedComponent(); }
+
+function selectComponentById(id) {
+  activeId.value = id;
+  selectComponent(id);
+  clearElement();
+}
+
+async function copyComponent() {
+  await copySelectedComponent();
+}
 </script>
 
 <template>
   <div class="editor" :class="{ 'editor--preview': preview }">
-    <header class="editor-toolbar">
-      <button type="button" class="close-button" aria-label="Close editor" @click="emit('close')">×</button>
-      <strong>Edit component</strong>
-      <span class="active-name">{{ activeComponent?.name }}</span>
-      <div class="toolbar-spacer" />
-      <div class="toolbar-actions">
-        <button type="button">Undo</button>
-        <button type="button">Redo</button>
-        <button type="button" @click="preview = !preview">{{ preview ? "Edit" : "Preview" }}</button>
-        <button type="button" class="copy-button" @click="copyComponent">Copy Vue Component</button>
+    <div class="editor-backdrop" aria-hidden="true" @click="emit('close')"></div>
+
+    <section class="editor-shell" role="dialog" aria-modal="true" :aria-label="`Edit ${activeComponent?.name || 'component'}`">
+      <header class="editor-toolbar">
+        <div class="toolbar-brand">
+          <button type="button" class="close-button" aria-label="Close editor" @click="emit('close')">×</button>
+          <div class="toolbar-title">
+            <strong>Edit component</strong>
+            <span class="active-name">{{ activeComponent?.name }}</span>
+          </div>
+        </div>
+
+        <div class="toolbar-actions">
+          <button type="button" class="toolbar-button">Undo</button>
+          <button type="button" class="toolbar-button">Redo</button>
+          <button type="button" class="toolbar-button preview-button" @click="preview = !preview">
+            {{ preview ? "Edit" : "Preview" }}
+          </button>
+          <button type="button" class="toolbar-button copy-button" @click="copyComponent">Copy Vue</button>
+        </div>
+      </header>
+
+      <div class="editor-body">
+        <ComponentCanvas v-if="activeComponent" :component="activeComponent" />
+
+        <aside v-if="!preview" class="settings-drawer">
+          <div class="drawer-handle" aria-hidden="true"></div>
+          <div class="drawer-topbar">
+            <span>Element settings</span>
+            <button type="button" class="drawer-close" aria-label="Close settings" @click="clearElement">×</button>
+          </div>
+          <SettingsPanel />
+        </aside>
       </div>
-    </header>
-    <div class="editor-body">
-      <!-- <ElementPanel v-if="!preview" @select="selectComponentById" /> -->
-      <ComponentCanvas v-if="activeComponent" :component="activeComponent" />
-      <SettingsPanel v-if="!preview" />
-    </div>
+    </section>
   </div>
 </template>
 
 <style scoped>
 .editor {
-  width: 100%;
-  height: 100%;
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  overflow: hidden;
+  background: rgba(15, 23, 42, 0.48);
+}
+
+.editor-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.42);
+  backdrop-filter: blur(2px);
+}
+
+.editor-shell {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
-  background: #eef1f5
+  min-width: 0;
+  background: #eef1f5;
+  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.24);
 }
 
 .editor-toolbar {
-  min-height: 56px;
+  position: relative;
+  z-index: 100;
+  min-height: 54px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;
+  gap: 16px;
   padding: 0 14px;
   box-sizing: border-box;
   background: #111827;
-  color: #fff
+  color: #fff;
+  border-bottom: 1px solid #273244;
 }
 
+.toolbar-brand,
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+}
+
+.toolbar-brand { gap: 10px; min-width: 0; }
+.toolbar-actions { gap: 5px; }
+
 .close-button {
-  width: 30px;
-  height: 30px;
+  width: 31px;
+  height: 31px;
+  flex: 0 0 31px;
   border: 0;
-  border-radius: 6px;
+  border-radius: 7px;
   background: #374151;
   color: #fff;
-  font-size: 22px;
+  font-size: 21px;
   line-height: 1;
-  cursor: pointer
+  cursor: pointer;
+}
+
+.close-button:hover { background: #4b5563; }
+
+.toolbar-title {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  min-width: 0;
+}
+
+.toolbar-title strong {
+  font-size: 12px;
+  white-space: nowrap;
 }
 
 .active-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #94a3b8;
   font-size: 11px;
-  color: #94a3b8
 }
 
-.toolbar-spacer {
-  flex: 1
-}
-
-.toolbar-actions {
-  display: flex;
-  gap: 4px
-}
-
-.toolbar-actions button {
+.toolbar-button {
+  min-height: 30px;
   border: 0;
   border-radius: 6px;
-  padding: 7px 10px;
+  padding: 6px 10px;
   background: #1f2937;
   color: #cbd5e1;
+  font-size: 11px;
   cursor: pointer;
-  white-space: nowrap
+  white-space: nowrap;
 }
 
-.toolbar-actions .copy-button {
-  background: #2563eb;
-  color: #fff
-}
+.toolbar-button:hover { background: #2b3648; color: #fff; }
+.toolbar-button.copy-button { background: #2563eb; color: #fff; }
+.toolbar-button.copy-button:hover { background: #1d4ed8; }
 
 .editor-body {
+  position: relative;
   flex: 1;
   display: flex;
   min-height: 0;
-  overflow: hidden
+  min-width: 0;
+  overflow: hidden;
 }
 
-.editor--preview :deep(.component-stage) {
-  margin-top: 0
+.editor-body > :deep(.component-canvas) {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+}
+
+.settings-drawer {
+  position: relative;
+  z-index: 80;
+  width: 360px;
+  flex: 0 0 360px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  background: #fff;
+  border-left: 1px solid #dbe3ee;
+  box-shadow: -12px 0 32px rgba(15, 23, 42, 0.12);
+  overflow: hidden;
+}
+
+.drawer-handle { display: none; }
+
+.drawer-topbar {
+  height: 38px;
+  flex: 0 0 38px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px 0 14px;
+  box-sizing: border-box;
+  background: #f8fafc;
+  border-bottom: 1px solid #e5e7eb;
+  color: #475569;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.drawer-close {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #64748b;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.drawer-close:hover { background: #e2e8f0; color: #1e293b; }
+
+.settings-drawer :deep(.settings-panel) {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  border: 0;
+  box-shadow: none;
+}
+
+.editor--preview .editor-body > :deep(.component-canvas) {
+  flex: 1;
+}
+
+@media (max-width: 760px) {
+  .toolbar-actions .toolbar-button:not(.preview-button):not(.copy-button) { display: none; }
+  .toolbar-title { flex-direction: column; gap: 1px; }
+
+  .settings-drawer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(360px, 92vw);
+    flex-basis: auto;
+  }
 }
 </style>
