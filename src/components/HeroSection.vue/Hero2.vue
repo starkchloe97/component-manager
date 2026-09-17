@@ -4,7 +4,6 @@ import { useToast } from '../../composables/useToastCopy.js'
 
 const { showToast } = useToast()
 const progressAnimated = ref(false)
-const statsAnimated = ref(false)
 
 const handleSearch = () => {
   showToast('Starting your trademark search...')
@@ -33,9 +32,12 @@ const animateCounters = () => {
       const progress = Math.min(elapsed / duration, 1)
       const eased = 1 - Math.pow(1 - progress, 3)
       const current = Math.round(eased * target)
+
       animatedValues.value[index] = current.toLocaleString()
+
       if (progress < 1) requestAnimationFrame(update)
     }
+
     requestAnimationFrame(update)
   })
 }
@@ -48,27 +50,31 @@ onMounted(() => {
   }, 1000)
 
   const heroVisual = document.querySelector('.hero-visual')
+
   if (heroVisual) {
     const obs = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting) {
         setTimeout(() => {
           progressAnimated.value = true
         }, 300)
+
         obs.disconnect()
       }
     }, { threshold: 0.3 })
+
     obs.observe(heroVisual)
   }
 
   const heroStats = document.querySelector('.hero-stats')
+
   if (heroStats) {
     statsObserver = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting) {
-        statsAnimated.value = true
         animateCounters()
         statsObserver.disconnect()
       }
     }, { threshold: 0.5 })
+
     statsObserver.observe(heroStats)
   }
 })
@@ -85,33 +91,50 @@ onUnmounted(() => {
       <div class="hero-blob-2"></div>
       <div class="hero-grid-pattern"></div>
     </div>
+
     <div class="hero-inner">
       <div class="hero-content">
         <div class="hero-badge">
           <div class="hero-badge-dot"><i class="fas fa-bolt"></i></div>
           Trusted by 50,000+ businesses worldwide
         </div>
+
         <h1 class="hero-title">
-          Protect Your Brand<br>With <span class="highlight">Trademark Registration</span>
+          Protect Your Brand<br>
+          With <span class="highlight">Trademark Registration</span>
         </h1>
+
         <p class="hero-desc">
           Secure your intellectual property across 190+ countries. Fast, affordable, and fully managed trademark registration from start to finish.
         </p>
+
         <div class="hero-actions">
           <button class="btn-hero-primary" @click="handleSearch">
             <i class="fas fa-search"></i> Search Your Trademark
           </button>
+
           <button class="btn-hero-secondary" @click="handleSeeHow">
             <i class="fas fa-play-circle"></i> See How It Works
           </button>
         </div>
+
         <div class="hero-stats">
-          <div v-for="(stat, index) in stats" :key="stat.label" class="hero-stat">
-            <div class="hero-stat-value">{{ animatedValues[index] }}{{ stat.suffix }}</div>
-            <div class="hero-stat-label">{{ stat.label }}</div>
+          <div
+            v-for="(stat, index) in stats"
+            :key="stat.label"
+            class="hero-stat"
+          >
+            <div class="hero-stat-value">
+              {{ animatedValues[index] }}{{ stat.suffix }}
+            </div>
+
+            <div class="hero-stat-label">
+              {{ stat.label }}
+            </div>
           </div>
         </div>
       </div>
+
       <div class="hero-visual">
         <div class="hero-card-main">
           <div class="hero-card-header">
@@ -119,47 +142,77 @@ onUnmounted(() => {
               <div class="dot"></div>
               In Progress
             </div>
+
             <div class="hero-card-id">#TM-2024-78432</div>
           </div>
+
           <div class="hero-tm-name">TechNova Solutions</div>
-          <div class="hero-tm-class">Class 9 — Software & Technology</div>
+
+          <div class="hero-tm-class">
+            Class 9 — Software & Technology
+          </div>
+
           <div class="hero-progress-section">
             <div class="hero-progress-label">
               <span>Registration Progress</span>
               <span style="color: var(--accent); font-weight: 700;">72%</span>
             </div>
+
             <div class="hero-progress-bar">
-              <div class="hero-progress-fill" :class="{ animated: progressAnimated }"></div>
+              <div
+                class="hero-progress-fill"
+                :class="{ animated: progressAnimated }"
+              ></div>
             </div>
           </div>
+
           <div class="hero-timeline">
             <div class="hero-timeline-item">
-              <div class="hero-timeline-check done"><i class="fas fa-check"></i></div>
+              <div class="hero-timeline-check done">
+                <i class="fas fa-check"></i>
+              </div>
               Trademark Search & Clearance
             </div>
+
             <div class="hero-timeline-item">
-              <div class="hero-timeline-check done"><i class="fas fa-check"></i></div>
+              <div class="hero-timeline-check done">
+                <i class="fas fa-check"></i>
+              </div>
               Application Filed
             </div>
+
             <div class="hero-timeline-item current-item">
-              <div class="hero-timeline-check current"><i class="fas fa-circle" style="font-size:6px"></i></div>
+              <div class="hero-timeline-check current">
+                <i class="fas fa-circle" style="font-size:6px"></i>
+              </div>
               Examination Phase
             </div>
+
             <div class="hero-timeline-item">
-              <div class="hero-timeline-check pending"><i class="fas fa-circle" style="font-size:6px"></i></div>
+              <div class="hero-timeline-check pending">
+                <i class="fas fa-circle" style="font-size:6px"></i>
+              </div>
               Publication & Registration
             </div>
           </div>
         </div>
+
         <div class="hero-floating-card card-shield">
-          <div class="floating-icon shield"><i class="fas fa-shield-alt"></i></div>
+          <div class="floating-icon shield">
+            <i class="fas fa-shield-alt"></i>
+          </div>
+
           <div>
             <div class="floating-text">Fully Protected</div>
             <div class="floating-subtext">Legal coverage active</div>
           </div>
         </div>
+
         <div class="hero-floating-card card-globe">
-          <div class="floating-icon globe"><i class="fas fa-globe-americas"></i></div>
+          <div class="floating-icon globe">
+            <i class="fas fa-globe-americas"></i>
+          </div>
+
           <div>
             <div class="floating-text">190+ Countries</div>
             <div class="floating-subtext">Global protection</div>
@@ -171,7 +224,7 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.v-two .hero {
+.hero {
   position: relative;
   min-height: 100vh;
   display: flex;
@@ -180,7 +233,7 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
-.v-two .hero-bg {
+.hero-bg {
   position: absolute;
   inset: 0;
   z-index: 0;
@@ -324,7 +377,10 @@ onUnmounted(() => {
   animation: shimmer 3s infinite;
 }
 
-.v-two .btn-hero-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(255, 109, 0, 0.4); }
+.v-two .btn-hero-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(255, 109, 0, 0.4);
+}
 
 .v-two .btn-hero-secondary {
   display: inline-flex;
@@ -343,7 +399,11 @@ onUnmounted(() => {
   transition: all 0.3s ease;
 }
 
-.v-two .btn-hero-secondary:hover { border-color: var(--primary); color: var(--primary); background: rgba(26,35,126,0.03); }
+.v-two .btn-hero-secondary:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: rgba(26,35,126,0.03);
+}
 
 .v-two .hero-stats {
   display: flex;
@@ -351,7 +411,10 @@ onUnmounted(() => {
   animation: fadeInUp 0.8s 0.7s ease both;
 }
 
-.v-two .hero-stat { display: flex; flex-direction: column; }
+.v-two .hero-stat {
+  display: flex;
+  flex-direction: column;
+}
 
 .v-two .hero-stat-value {
   font-size: 28px;
@@ -444,7 +507,9 @@ onUnmounted(() => {
   margin-bottom: 20px;
 }
 
-.v-two .hero-progress-section { margin-bottom: 24px; }
+.v-two .hero-progress-section {
+  margin-bottom: 24px;
+}
 
 .v-two .hero-progress-label {
   display: flex;
@@ -470,7 +535,9 @@ onUnmounted(() => {
   transition: width 2s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.v-two .hero-progress-fill.animated { width: 72%; }
+.v-two .hero-progress-fill.animated {
+  width: 72%;
+}
 
 .v-two .hero-timeline {
   display: flex;
@@ -522,7 +589,10 @@ onUnmounted(() => {
   color: var(--text-muted);
 }
 
-.v-two .hero-timeline-item.current-item { font-weight: 600; color: var(--text); }
+.v-two .hero-timeline-item.current-item {
+  font-weight: 600;
+  color: var(--text);
+}
 
 .v-two .hero-floating-card {
   position: absolute;
@@ -562,99 +632,154 @@ onUnmounted(() => {
   font-size: 16px;
 }
 
-.v-two .floating-icon.shield { background: rgba(0,137,123,0.1); color: var(--teal); }
-.v-two .floating-icon.globe { background: rgba(26,35,126,0.08); color: var(--primary); }
+.v-two .floating-icon.shield {
+  background: rgba(0,137,123,0.1);
+  color: var(--teal);
+}
 
-.v-two .floating-text { font-size: 12px; font-weight: 600; color: var(--text); }
-.v-two .floating-subtext { font-size: 10px; color: var(--text-muted); }
+.v-two .floating-icon.globe {
+  background: rgba(26,35,126,0.08);
+  color: var(--primary);
+}
+
+.v-two .floating-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.v-two .floating-subtext {
+  font-size: 10px;
+  color: var(--text-muted);
+}
 
 @media (max-width: 1024px) {
-  .v-two .hero-inner { grid-template-columns: 1fr; gap: 40px; }
-  .v-two .hero-visual { max-width: 480px; margin: 0 auto; }
+  .v-two .hero-inner {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .v-two .hero-visual {
+    max-width: 480px;
+    margin: 0 auto;
+  }
 }
 
 @media (max-width: 768px) {
-  .v-two .hero { padding: 100px 16px 60px; min-height: auto; }
-  .v-two .hero-stats { gap: 20px; }
-  .v-two .hero-stat-value { font-size: 22px; }
-  .v-two .hero-floating-card { display: none; }
+  .v-two .hero {
+    padding: 100px 16px 60px;
+    min-height: auto;
+  }
+
+  .v-two .hero-stats {
+    gap: 20px;
+  }
+
+  .v-two .hero-stat-value {
+    font-size: 22px;
+  }
+
+  .v-two .hero-floating-card {
+    display: none;
+  }
 }
 
 @media (max-width: 480px) {
-  .v-two .hero-actions { flex-direction: column; }
-  .v-two .hero-stats { flex-direction: column; gap: 12px; }
+  .v-two .hero-actions {
+    flex-direction: column;
+  }
+
+  .v-two .hero-stats {
+    flex-direction: column;
+    gap: 12px;
+  }
 }
 
 /* V-TWO */
 
-.v-two *, .v-two *::before, .v-two *::after { margin: 0; padding: 0; box-sizing: border-box; }
+.v-two *,
+.v-two *::before,
+.v-two *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
 .v-two {
   --primary: #1a237e;
-  --primary-light: #3949ab;
-  --primary-lighter: #7986cb;
   --accent: #ff6d00;
   --accent-light: #ff9e40;
   --accent-glow: rgba(255, 109, 0, 0.15);
   --teal: #00897b;
-  --teal-light: #4db6ac;
-  --bg: #fafbff;
   --bg-card: #ffffff;
   --bg-alt: #f0f2ff;
-  --bg-gradient: linear-gradient(135deg, #fafbff 0%, #f0f2ff 50%, #fff8f0 100%);
   --text: #1a1a2e;
   --text-secondary: #5c6283;
   --text-muted: #8b90a8;
   --border: #e2e5f1;
   --border-light: #eef0f8;
-  --shadow-sm: 0 1px 3px rgba(26,35,126,0.06);
-  --shadow-md: 0 4px 16px rgba(26,35,126,0.08);
   --shadow-lg: 0 8px 40px rgba(26,35,126,0.1);
   --shadow-xl: 0 16px 60px rgba(26,35,126,0.12);
   --radius: 12px;
-  --radius-lg: 20px;
   --radius-xl: 28px;
 }
 
-.v-two html { scroll-behavior: smooth; }
-
-.v-two h1, .v-two h2, .v-two h3, .v-two h4, .v-two h5, .v-two h6,
-.v-two p, .v-two span, .v-two div, .v-two button, .v-two input,
-.v-two label, .v-two a, .v-two li, .v-two ul, .v-two ol {
+.v-two h1,
+.v-two h2,
+.v-two h3,
+.v-two h4,
+.v-two h5,
+.v-two h6,
+.v-two p,
+.v-two span,
+.v-two div,
+.v-two button,
+.v-two input,
+.v-two label,
+.v-two a,
+.v-two li,
+.v-two ul,
+.v-two ol {
   font-family: 'Inter', sans-serif;
 }
 
-.v-two body {
-  background: var(--bg-gradient);
-  color: var(--text);
-  line-height: 1.6;
-  overflow-x: hidden;
-}
-
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(40px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
+
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
 }
+
 @keyframes blob {
-  0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
-  25% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
-  50% { border-radius: 50% 60% 30% 60% / 30% 60% 70% 40%; }
-  75% { border-radius: 60% 40% 60% 30% / 60% 40% 30% 70%; }
-}
+  0%, 100% {
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+  }
 
-.v-two .animate-on-scroll.delay-6 { transition-delay: 0.6s; }
+  25% {
+    border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
+  }
 
-@media (max-width: 1024px) {
-  .v-two body { --bp-tablet: true; }
-}
-@media (max-width: 768px) {
-  .v-two body { --bp-mobile: true; }
-}
-@media (max-width: 480px) {
-  .v-two body { --bp-small: true; }
+  50% {
+    border-radius: 50% 60% 30% 60% / 30% 60% 70% 40%;
+  }
+
+  75% {
+    border-radius: 60% 40% 60% 30% / 60% 40% 30% 70%;
+  }
 }
 </style>
