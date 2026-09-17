@@ -15,10 +15,12 @@ export function useEditor() {
     section.styles.display = "grid";
     section.styles.gridTemplateColumns = columns.map((width) => `${width}fr`).join(" ");
     section.styles.gap = section.styles.gap || "12px";
-    section.children.push(...columns.map(() => {
+    section.children.push(...columns.map((width) => {
       const column = createEditorNode("column");
       column.styles.width = "auto";
       column.styles.minWidth = "0";
+      column.styles.flexGrow = String(width);
+      column.styles.flexBasis = "0";
       return column;
     }));
     document.children.splice(Math.max(0, index), 0, section);
