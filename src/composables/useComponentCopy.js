@@ -8,25 +8,75 @@ export function useComponentCopy() {
 
   const copySelectedComponent = async () => {
     const component = selectedComponent.value;
-    if (!component) return false;
+    if (!component) return { ok: false, error: "No component is selected." };
 
     const registryEntry = componentRegistry[component.id];
-    if (!registryEntry) return false;
+    if (!registryEntry?.source) {
+      return { ok: false, error: "The selected component source is unavailable." };
+    }
 
     try {
       const response = await registryEntry.source();
-      let source = response.default;
-      source = applyStyleValues(source, component.styles || {});
-      source = appendElementOverrides(source, overrides[component.id] || {});
-      await navigator.clipboard.writeText(source);
-      return true;
+      const source = typeof response === "string" ? response : response?.default;
+      if (typeof source !== "string" || !source.trim()) {
+        return { ok: false, error: "The component source is empty." };
+      }
+
+      const withStyles = applyStyleValues(source, component.styles || {});
+      const finalSource = appendElementOverrides(
+        withStyles,
+        overrides[component.id] || {}
+      );
+
+      await writeClipboard(finalSource);
+      return { ok: true, source: finalSource };
     } catch (error) {
       console.error("Failed to copy component:", error);
-      return false;
+      return {
+        ok: false,
+        error: error?.message || "Unable to copy the component source."
+      };
     }
   };
 
   return { copySelectedComponent };
+}
+
+async function writeClipboard(text) {
+  if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return;
+    } catch (_) {
+      // Fall through for insecure origins or denied Clipboard API permissions.
+    }
+  }
+
+  if (typeof document === "undefined") {
+    throw new Error("Clipboard access is unavailable in this environment.");
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.left = "-9999px";
+  textarea.style.top = "0";
+  textarea.style.opacity = "0";
+  document.body.appendChild(textarea);
+
+  let copied = false;
+  try {
+    textarea.focus();
+    textarea.select();
+    copied = document.execCommand("copy");
+  } finally {
+    document.body.removeChild(textarea);
+  }
+
+  if (!copied) {
+    throw new Error("Clipboard permission was denied. Please allow clipboard access and try again.");
+  }
 }
 
 function applyStyleValues(source, styles) {
