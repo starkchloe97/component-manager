@@ -99,15 +99,9 @@ export function useEditor() {
   }
 
   function addContainerToComponent(layout = "100") {
-    const container = createEditorNode("container");
-    const columns = layout.split("-").map(Number);
-    container.styles.display = "grid";
-    container.styles.gridTemplateColumns = columns.map((width) => `${width}fr`).join(" ");
-    container.styles.gap = "0px";
-    container.children.push(...createLayoutChildren(layout));
-    document.componentChildren.push(container);
-    selectNode(container.id);
-    return container;
+    // Kept for API compatibility with ComponentCanvas. A picker layout is
+    // always a page-level section, never a container nested in the component.
+    return addSection(layout, document.children.length, document.children);
   }
 
   function createSection(layout = "100") {
