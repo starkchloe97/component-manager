@@ -33,6 +33,7 @@ function replaceDocument(next) {
   if (next?.componentChildren && Array.isArray(next.componentChildren)) document.componentChildren.push(...next.componentChildren);
   migrateLegacyLayout(document.children);
   migrateLegacyLayout(document.componentChildren);
+  normalizePageStructure(document.children);
   if (next?.version) document.version = Math.max(Number(next.version) || 0, document.version);
 }
 
@@ -127,11 +128,9 @@ export function useEditor() {
   }
 
   function addSectionAfter(sectionId, layout = "100") {
-    const parent = findParentInDocument(sectionId);
-    const list = parent ? parent.children : document.children;
-    const index = list.findIndex((node) => node.id === sectionId);
-    if (index < 0) return null;
-    return addSection(layout, index + 1, list);
+    const topLevel = findTopLevelSection(sectionId);
+    const index = topLevel ? document.children.findIndex((node) => node.id === topLevel.id) + 1 : document.children.length;
+    return addSection(layout, index, document.children);
   }
 
   function createLayoutChildren(layout) {
@@ -147,31 +146,17 @@ export function useEditor() {
   }
 
   function addSectionToParent(parentId, layout = "100") {
-    const parent = findNodeInDocument(parentId);
-    if (!parent || !Array.isArray(parent.children)) return null;
-
-    const section = createEditorNode("section");
-    const columns = layout.split("-").map(Number);
-    section.styles.display = "grid";
-    section.styles.gridTemplateColumns = columns.map((width) => width + "fr").join(" ");
-    section.styles.gap = "0px";
-    section.children.push(...createLayoutChildren(layout));
-    parent.children.push(section);
-    selectNode(section.id);
-    return section;
+    const topLevel = findTopLevelSection(parentId);
+    const index = topLevel ? document.children.findIndex((node) => node.id === topLevel.id) + 1 : document.children.length;
+    return addSection(layout, index, document.children);
   }
 
   // "Container" in the layout picker is a top-level layout section.
   // We deliberately do not create section -> container -> columns nesting.
   function addContainer(layout = "100", parentId = null) {
-    const section = createSection(layout);
-    const current = parentId ? findNodeInDocument(parentId) : null;
-    const parentSection = current ? findTopLevelSection(current.id) : null;
-    const list = document.children;
-    const insertAfter = parentSection ? list.findIndex((node) => node.id === parentSection.id) + 1 : list.length;
-    list.splice(Math.max(0, insertAfter), 0, section);
-    selectNode(section.id);
-    return section;
+    const topLevel = parentId ? findTopLevelSection(parentId) : null;
+    const index = topLevel ? document.children.findIndex((node) => node.id === topLevel.id) + 1 : document.children.length;
+    return addSection(layout, index, document.children);
   }
 
   function addNode(type, parentId = null, overrides = {}) {
@@ -264,6 +249,53 @@ function findTopLevelSection(id) {
   };
   return walk(document.children);
 }
+function normalizePageStructure(nodes) {
+  const root = nodes || [];
+  const promoted = [];
+
+  function collectNested(list) {
+    for (let i = (list || []).length - 1; i >= 0; i -= 1) {
+      const node = list[i];
+      if (!node) continue;
+      if (node.type === "section" || node.type === "container") {
+        list.splice(i, 1);
+        if (node.type === "container") {
+          node.type = "section";
+          node.styles = { ...(node.styles || {}), display: "grid", gap: "0px", width: "100%" };
+        }
+        promoted.unshift(node);
+      } else {
+        collectNested(node.children);
+      }
+    }
+  }
+
+  // Convert the old nested layout tree into page-level sibling sections.
+  for (let i = root.length - 1; i >= 0; i -= 1) {
+    const node = root[i];
+    if (node?.type === "section") collectNested(node.children);
+  }
+
+  for (const section of promoted) root.push(section);
+
+  for (const section of root) {
+    if (section?.type !== "section") continue;
+    section.styles = { ...(section.styles || {}), display: "grid", gap: "0px", width: "100%" };
+    section.children = (section.children || []).filter(child => child?.type === "column");
+    const tracks = section.children.map(column => {
+      const n = Number.parseFloat(column.styles?.width);
+      return Number.isFinite(n) && n > 0 && n < 100 ? n : 1;
+    });
+    if (section.children.length) {
+      const total = tracks.reduce((a, b) => a + b, 0);
+      section.styles.gridTemplateColumns = tracks.map(n => `${n / total}fr`).join(" ");
+    }
+    section.children.forEach(column => {
+      column.styles = { ...(column.styles || {}), width: "100%", minWidth: "0", padding: "0", boxSizing: "border-box" };
+    });
+  }
+}
+
 function rootListFor(id) {
   if (findNode(document.children, id)) return document.children;
   if (findNode(document.componentChildren, id)) return document.componentChildren;
