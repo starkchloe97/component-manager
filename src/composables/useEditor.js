@@ -81,28 +81,26 @@ export function useEditor() {
     const columns = layout.split("-").map(Number);
     container.styles.display = "grid";
     container.styles.gridTemplateColumns = columns.map((width) => `${width}fr`).join(" ");
-    container.styles.gap = container.styles.gap || "12px";
+    container.styles.gap = "0px";
     container.children.push(...createLayoutChildren(layout));
     document.componentChildren.push(container);
     selectNode(container.id);
     return container;
   }
 
-  function addSection(layout = "100", index = document.children.length) {
+  function createSection(layout = "100") {
     const section = createEditorNode("section");
     const columns = layout.split("-").map(Number);
     section.styles.display = "grid";
     section.styles.gridTemplateColumns = columns.map((width) => `${width}fr`).join(" ");
-    section.styles.gap = section.styles.gap || "12px";
-    section.children.push(...columns.map((width) => {
-      const column = createEditorNode("column");
-      column.styles.width = "auto";
-      column.styles.minWidth = "0";
-      column.styles.flexGrow = String(width);
-      column.styles.flexBasis = "0";
-      return column;
-    }));
-    document.children.splice(Math.max(0, index), 0, section);
+    section.styles.gap = "0px";
+    section.children.push(...createLayoutChildren(layout));
+    return section;
+  }
+
+  function addSection(layout = "100", index = document.children.length, list = document.children) {
+    const section = createSection(layout);
+    list.splice(Math.max(0, Math.min(index, list.length)), 0, section);
     selectNode(section.id);
     return section;
   }
@@ -112,16 +110,17 @@ export function useEditor() {
     const list = parent ? parent.children : document.children;
     const index = list.findIndex((node) => node.id === sectionId);
     if (index < 0) return null;
-    return addSection(layout, index + 1);
+    return addSection(layout, index + 1, list);
   }
 
   function createLayoutChildren(layout) {
     return layout.split("-").map(Number).map((width) => {
       const column = createEditorNode("column");
-      column.styles.width = "auto";
+      column.styles.width = "100%";
       column.styles.minWidth = "0";
-      column.styles.flexGrow = String(width);
-      column.styles.flexBasis = "0";
+      column.styles.minHeight = "72px";
+      column.styles.boxSizing = "border-box";
+      column.styles.padding = "0";
       return column;
     });
   }
