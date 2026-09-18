@@ -32,6 +32,10 @@ function select(event) {
   showAdd.value = false;
   showSectionPicker.value = false;
 }
+function toggleAdd() {
+  showAdd.value = !showAdd.value;
+  if (showAdd.value) selectNode(props.node.id);
+}
 function addBasic(type) {
   addNode(type, props.node.id);
   showAdd.value = false;
@@ -113,7 +117,7 @@ async function copyCurrentComponent() {
       <div v-if="!node.children.length" class="column-empty"><span>+</span><small>Empty column</small></div>
       <EditorNode v-for="child in node.children" :key="child.id" :node="child" />
       <div class="column-add" @click.stop>
-        <button type="button" class="add-element-button" :class="{ 'is-open': showAdd }" @click="showAdd = !showAdd" aria-label="Add element">+</button>
+        <button type="button" class="add-element-button" :class="{ 'is-open': showAdd }" @click="toggleAdd" aria-label="Add element">+</button>
         <div v-if="showAdd" class="element-menu">
           <div class="menu-title">Basic elements</div>
           <button v-for="item in basicElements" :key="item.type" type="button" @click="addBasic(item.type)">{{ item.label }}</button>
