@@ -31,7 +31,28 @@ function replaceDocument(next) {
   Object.assign(document, createEditorDocument());
   if (next?.children && Array.isArray(next.children)) document.children.push(...next.children);
   if (next?.componentChildren && Array.isArray(next.componentChildren)) document.componentChildren.push(...next.componentChildren);
-  if (next?.version) document.version = next.version;
+  migrateLegacyLayout(document.children);
+  migrateLegacyLayout(document.componentChildren);
+  if (next?.version) document.version = Math.max(Number(next.version) || 0, document.version);
+}
+
+function migrateLegacyLayout(nodes) {
+  for (const node of nodes || []) {
+    if (node.type === "section") {
+      const s = node.styles || {};
+      if (s.paddingTop === "60px" && s.paddingBottom === "60px" && s.paddingLeft === "20px" && s.paddingRight === "20px") {
+        Object.assign(s, { paddingTop: "40px", paddingRight: "0px", paddingBottom: "40px", paddingLeft: "0px" });
+      }
+      if (s.gap === "12px") s.gap = "0px";
+    }
+    if (node.type === "column") {
+      const s = node.styles || {};
+      if (s.padding === "14px") s.padding = "0px";
+      if (s.minHeight === "120px") s.minHeight = "72px";
+    }
+    if (node.type === "container" && node.styles?.gap === "12px") node.styles.gap = "0px";
+    migrateLegacyLayout(node.children);
+  }
 }
 
 function persistDocument() {
