@@ -107,10 +107,15 @@ export function useEditor() {
     return node;
   }
 
-  function addContainerToComponent(layout = "100") {
-    // Kept for API compatibility with ComponentCanvas. A picker layout is
-    // always a page-level section, never a container nested in the component.
-    return addSection(layout, document.children.length, document.children);
+  function addContainerToComponent(layout = "100", parentId = null) {
+    // A layout added from the component canvas is a sibling page section.
+    // The parentId argument is accepted only for compatibility; the page
+    // builder deliberately keeps layout sections flat.
+    const topLevel = parentId ? findTopLevelSection(parentId) : null;
+    const index = topLevel
+      ? document.children.findIndex((node) => node.id === topLevel.id) + 1
+      : document.children.length;
+    return addSection(layout, index, document.children);
   }
 
   function createSection(layout = "100") {
