@@ -1,7 +1,6 @@
 <script setup>
 import { computed, ref } from "vue";
 import ComponentCanvas from "./ComponentCanvas.vue";
-import EditorCanvas from "./EditorCanvas.vue";
 import SectionLayoutPicker from "./SectionLayoutPicker.vue";
 import SettingsPanel from "./SettingsPanel.vue";
 import NodeSettingsPanel from "./NodeSettingsPanel.vue";
@@ -258,81 +257,12 @@ function addSectionToPage(layout) { addSection(layout); showAddSection.value = f
   position: absolute;
   inset: 0;
   overflow: auto;
-  background: #eef1f5
+  background: #eef1f5;
+  transition: padding-right .22s ease;
 }
-
-.page-builder-area {
-  width: auto;
-  margin: 0 0 40px;
-  background: #fff;
-  box-shadow: 0 8px 30px rgba(15, 23, 42, .06)
-}
-
-.page-builder-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 14px 18px;
-  border-bottom: 1px solid #e5e7eb;
-  background: #fff
-}
-
-.page-builder-header div {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  flex-wrap: wrap
-}
-
-.eyebrow {
-  font-size: 8px;
-  font-weight: 800;
-  letter-spacing: .1em;
-  color: #94a3b8
-}
-
-.page-builder-header strong {
-  font-size: 12px;
-  color: #334155
-}
-
-.page-builder-header small {
-  font-size: 10px;
-  color: #94a3b8
-}
-
-.page-builder-header button {
-  border: 1px solid #bfdbfe;
-  border-radius: 6px;
-  padding: 6px 10px;
-  background: #eff6ff;
-  color: #2563eb;
-  font-size: 10px;
-  font-weight: 700;
-  cursor: pointer
-}
-
-.page-builder-header button:hover {
-  background: #dbeafe
-}
-
-.page-builder-area :deep(.editor-canvas) {
-  min-height: 180px;
-  overflow: visible;
-  background: #fff
-}
-
-.page-builder-area :deep(.editor-canvas > .editor-node) {
-  margin: 0
-}
-
-.page-builder-hint {
-  padding: 18px;
-  text-align: center;
-  color: #94a3b8;
-  font-size: 10px;
-  border-top: 1px dashed #e2e8f0
+.editor.drawer-open .editor-workspace {
+  padding-right: 320px;
+  box-sizing: border-box;
 }
 
 .settings-drawer {
@@ -341,8 +271,8 @@ function addSectionToPage(layout) { addSection(layout); showAddSection.value = f
   right: 0;
   bottom: 0;
   z-index: 900;
-  width: 360px;
-  max-width: min(360px, 92vw);
+  width: 320px;
+  max-width: min(320px, 92vw);
   transform: translateX(100%);
   display: flex;
   flex-direction: column;
@@ -478,11 +408,8 @@ function addSectionToPage(layout) { addSection(layout); showAddSection.value = f
   border: 1px solid #e2e8f0
 }
 
-.editor--preview .page-builder-area {
-  display: none
-}
-
 @media(max-width:760px) {
+  .editor.drawer-open .editor-workspace { padding-right: 0; }
   .toolbar-actions .toolbar-button:not(.copy-button):not(.add-section-button) {
     display: none
   }
