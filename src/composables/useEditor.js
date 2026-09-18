@@ -9,6 +9,25 @@ export function useEditor() {
   const selectedNode = computed(() => selectedNodeId.value ? findNode(document.children, selectedNodeId.value) : null);
   const selectNode = (id) => { selectedNodeId.value = id; };
 
+  function addComponentElement(type, overrides = {}) {
+    const node = createEditorNode(type, overrides);
+    document.componentChildren.push(node);
+    selectNode(node.id);
+    return node;
+  }
+
+  function addContainerToComponent(layout = "100") {
+    const container = createEditorNode("container");
+    const columns = layout.split("-").map(Number);
+    container.styles.display = "grid";
+    container.styles.gridTemplateColumns = columns.map((width) => `${width}fr`).join(" ");
+    container.styles.gap = container.styles.gap || "12px";
+    container.children.push(...createLayoutChildren(layout));
+    document.componentChildren.push(container);
+    selectNode(container.id);
+    return container;
+  }
+
   function addSection(layout = "100", index = document.children.length) {
     const section = createEditorNode("section");
     const columns = layout.split("-").map(Number);
@@ -130,7 +149,7 @@ export function useEditor() {
     return true;
   }
 
-  return { document, selectedNodeId, selectedNode, selectNode, addSection, addSectionAfter, addSectionToParent, addContainer, addNode, addComponent, updateNode, moveNode, deleteNode, duplicateNode };
+  return { document, selectedNodeId, selectedNode, selectNode, addSection, addSectionAfter, addSectionToParent, addContainer, addComponentElement, addContainerToComponent, addNode, addComponent, updateNode, moveNode, deleteNode, duplicateNode };
 }
 
 function findNode(nodes, id) { for (const node of nodes) { if (node.id === id) return node; const found = findNode(node.children || [], id); if (found) return found; } return null; }
