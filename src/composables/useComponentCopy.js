@@ -188,8 +188,13 @@ function serializeNode(node, depth = 0) {
       const alt = escapeAttribute(node.props?.alt || "");
       return `${indent}<img src="${src}" alt="${alt}"${attrs} />`;
     }
-    case "component":
-      return `${indent}<!-- Registered component "${escapeHtml(node.props?.componentId || "unknown")}" is rendered by the builder. -->`;
+    case "component": {
+      const children = (node.children || [])
+        .map((child) => serializeNode(child, depth))
+        .join("\n");
+      const marker = `${indent}<!-- Registered component "${escapeHtml(node.props?.componentId || "unknown")}" is rendered by the builder. -->`;
+      return children ? marker + "\n" + children : marker;
+    }
     default:
       return `${indent}<!-- Unsupported builder node: ${escapeHtml(node.type || "unknown")} -->`;
   }
