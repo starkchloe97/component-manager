@@ -25,7 +25,7 @@ const { registerComponent } = useComponentManager();
 const { registerComponent: registerStyleComponent, selectComponent } = useStyleManager();
 const { copySelectedComponent } = useComponentCopy();
 const copyState = ref("idle");
-const { document, selectedNodeId, selectedNode, addSection, selectNode } = useEditor();
+const { document, selectedNodeId, selectedNode, setActiveComponent, clearActiveComponent, addSection, selectNode } = useEditor();
 
 registry.forEach((entry) => {
   const config = { name: entry.name, component: entry.component, source: entry.source, styles: {} };
@@ -33,19 +33,21 @@ registry.forEach((entry) => {
   registerStyleComponent(entry.id, config);
 });
 selectComponent(activeId.value);
+setActiveComponent(activeId.value);
 
 const activeComponent = computed(() => componentRegistry[activeId.value] || null);
 const hasSelectedElement = computed(() => !!selectedElement.value || !!selectedNode.value);
 
 function selectComponentById(id) {
   activeId.value = id;
+  setActiveComponent(id);
   selectComponent(id);
   clearElement();
   drawerOpen.value = false;
 }
 function openDrawer() { if (!preview.value) drawerOpen.value = true; }
 function closeDrawer() { drawerOpen.value = false; }
-function closeEditor() { drawerOpen.value = false; showAddSection.value = false; clearElement(); emit("close"); }
+function closeEditor() { drawerOpen.value = false; showAddSection.value = false; clearElement(); clearActiveComponent(); emit("close"); }
 function handleElementSelected() { if (!preview.value) drawerOpen.value = true; }
 function togglePreview() { preview.value = !preview.value; drawerOpen.value = false; if (preview.value) clearElement(); }
 async function copyComponent() {
