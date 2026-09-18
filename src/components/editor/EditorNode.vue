@@ -144,7 +144,7 @@ async function copyCurrentComponent() {
       />
     </div>
 
-    <div v-else-if="node.type === 'component'" class="component-node" :style="node.styles">
+    <div v-else-if="node.type === 'component'" class="component-node" :style="node.styles" @click.stop="select">
       <div class="component-node-label">{{ componentLabel }}</div>
       <component v-if="componentEntry" :is="componentEntry.component" />
       <div v-else class="component-missing">Component unavailable</div>
