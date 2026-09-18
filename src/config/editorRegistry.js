@@ -23,10 +23,16 @@ export const editorRegistry = {
   container: {
     label: "Container",
     category: "Layout",
-    canHaveChildren: true,
-    defaults: {
-      styles: { width: "100%", maxWidth: "1200px", marginLeft: "auto", marginRight: "auto", padding: "0", boxSizing: "border-box" },
-    },
+    defaultStyles: {
+      width: "100%",
+      maxWidth: "100%",
+      marginLeft: "0",
+      marginRight: "0",
+      padding: "0",
+      boxSizing: "border-box",
+      minWidth: "0",
+      flexShrink: "1"
+    }
   },
   column: {
     label: "Column",
