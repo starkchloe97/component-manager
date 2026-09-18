@@ -250,50 +250,71 @@ function findTopLevelSection(id) {
   return walk(document.children);
 }
 function normalizePageStructure(nodes) {
-  const root = nodes || [];
-  const promoted = [];
+  const source = Array.isArray(nodes) ? [...nodes] : [];
+  const result = [];
 
-  function collectNested(list) {
-    for (let i = (list || []).length - 1; i >= 0; i -= 1) {
-      const node = list[i];
-      if (!node) continue;
-      if (node.type === "section" || node.type === "container") {
-        list.splice(i, 1);
-        if (node.type === "container") {
-          node.type = "section";
-          node.styles = { ...(node.styles || {}), display: "grid", gap: "0px", width: "100%" };
-        }
-        promoted.unshift(node);
+  function asSection(node) {
+    if (!node) return null;
+    if (node.type === "container") {
+      node.type = "section";
+      node.styles = { ...(node.styles || {}), display: "grid", gap: "0px", width: "100%" };
+    }
+    if (node.type !== "section") return null;
+    node.styles = { ...(node.styles || {}), display: "grid", gap: "0px", width: "100%" };
+
+    const directColumns = (node.children || []).filter(child => child?.type === "column");
+    const nestedLayouts = (node.children || []).filter(child => child?.type === "section" || child?.type === "container");
+
+    if (directColumns.length) {
+      node.children = directColumns;
+      const tracks = directColumns.map(column => {
+        const n = Number.parseFloat(column.styles?.width);
+        return Number.isFinite(n) && n > 0 ? n : 1;
+      });
+      const total = tracks.reduce((sum, n) => sum + n, 0);
+      node.styles.gridTemplateColumns = tracks.map(n => `${n / total}fr`).join(" ");
+      directColumns.forEach(column => {
+        column.styles = { ...(column.styles || {}), width: "100%", minWidth: "0", padding: "0", boxSizing: "border-box" };
+        extractNestedLayouts(column);
+      });
+      return node;
+    }
+
+    // Old structure: section -> container/section. Promote those layouts
+    // instead of keeping an empty wrapper around them.
+    for (const child of nestedLayouts) {
+      const promoted = asSection(child);
+      if (promoted) result.push(promoted);
+    }
+    return null;
+  }
+
+  function extractNestedLayouts(node) {
+    if (!node?.children) return;
+    const kept = [];
+    for (const child of node.children) {
+      if (child?.type === "section" || child?.type === "container") {
+        const promoted = asSection(child);
+        if (promoted) result.push(promoted);
       } else {
-        collectNested(node.children);
+        extractNestedLayouts(child);
+        kept.push(child);
       }
     }
+    node.children = kept;
   }
 
-  // Convert the old nested layout tree into page-level sibling sections.
-  for (let i = root.length - 1; i >= 0; i -= 1) {
-    const node = root[i];
-    if (node?.type === "section") collectNested(node.children);
-  }
-
-  for (const section of promoted) root.push(section);
-
-  for (const section of root) {
-    if (section?.type !== "section") continue;
-    section.styles = { ...(section.styles || {}), display: "grid", gap: "0px", width: "100%" };
-    section.children = (section.children || []).filter(child => child?.type === "column");
-    const tracks = section.children.map(column => {
-      const n = Number.parseFloat(column.styles?.width);
-      return Number.isFinite(n) && n > 0 && n < 100 ? n : 1;
-    });
-    if (section.children.length) {
-      const total = tracks.reduce((a, b) => a + b, 0);
-      section.styles.gridTemplateColumns = tracks.map(n => `${n / total}fr`).join(" ");
+  for (const node of source) {
+    if (node?.type === "section" || node?.type === "container") {
+      const section = asSection(node);
+      if (section) result.push(section);
+    } else {
+      result.push(node);
     }
-    section.children.forEach(column => {
-      column.styles = { ...(column.styles || {}), width: "100%", minWidth: "0", padding: "0", boxSizing: "border-box" };
-    });
   }
+
+  // Replace the reactive array without retaining the obsolete wrappers.
+  nodes.splice(0, nodes.length, ...result);
 }
 
 function rootListFor(id) {
