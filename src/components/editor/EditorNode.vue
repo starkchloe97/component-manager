@@ -114,7 +114,7 @@ async function copyCurrentComponent() {
     </section>
 
     <div v-else-if="node.type === 'column'" class="editor-column" :style="node.styles">
-      <div v-if="!node.children.length" class="column-empty"><span>+</span><small>Empty column</small></div>
+      <div v-if="!node.children.length" class="column-empty"><small>Empty column</small></div>
       <EditorNode v-for="child in node.children" :key="child.id" :node="child" />
       <div class="column-add" @click.stop>
         <button type="button" class="add-element-button" :class="{ 'is-open': showAdd }" @click="toggleAdd" aria-label="Add element">+</button>
