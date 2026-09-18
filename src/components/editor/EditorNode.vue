@@ -6,7 +6,7 @@ import SectionLayoutPicker from "./SectionLayoutPicker.vue";
 import { editorRegistry } from "@/config/editorRegistry";
 
 const props = defineProps({ node: { type: Object, required: true } });
-const { selectedNodeId, selectedNode, selectNode, addNode, addComponent, addSectionAfter, duplicateNode, deleteNode } = useEditor();
+const { selectedNodeId, selectedNode, selectNode, addNode, addComponent, addSectionAfter, addContainer, duplicateNode, deleteNode } = useEditor();
 const showAdd = ref(false);
 const showSectionPicker = ref(false);
 
@@ -31,7 +31,16 @@ function addBasic(type) {
   showAdd.value = false;
 }
 function addLayout(type) {
-  addNode(type, props.node.id);
+  if (type === "container") {
+    showSectionPicker.value = true;
+  } else {
+    addNode(type, props.node.id);
+    showAdd.value = false;
+  }
+}
+function addContainerBelow(layout) {
+  addContainer(layout, props.node.id);
+  showSectionPicker.value = false;
   showAdd.value = false;
 }
 function openSectionPicker() {
@@ -98,6 +107,13 @@ function removeNode() {
           <button v-for="item in registeredComponents" :key="item.id" type="button" @click="addRegistered(item.id)">{{ item.name }}</button>
         </div>
       </div>
+<SectionLayoutPicker
+        v-if="showSectionPicker && node.type === 'container'"
+        title="Add container"
+        description="Choose the column layout for the new container."
+        @select="addContainerBelow"
+        @close="showSectionPicker = false"
+      />
     </div>
 
     <div v-else-if="node.type === 'component'" class="component-node" :style="node.styles">
