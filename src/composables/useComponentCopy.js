@@ -107,6 +107,18 @@ function appendElementOverrides(source, overrides) {
   return `${source}\n\n<style scoped>\n${css}\n</style>`;
 }
 
-function normalizeSelector(selector) {\n  const value = String(selector || "").trim();\n  return value.startsWith(".") || value.startsWith("#") || value.includes(" ") || value.includes("[") || value.includes(":") ? value : "." + value;\n}\n\nfunction toKebabCase(value) {
+function normalizeSelector(selector) {
+  const value = String(selector || "").trim();
+  if (!value) return "";
+  return value.startsWith(".") ||
+    value.startsWith("#") ||
+    value.includes(" ") ||
+    value.includes("[") ||
+    value.includes(":")
+    ? value
+    : "." + value;
+}
+
+function toKebabCase(value) {
   return value.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
 }
