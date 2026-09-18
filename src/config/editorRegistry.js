@@ -12,10 +12,10 @@ export const editorRegistry = {
         alignItems: "stretch",
         justifyContent: "flex-start",
         gap: "0px",
-        paddingTop: "60px",
-        paddingRight: "20px",
-        paddingBottom: "60px",
-        paddingLeft: "20px",
+        paddingTop: "40px",
+        paddingRight: "0px",
+        paddingBottom: "40px",
+        paddingLeft: "0px",
         boxSizing: "border-box",
       },
     },
@@ -25,7 +25,7 @@ export const editorRegistry = {
     category: "Layout",
     canHaveChildren: true,
     defaults: {
-      styles: { width: "100%", maxWidth: "1200px", marginLeft: "auto", marginRight: "auto", boxSizing: "border-box" },
+      styles: { width: "100%", maxWidth: "1200px", marginLeft: "auto", marginRight: "auto", padding: "0", boxSizing: "border-box" },
     },
   },
   column: {
@@ -36,7 +36,8 @@ export const editorRegistry = {
       styles: {
         width: "100%",
         minWidth: "0",
-        minHeight: "100px",
+        minHeight: "72px",
+        padding: "0",
         boxSizing: "border-box",
         display: "flex",
         flexDirection: "column",
