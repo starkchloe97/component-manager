@@ -2,11 +2,13 @@
 import { computed, ref } from "vue";
 import { useEditor } from "@/composables/useEditor";
 import { componentRegistry } from "@/config/componentRegistry";
+import SectionLayoutPicker from "./SectionLayoutPicker.vue";
 import { editorRegistry } from "@/config/editorRegistry";
 
 const props = defineProps({ node: { type: Object, required: true } });
-const { selectedNodeId, selectedNode, selectNode, addNode, addComponent, duplicateNode, deleteNode } = useEditor();
+const { selectedNodeId, selectedNode, selectNode, addNode, addComponent, addSectionAfter, duplicateNode, deleteNode } = useEditor();
 const showAdd = ref(false);
+const showSectionPicker = ref(false);
 
 const isSelected = computed(() => selectedNodeId.value === props.node.id);
 const componentEntry = computed(() => componentRegistry[props.node.props?.componentId] || null);
@@ -32,6 +34,13 @@ function addLayout(type) {
   addNode(type, props.node.id);
   showAdd.value = false;
 }
+function openSectionPicker() {
+  showSectionPicker.value = true;
+}
+function addSectionBelow(layout) {
+  addSectionAfter(props.node.id, layout);
+  showSectionPicker.value = false;
+}
 function addRegistered(id) {
   addComponent(id, props.node.id);
   showAdd.value = false;
@@ -48,6 +57,14 @@ function removeNode() {
         v-for="child in node.children"
         :key="child.id"
         :node="child"
+      />
+      <div class="section-actions" @click.stop>
+        <button type="button" class="add-section-under" @click="openSectionPicker">+ Add section</button>
+      </div>
+      <SectionLayoutPicker
+        v-if="showSectionPicker"
+        @select="addSectionBelow"
+        @close="showSectionPicker = false"
       />
     </section>
 
@@ -146,7 +163,10 @@ function removeNode() {
 <style scoped>
 .editor-node{position:relative;min-width:0}
 .editor-node--selected{outline:2px solid #3b82f6;outline-offset:-2px}
-.editor-section{width:100%;min-width:0}
+.editor-section{position:relative;width:100%;min-width:0}
+.section-actions{display:flex;justify-content:center;padding:12px 0 16px;min-height:12px;box-sizing:border-box}
+.add-section-under{border:1px solid #bfdbfe;border-radius:6px;padding:6px 10px;background:#eff6ff;color:#2563eb;font-size:10px;font-weight:700;cursor:pointer}
+.add-section-under:hover{background:#dbeafe;border-color:#93c5fd}
 .editor-column{position:relative;min-width:0;min-height:120px;padding:14px;box-sizing:border-box;border:1px dashed #d5dce7;background:rgba(248,250,252,.72)}
 .editor-column:hover,.editor-container:hover{border-color:#93c5fd}
 .editor-container{position:relative;width:100%;min-width:0;box-sizing:border-box;margin-left:auto;margin-right:auto;padding:14px;border:1px dashed #d5dce7;background:rgba(255,255,255,.72)}
