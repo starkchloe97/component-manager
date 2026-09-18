@@ -85,16 +85,6 @@ function addSectionToPage(layout) { addSection(layout); showAddSection.value = f
           <ComponentCanvas v-if="activeComponent" :component="activeComponent" :drawer-open="drawerOpen"
             :preview="preview" @element-selected="handleElementSelected" />
 
-          <section v-if="!preview" class="page-builder-area">
-            <div class="page-builder-header">
-              <div><span class="eyebrow">PAGE BUILDER</span><strong>Sections</strong><small>Build additional content
-                  underneath the component</small></div>
-              <button type="button" @click="openAddSection">+ Add section</button>
-            </div>
-            <EditorCanvas :component="activeComponent" />
-            <div v-if="!document.children.length" class="page-builder-hint">Use <strong>Add section</strong> to start
-              building. Select a column to add elements.</div>
-          </section>
         </div>
 
         <button v-if="!preview && !drawerOpen" type="button" class="drawer-tab drawer-tab--closed"
@@ -419,8 +409,5 @@ function addSectionToPage(layout) { addSection(layout); showAddSection.value = f
     gap: 1px
   }
 
-  .page-builder-area {
-    width: calc(100% - 24px)
-  }
 }
 </style>
