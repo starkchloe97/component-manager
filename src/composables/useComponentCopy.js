@@ -1,10 +1,12 @@
 import { useStyleManager } from "./useStyleManager";
 import { useComponentEditor } from "./useComponentEditor";
 import { componentRegistry } from "@/config/componentRegistry";
+import { useEditor } from "./useEditor";
 
 export function useComponentCopy() {
   const { selectedComponent } = useStyleManager();
   const { overrides } = useComponentEditor();
+  const { document } = useEditor();
 
   const copySelectedComponent = async () => {
     const component = selectedComponent.value;
@@ -25,9 +27,13 @@ export function useComponentCopy() {
       }
 
       const withStyles = applyStyleValues(source, component.styles || {});
-      const finalSource = appendElementOverrides(
+      const withElementStyles = appendElementOverrides(
         withStyles,
         overrides[component.id] || {}
+      );
+      const finalSource = appendPageSections(
+        withElementStyles,
+        document.children
       );
 
       await writeClipboard(finalSource);
@@ -41,7 +47,19 @@ export function useComponentCopy() {
     }
   };
 
-  return { copySelectedComponent };
+  const copySection = async (sectionId) => {
+    const section = findNode(document.children, sectionId);
+    if (!section || section.type !== "section") return { ok: false, error: "No section is selected." };
+    try {
+      await writeClipboard(serializeNode(section, 0));
+      return { ok: true, source: serializeNode(section, 0) };
+    } catch (error) {
+      console.error("Failed to copy section:", error);
+      return { ok: false, error: error?.message || "Unable to copy the section." };
+    }
+  };
+
+  return { copySelectedComponent, copySection };
 }
 
 async function writeClipboard(text) {
@@ -123,4 +141,92 @@ function normalizeSelector(selector) {
 
 function toKebabCase(value) {
   return value.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
+}
+
+
+function appendPageSections(source, sections) {
+  if (!Array.isArray(sections) || !sections.length) return source;
+  const markup = sections
+    .filter((node) => node?.type === "section")
+    .map((node) => serializeNode(node, 2))
+    .join("\n\n");
+  if (!markup) return source;
+
+  if (/<\\/template>/i.test(source)) {
+    return source.replace(/<\\/template>/i, `\\n\\n${markup}\\n</template>`);
+  }
+
+  return `<template>\\n${markup}\\n</template>\\n\\n${source}`;
+}
+
+function serializeNode(node, depth = 0) {
+  const indent = " ".repeat(depth);
+  const childIndent = " ".repeat(depth + 2);
+  const style = styleAttribute(node.styles);
+  const attrs = style ? ` style="${escapeAttribute(style)}"` : "";
+
+  switch (node.type) {
+    case "section":
+      return wrapNode("section", node, attrs, depth);
+    case "column":
+      return wrapNode("div", node, attrs, depth);
+    case "container":
+      return wrapNode("div", node, attrs, depth);
+    case "heading": {
+      const tag = /^h[1-6]$/i.test(node.props?.tag) ? node.props.tag : "h2";
+      return `${indent}<${tag}${attrs}>${escapeHtml(node.props?.text || "")}</${tag}>`;
+    }
+    case "text":
+      return `${indent}<p${attrs}>${escapeHtml(node.props?.text || "")}</p>`;
+    case "button": {
+      const href = escapeAttribute(node.props?.href || "#");
+      return `${indent}<a href="${href}"${attrs}>${escapeHtml(node.props?.text || "Button")}</a>`;
+    }
+    case "image": {
+      const src = escapeAttribute(node.props?.src || "");
+      const alt = escapeAttribute(node.props?.alt || "");
+      return `${indent}<img src="${src}" alt="${alt}"${attrs} />`;
+    }
+    case "component":
+      return `${indent}<!-- Registered component "${escapeHtml(node.props?.componentId || "unknown")}" is rendered by the builder. -->`;
+    default:
+      return `${indent}<!-- Unsupported builder node: ${escapeHtml(node.type || "unknown")} -->`;
+  }
+}
+
+function wrapNode(tag, node, attrs, depth) {
+  const indent = " ".repeat(depth);
+  const children = (node.children || [])
+    .map((child) => serializeNode(child, depth + 2))
+    .join("\n");
+  if (!children) return `${indent}<${tag}${attrs}></${tag}>`;
+  return `${indent}<${tag}${attrs}>\n${children}\n${indent}</${tag}>`;
+}
+
+function styleAttribute(styles) {
+  if (!styles || typeof styles !== "object") return "";
+  return Object.entries(styles)
+    .filter(([, value]) => value !== null && value !== undefined && String(value).trim() !== "")
+    .map(([property, value]) => `${toKebabCase(property)}: ${String(value).trim()};`)
+    .join(" ");
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function escapeAttribute(value) {
+  return escapeHtml(value).replace(/"/g, "&quot;");
+}
+
+function findNode(nodes, id) {
+  for (const node of nodes || []) {
+    if (node.id === id) return node;
+    const found = findNode(node.children || [], id);
+    if (found) return found;
+  }
+  return null;
 }
