@@ -1,16 +1,24 @@
 <script setup>
+import { ref } from "vue";
 import { useEditor } from "@/composables/useEditor";
 import EditorNode from "./EditorNode.vue";
+import SectionLayoutPicker from "./SectionLayoutPicker.vue";
 
 const props = defineProps({ component: { type: Object, required: true } });
 const { document, addSection } = useEditor();
+const showSectionPicker = ref(false);
 </script>
 
 <template>
   <main class="editor-canvas" :data-editor-component-id="component.id">
     <div v-if="!document.children.length" class="empty-canvas">
       <p>Your page is empty.</p>
-      <button type="button" @click="addSection('100')">Add Section</button>
+      <button type="button" @click="showSectionPicker = true">Add Section</button>
+      <SectionLayoutPicker
+        v-if="showSectionPicker"
+        @select="(layout) => { addSection(layout); showSectionPicker = false }"
+        @close="showSectionPicker = false"
+      />
     </div>
     <EditorNode v-for="node in document.children" v-else :key="node.id" :node="node" :component-id="component.id" />
   </main>
