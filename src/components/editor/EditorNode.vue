@@ -14,6 +14,9 @@ const componentLabel = computed(() => componentEntry.value?.name || props.node.p
 const basicElements = computed(() => Object.entries(editorRegistry)
   .filter(([type, definition]) => definition.category === "Basic")
   .map(([type, definition]) => ({ type, ...definition })));
+const layoutElements = computed(() => Object.entries(editorRegistry)
+  .filter(([type, definition]) => type === "container")
+  .map(([type, definition]) => ({ type, ...definition })));
 const registeredComponents = computed(() => Object.values(componentRegistry));
 const nodeLabel = computed(() => props.node.type === "component" ? componentLabel.value : (editorRegistry[props.node.type]?.label || props.node.type));
 
@@ -22,6 +25,10 @@ function select(event) {
   selectNode(props.node.id);
 }
 function addBasic(type) {
+  addNode(type, props.node.id);
+  showAdd.value = false;
+}
+function addLayout(type) {
   addNode(type, props.node.id);
   showAdd.value = false;
 }
@@ -52,6 +59,24 @@ function removeNode() {
         <div v-if="showAdd" class="element-menu">
           <div class="menu-title">Basic elements</div>
           <button v-for="item in basicElements" :key="item.type" type="button" @click="addBasic(item.type)">{{ item.label }}</button>
+          <div class="menu-title">Layout</div>
+          <button v-for="item in layoutElements" :key="item.type" type="button" @click="addLayout(item.type)">{{ item.label }}</button>
+          <div class="menu-title">Registered components</div>
+          <button v-for="item in registeredComponents" :key="item.id" type="button" @click="addRegistered(item.id)">{{ item.name }}</button>
+        </div>
+      </div>
+    </div>
+
+    <div v-else-if="node.type === 'container'" class="editor-container" :style="node.styles">
+      <div v-if="!node.children.length" class="container-empty">Drop an element here or use + Add element</div>
+      <EditorNode v-for="child in node.children" :key="child.id" :node="child" />
+      <div class="container-add" @click.stop>
+        <button type="button" class="add-element-button" @click="showAdd = !showAdd">+ Add element</button>
+        <div v-if="showAdd" class="element-menu">
+          <div class="menu-title">Basic elements</div>
+          <button v-for="item in basicElements" :key="item.type" type="button" @click="addBasic(item.type)">{{ item.label }}</button>
+          <div class="menu-title">Layout</div>
+          <button v-for="item in layoutElements" :key="item.type" type="button" @click="addLayout(item.type)">{{ item.label }}</button>
           <div class="menu-title">Registered components</div>
           <button v-for="item in registeredComponents" :key="item.id" type="button" @click="addRegistered(item.id)">{{ item.name }}</button>
         </div>
@@ -123,7 +148,10 @@ function removeNode() {
 .editor-node--selected{outline:2px solid #3b82f6;outline-offset:-2px}
 .editor-section{width:100%;min-width:0}
 .editor-column{position:relative;min-width:0;min-height:120px;padding:14px;box-sizing:border-box;border:1px dashed #d5dce7;background:rgba(248,250,252,.72)}
-.editor-column:hover{border-color:#93c5fd}
+.editor-column:hover,.editor-container:hover{border-color:#93c5fd}
+.editor-container{position:relative;width:100%;min-width:0;box-sizing:border-box;margin-left:auto;margin-right:auto;padding:14px;border:1px dashed #d5dce7;background:rgba(255,255,255,.72)}
+.container-empty{min-height:72px;display:grid;place-items:center;color:#94a3b8;font-size:11px;pointer-events:none;text-align:center}
+.container-add{position:relative;display:flex;justify-content:center;padding:9px 0 2px}
 .column-empty{min-height:72px;display:grid;place-items:center;color:#94a3b8;font-size:11px;pointer-events:none;text-align:center}
 .column-add{position:relative;display:flex;justify-content:center;padding:9px 0 2px}
 .add-element-button{border:1px solid #cbd5e1;border-radius:6px;background:#fff;color:#475569;padding:6px 10px;font-size:10px;cursor:pointer}
@@ -140,6 +168,7 @@ function removeNode() {
 .component-missing{min-height:100px;display:grid;place-items:center;color:#94a3b8;background:#f8fafc}
 .node-toolbar{position:absolute;top:-32px;right:0;z-index:150;display:flex;align-items:center;gap:4px;padding:4px;background:#111827;color:#fff;border-radius:6px;font-size:10px}
 .node-toolbar span{padding:0 4px;font-weight:700}
+.editor-container > .editor-node{width:100%;min-width:0}
 .node-toolbar button{border:0;background:transparent;color:#fff;cursor:pointer;font-size:10px;padding:3px 5px}
 .node-toolbar button:hover{background:#273244;border-radius:4px}
 </style>
