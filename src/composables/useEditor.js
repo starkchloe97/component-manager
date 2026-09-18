@@ -47,6 +47,21 @@ export function useEditor() {
     });
   }
 
+  function addSectionToParent(parentId, layout = "100") {
+    const parent = findNode(document.children, parentId);
+    if (!parent || !Array.isArray(parent.children)) return null;
+
+    const section = createEditorNode("section");
+    const columns = layout.split("-").map(Number);
+    section.styles.display = "grid";
+    section.styles.gridTemplateColumns = columns.map((width) => width + "fr").join(" ");
+    section.styles.gap = section.styles.gap || "12px";
+    section.children.push(...createLayoutChildren(layout));
+    parent.children.push(section);
+    selectNode(section.id);
+    return section;
+  }
+
   function addContainer(layout = "100", parentId = null) {
     const container = createEditorNode("container");
     const columns = layout.split("-").map(Number);
@@ -115,7 +130,7 @@ export function useEditor() {
     return true;
   }
 
-  return { document, selectedNodeId, selectedNode, selectNode, addSection, addSectionAfter, addContainer, addNode, addComponent, updateNode, moveNode, deleteNode, duplicateNode };
+  return { document, selectedNodeId, selectedNode, selectNode, addSection, addSectionAfter, addSectionToParent, addContainer, addNode, addComponent, updateNode, moveNode, deleteNode, duplicateNode };
 }
 
 function findNode(nodes, id) { for (const node of nodes) { if (node.id === id) return node; const found = findNode(node.children || [], id); if (found) return found; } return null; }
