@@ -34,6 +34,12 @@ function replaceDocument(next) {
   migrateLegacyLayout(document.children);
   migrateLegacyLayout(document.componentChildren);
   normalizePageStructure(document.children);
+  const legacyComponentLayouts = [...document.componentChildren];
+  normalizePageStructure(legacyComponentLayouts);
+  const promotedComponentLayouts = legacyComponentLayouts.filter(node => node?.type === "section");
+  const remainingComponentChildren = legacyComponentLayouts.filter(node => node?.type !== "section");
+  document.componentChildren.splice(0, document.componentChildren.length, ...remainingComponentChildren);
+  document.children.push(...promotedComponentLayouts);
   if (next?.version) document.version = Math.max(Number(next.version) || 0, document.version);
 }
 
