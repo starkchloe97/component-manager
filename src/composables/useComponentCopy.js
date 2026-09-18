@@ -31,8 +31,9 @@ export function useComponentCopy() {
         withStyles,
         overrides[component.id] || {}
       );
-      const finalSource = appendPageSections(
+      const finalSource = appendBuilderContent(
         withElementStyles,
+        document.componentChildren,
         document.children
       );
 
@@ -144,15 +145,13 @@ function toKebabCase(value) {
 }
 
 
-function appendPageSections(source, sections) {
-  if (!Array.isArray(sections) || !sections.length) return source;
+function appendBuilderContent(source, componentChildren, sections) {
+  const children = Array.isArray(componentChildren) ? componentChildren : [];
+  const pageSections = Array.isArray(sections) ? sections.filter((node) => node?.type === "section") : [];
+  const nodes = [...children, ...pageSections];
+  if (!nodes.length) return source;
 
-  const markup = sections
-    .filter((node) => node?.type === "section")
-    .map((node) => serializeNode(node, 2))
-    .join("\n\n");
-
-  if (!markup) return source;
+  const markup = nodes.map((node) => serializeNode(node, 2)).join("\n\n");
 
   if (/<\/template>/i.test(source)) {
     return source.replace(/<\/template>/i, "\n\n" + markup + "\n</template>");
