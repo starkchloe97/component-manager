@@ -146,22 +146,23 @@ function toKebabCase(value) {
 
 function appendPageSections(source, sections) {
   if (!Array.isArray(sections) || !sections.length) return source;
+
   const markup = sections
     .filter((node) => node?.type === "section")
     .map((node) => serializeNode(node, 2))
     .join("\n\n");
+
   if (!markup) return source;
 
-  if (/<\\/template>/i.test(source)) {
-    return source.replace(/<\\/template>/i, `\\n\\n${markup}\\n</template>`);
+  if (/<\/template>/i.test(source)) {
+    return source.replace(/<\/template>/i, "\n\n" + markup + "\n</template>");
   }
 
-  return `<template>\\n${markup}\\n</template>\\n\\n${source}`;
+  return "<template>\n" + markup + "\n</template>\n\n" + source;
 }
 
 function serializeNode(node, depth = 0) {
   const indent = " ".repeat(depth);
-  const childIndent = " ".repeat(depth + 2);
   const style = styleAttribute(node.styles);
   const attrs = style ? ` style="${escapeAttribute(style)}"` : "";
 
