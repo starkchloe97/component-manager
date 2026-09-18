@@ -133,7 +133,7 @@ export function useEditor() {
     const columns = layout.split("-").map(Number);
     section.styles.display = "grid";
     section.styles.gridTemplateColumns = columns.map((width) => width + "fr").join(" ");
-    section.styles.gap = section.styles.gap || "12px";
+    section.styles.gap = "0px";
     section.children.push(...createLayoutChildren(layout));
     parent.children.push(section);
     selectNode(section.id);
@@ -145,7 +145,7 @@ export function useEditor() {
     const columns = layout.split("-").map(Number);
     container.styles.display = "grid";
     container.styles.gridTemplateColumns = columns.map((width) => `${width}fr`).join(" ");
-    container.styles.gap = container.styles.gap || "12px";
+    container.styles.gap = "0px";
     container.children.push(...createLayoutChildren(layout));
     const parent = parentId ? findNodeInDocument(parentId) : document;
     if (!parent || !Array.isArray(parent.children)) return null;
