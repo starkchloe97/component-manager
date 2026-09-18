@@ -29,6 +29,8 @@ const nodeLabel = computed(() => props.node.type === "component" ? componentLabe
 function select(event) {
   event.stopPropagation();
   selectNode(props.node.id);
+  showAdd.value = false;
+  showSectionPicker.value = false;
 }
 function addBasic(type) {
   addNode(type, props.node.id);
@@ -108,10 +110,10 @@ async function copyCurrentComponent() {
     </section>
 
     <div v-else-if="node.type === 'column'" class="editor-column" :style="node.styles">
-      <div v-if="!node.children.length" class="column-empty">Drop an element here or use + Add element</div>
+      <div v-if="!node.children.length" class="column-empty"><span>+</span><small>Empty column</small></div>
       <EditorNode v-for="child in node.children" :key="child.id" :node="child" />
       <div class="column-add" @click.stop>
-        <button type="button" class="add-element-button" @click="showAdd = !showAdd">+ Add element</button>
+        <button type="button" class="add-element-button" :class="{ 'is-open': showAdd }" @click="showAdd = !showAdd" aria-label="Add element">+</button>
         <div v-if="showAdd" class="element-menu">
           <div class="menu-title">Basic elements</div>
           <button v-for="item in basicElements" :key="item.type" type="button" @click="addBasic(item.type)">{{ item.label }}</button>
@@ -131,10 +133,10 @@ async function copyCurrentComponent() {
     </div>
 
     <div v-else-if="node.type === 'container'" class="editor-container" :style="node.styles">
-      <div v-if="!node.children.length" class="container-empty">Drop an element here or use + Add element</div>
+      <div v-if="!node.children.length" class="container-empty"><span>+</span><small>Empty container</small></div>
       <EditorNode v-for="child in node.children" :key="child.id" :node="child" />
       <div class="container-add" @click.stop>
-        <button type="button" class="add-element-button" @click="showAdd = !showAdd">+ Add element</button>
+        <button type="button" class="add-element-button" :class="{ 'is-open': showAdd }" @click="showAdd = !showAdd" aria-label="Add element">+</button>
         <div v-if="showAdd" class="element-menu">
           <div class="menu-title">Basic elements</div>
           <button v-for="item in basicElements" :key="item.type" type="button" @click="addBasic(item.type)">{{ item.label }}</button>
@@ -161,7 +163,7 @@ async function copyCurrentComponent() {
       <EditorNode v-for="child in node.children" :key="child.id" :node="child" />
 
       <div class="component-add" @click.stop>
-        <button type="button" class="add-element-button" @click="showAdd = !showAdd">+ Add element</button>
+        <button type="button" class="add-element-button" :class="{ 'is-open': showAdd }" @click="showAdd = !showAdd" aria-label="Add element">+</button>
         <div v-if="showAdd" class="element-menu">
           <div class="menu-title">Basic elements</div>
           <button v-for="item in basicElements" :key="item.type" type="button" @click="addBasic(item.type)">{{ item.label }}</button>
@@ -248,8 +250,12 @@ async function copyCurrentComponent() {
 
 <style scoped>
 .editor-node{position:relative;min-width:0}
-.editor-node--selected{outline:2px solid #3b82f6;outline-offset:-2px}
-.editor-section{position:relative;width:100%;min-width:0}
+.editor-node--selected{outline:2px solid #2563eb;outline-offset:-2px}
+.editor-node--selected > .editor-section,
+.editor-node--selected > .editor-column,
+.editor-node--selected > .editor-container,
+.editor-node--selected > .component-node{outline:none}
+.editor-section{position:relative;width:100%;min-width:0;transition:outline-color .12s ease}
 .section-actions{grid-column:1 / -1;display:flex;justify-content:center;padding:8px 0 12px;min-height:10px;box-sizing:border-box}
 .add-section-under{border:1px solid #bfdbfe;border-radius:6px;padding:6px 10px;background:#eff6ff;color:#2563eb;font-size:10px;font-weight:700;cursor:pointer}
 .add-section-under:hover{background:#dbeafe;border-color:#93c5fd}
@@ -258,12 +264,17 @@ async function copyCurrentComponent() {
 .editor-container:hover{border-color:#bfdbfe}
 .editor-container{position:relative;width:100%;min-width:0;box-sizing:border-box;margin-left:auto;margin-right:auto;padding:0;border:1px solid transparent;background:transparent}
 .container-empty{min-height:72px;display:grid;place-items:center;color:#94a3b8;font-size:11px;pointer-events:none;text-align:center}
+.container-empty span,.column-empty span{width:22px;height:22px;border:1px dashed #94a3b8;border-radius:50%;display:grid;place-items:center;font-size:15px;line-height:1;color:#64748b}
+.container-empty small,.column-empty small{font-size:10px;color:#94a3b8}
 .container-add{grid-column:1 / -1;position:relative;display:flex;justify-content:center;padding:8px 0 2px}
 .column-empty{min-height:72px;display:grid;place-items:center;color:#94a3b8;font-size:11px;pointer-events:none;text-align:center}
 .column-add{position:relative;display:flex;justify-content:center;padding:8px 0 2px}
-.add-element-button{border:1px solid #cbd5e1;border-radius:6px;background:#fff;color:#475569;padding:6px 10px;font-size:10px;cursor:pointer}
-.add-element-button:hover{border-color:#60a5fa;color:#2563eb}
-.element-menu{position:absolute;bottom:36px;left:50%;transform:translateX(-50%);width:240px;max-height:320px;overflow:auto;padding:7px;border:1px solid #dbe3ee;border-radius:9px;background:#fff;box-shadow:0 14px 35px rgba(15,23,42,.16);z-index:100}
+.add-element-button{width:22px;height:22px;padding:0;border:1px solid #cbd5e1;border-radius:50%;background:#fff;color:#64748b;font-size:15px;line-height:20px;cursor:pointer;box-shadow:0 1px 3px rgba(15,23,42,.08)}
+.add-element-button:hover,.add-element-button.is-open{border-color:#2563eb;color:#2563eb;background:#eff6ff}
+.add-element-button.is-open{transform:rotate(45deg)}
+.element-menu{position:absolute;bottom:38px;left:50%;transform:translateX(-50%);width:220px;max-height:280px;overflow:auto;padding:5px;border:1px solid #dbe3ee;border-radius:8px;background:#fff;box-shadow:0 12px 28px rgba(15,23,42,.14);z-index:300}
+.element-menu:after{content:"";position:absolute;bottom:-5px;left:calc(50% - 5px);width:9px;height:9px;background:#fff;border-right:1px solid #dbe3ee;border-bottom:1px solid #dbe3ee;transform:rotate(45deg)}
+.element-menu button{position:relative;z-index:1}
 .element-menu button{display:block;width:100%;padding:7px 8px;border:0;border-radius:5px;background:transparent;text-align:left;color:#334155;font-size:10px;cursor:pointer}
 .element-menu button:hover{background:#eff6ff;color:#2563eb}
 .menu-title{padding:7px;color:#94a3b8;font-size:8px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
