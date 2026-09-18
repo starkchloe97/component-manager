@@ -155,20 +155,18 @@ export function useEditor() {
   // "Container" in the layout picker is a top-level layout section.
   // We deliberately do not create section -> container -> columns nesting.
   function addContainer(layout = "100", parentId = null) {
+    // A selected column is the insertion context: create the responsive
+    // container INSIDE that column. A selected section means sibling section.
     const parent = parentId ? findNodeInDocument(parentId) : null;
-
-    // If the user explicitly opens "Add container" from a column/container,
-    // the new layout belongs inside that node. This is intentional nesting.
-    // The layout itself is still a single section with direct columns; we do
-    // not create an extra section/container wrapper around the 50/50 columns.
-    if (parent && (parent.type === "column" || parent.type === "container")) {
+    if (parent?.type === "column") {
       const section = createSection(layout);
+      section.styles.width = "100%";
+      section.styles.maxWidth = "100%";
       parent.children.push(section);
       selectNode(section.id);
       return section;
     }
 
-    // From a section (or the page toolbar), insert a sibling section.
     const topLevel = parent ? findTopLevelSection(parent.id) : null;
     const index = topLevel
       ? document.children.findIndex((node) => node.id === topLevel.id) + 1
