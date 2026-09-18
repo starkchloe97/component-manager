@@ -16,7 +16,9 @@ export function useComponentCopy() {
     }
 
     try {
-      const response = await registryEntry.source();
+      const response = typeof registryEntry.source === "function"
+        ? await registryEntry.source()
+        : registryEntry.source;
       const source = typeof response === "string" ? response : response?.default;
       if (typeof source !== "string" || !source.trim()) {
         return { ok: false, error: "The component source is empty." };
