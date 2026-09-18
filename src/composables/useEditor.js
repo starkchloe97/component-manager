@@ -127,7 +127,7 @@ export function useEditor() {
   }
 
   function addSectionToParent(parentId, layout = "100") {
-    const parent = findNode(document.children, parentId);
+    const parent = findNodeInDocument(parentId);
     if (!parent || !Array.isArray(parent.children)) return null;
 
     const section = createEditorNode("section");
@@ -157,7 +157,7 @@ export function useEditor() {
 
   function addNode(type, parentId = null, overrides = {}) {
     const node = createEditorNode(type, overrides);
-    const parent = parentId ? findNode(document.children, parentId) : document;
+    const parent = parentId ? findNodeInDocument(parentId) : document;
     if (!parent || !Array.isArray(parent.children)) return null;
     parent.children.push(node);
     selectNode(node.id);
@@ -178,18 +178,18 @@ export function useEditor() {
   }
 
   function deleteNode(id) {
-    if (!removeNode(document.children, id)) return false;
+    if (!removeNode(document.children, id) && !removeNode(document.componentChildren, id)) return false;
     if (selectedNodeId.value === id) selectedNodeId.value = null;
     return true;
   }
 
   function duplicateNode(id) {
-    const node = findNode(document.children, id);
+    const node = findNodeInDocument(id);
     if (!node) return null;
     const clone = deepClone(node);
     regenerateIds(clone);
     const parent = findParentInDocument(id);
-    const list = parent ? parent.children : document.children;
+    const list = parent ? parent.children : rootListFor(id);
     const index = list.findIndex((child) => child.id === id);
     list.splice(index + 1, 0, clone);
     selectNode(clone.id);
@@ -197,8 +197,8 @@ export function useEditor() {
   }
 
   function moveNode(id, targetParentId, index = 0) {
-    const sourceParent = findParent(document.children, id);
-    const sourceList = sourceParent ? sourceParent.children : document.children;
+    const sourceParent = findParentInDocument(id);
+    const sourceList = sourceParent ? sourceParent.children : rootListFor(id);
     const sourceIndex = sourceList.findIndex((child) => child.id === id);
     if (sourceIndex < 0) return false;
     const [node] = sourceList.splice(sourceIndex, 1);
@@ -233,6 +233,11 @@ function findParent(nodes, id, parent = null) {
 }
 function findParentInDocument(id) {
   return findParent(document.children, id) || findParent(document.componentChildren, id);
+}
+function rootListFor(id) {
+  if (findNode(document.children, id)) return document.children;
+  if (findNode(document.componentChildren, id)) return document.componentChildren;
+  return document.children;
 }
 function removeNode(nodes, id) {
   const index = (nodes || []).findIndex((node) => node.id === id);
