@@ -161,18 +161,17 @@ export function useEditor() {
     return section;
   }
 
+  // "Container" in the layout picker is a top-level layout section.
+  // We deliberately do not create section -> container -> columns nesting.
   function addContainer(layout = "100", parentId = null) {
-    const container = createEditorNode("container");
-    const columns = layout.split("-").map(Number);
-    container.styles.display = "grid";
-    container.styles.gridTemplateColumns = columns.map((width) => `${width}fr`).join(" ");
-    container.styles.gap = "0px";
-    container.children.push(...createLayoutChildren(layout));
-    const parent = parentId ? findNodeInDocument(parentId) : document;
-    if (!parent || !Array.isArray(parent.children)) return null;
-    parent.children.push(container);
-    selectNode(container.id);
-    return container;
+    const section = createSection(layout);
+    const current = parentId ? findNodeInDocument(parentId) : null;
+    const parentSection = current ? findTopLevelSection(current.id) : null;
+    const list = document.children;
+    const insertAfter = parentSection ? list.findIndex((node) => node.id === parentSection.id) + 1 : list.length;
+    list.splice(Math.max(0, insertAfter), 0, section);
+    selectNode(section.id);
+    return section;
   }
 
   function addNode(type, parentId = null, overrides = {}) {
@@ -253,6 +252,17 @@ function findParent(nodes, id, parent = null) {
 }
 function findParentInDocument(id) {
   return findParent(document.children, id) || findParent(document.componentChildren, id);
+}
+function findTopLevelSection(id) {
+  const walk = (nodes, ancestor = null) => {
+    for (const node of nodes || []) {
+      if (node.id === id) return node.type === "section" ? node : ancestor;
+      const found = walk(node.children || [], node.type === "section" ? node : ancestor);
+      if (found) return found;
+    }
+    return null;
+  };
+  return walk(document.children);
 }
 function rootListFor(id) {
   if (findNode(document.children, id)) return document.children;
