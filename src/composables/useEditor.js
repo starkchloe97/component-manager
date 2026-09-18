@@ -79,6 +79,9 @@ function setActiveComponent(componentId) {
   activeComponentId.value = componentId;
   selectedNodeId.value = null;
   persistenceReady = true;
+  // Persist the normalized tree immediately so old nested layouts cannot
+  // reappear on the next editor open.
+  persistDocument();
 }
 
 function clearActiveComponent() {
