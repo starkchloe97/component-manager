@@ -10,11 +10,13 @@ const props = defineProps({
 });
 
 const components = computed(() => Object.values(componentRegistry).filter((item) => item.id.startsWith(props.prefix)));
-const editingId = ref(null);
+const EDITING_KEY = "component-manager:editing-component";
+const initialEditingId = typeof window !== "undefined" ? window.localStorage.getItem(EDITING_KEY) : null;
+const editingId = ref(initialEditingId && componentRegistry[initialEditingId]?.id?.startsWith(props.prefix) ? initialEditingId : null);
 const editingComponent = computed(() => editingId.value ? componentRegistry[editingId.value] : null);
 
-function startEditing(id) { editingId.value = id; }
-function closeEditor() { editingId.value = null; }
+function startEditing(id) { editingId.value = id; if (typeof window !== "undefined") window.localStorage.setItem(EDITING_KEY, id); }
+function closeEditor() { editingId.value = null; if (typeof window !== "undefined") window.localStorage.removeItem(EDITING_KEY); }
 </script>
 
 <template>
