@@ -1,7 +1,29 @@
-import { reactive, ref } from "vue";
+import { reactive, ref, watch } from "vue";
 
 const selectedElement = ref(null);
-const overrides = reactive({});
+const STORAGE_KEY = "component-manager:element-overrides";
+const overrides = reactive(loadOverrides());
+
+function loadOverrides() {
+  if (typeof window === "undefined") return {};
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || "{}");
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch (error) {
+    console.warn("Unable to restore element edits:", error);
+    return {};
+  }
+}
+
+if (typeof window !== "undefined") {
+  watch(overrides, () => {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides));
+    } catch (error) {
+      console.warn("Unable to save element edits:", error);
+    }
+  }, { deep: true });
+}
 
 function toSelector(selector) { return selector || ""; }
 
