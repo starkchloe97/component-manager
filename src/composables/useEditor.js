@@ -155,9 +155,21 @@ export function useEditor() {
   // "Container" in the layout picker is a top-level layout section.
   // We deliberately do not create section -> container -> columns nesting.
   function addContainer(layout = "100", parentId = null) {
-    // A layout selected from a node's contextual menu is inserted alongside
-    // the current top-level builder layout, never inside one of its columns.
-    const topLevel = parentId ? findTopLevelSection(parentId) : null;
+    const parent = parentId ? findNodeInDocument(parentId) : null;
+
+    // If the user explicitly opens "Add container" from a column/container,
+    // the new layout belongs inside that node. This is intentional nesting.
+    // The layout itself is still a single section with direct columns; we do
+    // not create an extra section/container wrapper around the 50/50 columns.
+    if (parent && (parent.type === "column" || parent.type === "container")) {
+      const section = createSection(layout);
+      parent.children.push(section);
+      selectNode(section.id);
+      return section;
+    }
+
+    // From a section (or the page toolbar), insert a sibling section.
+    const topLevel = parent ? findTopLevelSection(parent.id) : null;
     const index = topLevel
       ? document.children.findIndex((node) => node.id === topLevel.id) + 1
       : document.children.length;
