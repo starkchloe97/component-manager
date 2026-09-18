@@ -81,7 +81,7 @@
 
 <script setup>
 import header2 from "@/assets/2.png";
-import SwiperBrandIcons from "@/components/FadeBrandIcons.vue";
+import SwiperBrandIcons from "@/utils/FadeBrandIcons.vue";
 </script>
 
 <style scoped>
