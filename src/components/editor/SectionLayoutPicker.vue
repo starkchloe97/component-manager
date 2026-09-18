@@ -1,4 +1,8 @@
 <script setup>
+const props = defineProps({
+  title: { type: String, default: "Add section" },
+  description: { type: String, default: "Choose the column layout for the new section." },
+});
 const emit = defineEmits(["select", "close"]);
 
 const layouts = [
@@ -18,8 +22,8 @@ const layouts = [
     <section class="picker" role="dialog" aria-modal="true" aria-label="Add section">
       <header class="picker-header">
         <div>
-          <strong>Add section</strong>
-          <span>Choose the column layout for the new section.</span>
+          <strong>{{ props.title }}</strong>
+          <span>{{ props.description }}</span>
         </div>
         <button type="button" class="close" aria-label="Close" @click="emit('close')">×</button>
       </header>
