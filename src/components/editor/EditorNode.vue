@@ -259,14 +259,17 @@ async function copyCurrentComponent() {
 .editor-node--selected > .editor-column,
 .editor-node--selected > .editor-container,
 .editor-node--selected > .component-node{outline:none}
-.editor-section{position:relative;width:100%;min-width:0;transition:outline-color .12s ease}
+.editor-section{position:relative;width:100%;min-width:0;display:grid;box-sizing:border-box;transition:outline-color .12s ease}
+.editor-section > .editor-node{min-width:0;width:100%}
 .section-actions{grid-column:1 / -1;display:flex;justify-content:center;padding:8px 0 12px;min-height:10px;box-sizing:border-box}
 .add-section-under{border:1px solid #bfdbfe;border-radius:6px;padding:6px 10px;background:#eff6ff;color:#2563eb;font-size:10px;font-weight:700;cursor:pointer}
 .add-section-under:hover{background:#dbeafe;border-color:#93c5fd}
-.editor-column{position:relative;min-width:0;min-height:72px;padding:0;box-sizing:border-box;border:1px solid transparent;background:transparent}
+.editor-column{position:relative;width:100%;min-width:0;min-height:72px;padding:0;box-sizing:border-box;border:1px solid transparent;background:transparent;overflow:visible}
+.editor-column > .editor-node{min-width:0;width:100%}
 .editor-column:hover{border-color:#bfdbfe;background:rgba(239,246,255,.16)}
 .editor-container:hover{border-color:#bfdbfe}
-.editor-container{position:relative;width:100%;min-width:0;box-sizing:border-box;margin-left:auto;margin-right:auto;padding:0;border:1px solid transparent;background:transparent}
+.editor-container{position:relative;width:100%;min-width:0;min-height:0;box-sizing:border-box;margin:0;padding:0;border:1px solid transparent;background:transparent;overflow:visible}
+.editor-container > .editor-node{min-width:0;width:100%}
 .container-empty{min-height:72px;display:grid;place-items:center;color:#94a3b8;font-size:11px;pointer-events:none;text-align:center}
 .container-empty span,.column-empty span{width:22px;height:22px;border:1px dashed #94a3b8;border-radius:50%;display:grid;place-items:center;font-size:15px;line-height:1;color:#64748b}
 .container-empty small,.column-empty small{font-size:10px;color:#94a3b8}
