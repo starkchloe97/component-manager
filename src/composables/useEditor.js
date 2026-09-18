@@ -28,6 +28,14 @@ export function useEditor() {
     return section;
   }
 
+  function addSectionAfter(sectionId, layout = "100") {
+    const parent = findParent(document.children, sectionId);
+    const list = parent ? parent.children : document.children;
+    const index = list.findIndex((node) => node.id === sectionId);
+    if (index < 0) return null;
+    return addSection(layout, index + 1);
+  }
+
   function addNode(type, parentId = null, overrides = {}) {
     const node = createEditorNode(type, overrides);
     const parent = parentId ? findNode(document.children, parentId) : document;
@@ -82,7 +90,7 @@ export function useEditor() {
     return true;
   }
 
-  return { document, selectedNodeId, selectedNode, selectNode, addSection, addNode, addComponent, updateNode, moveNode, deleteNode, duplicateNode };
+  return { document, selectedNodeId, selectedNode, selectNode, addSection, addSectionAfter, addNode, addComponent, updateNode, moveNode, deleteNode, duplicateNode };
 }
 
 function findNode(nodes, id) { for (const node of nodes) { if (node.id === id) return node; const found = findNode(node.children || [], id); if (found) return found; } return null; }
