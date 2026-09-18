@@ -97,7 +97,7 @@ function appendElementOverrides(source, overrides) {
     const rules = Object.entries(styles)
       .map(([property, value]) => `  ${toKebabCase(property)}: ${value};`)
       .join("\n");
-    return `.${selector} {\n${rules}\n}`;
+    return `${normalizeSelector(selector)} {\n${rules}\n}`;
   }).join("\n\n");
 
   if (source.includes("</style>")) {
@@ -107,6 +107,6 @@ function appendElementOverrides(source, overrides) {
   return `${source}\n\n<style scoped>\n${css}\n</style>`;
 }
 
-function toKebabCase(value) {
+function normalizeSelector(selector) {\n  const value = String(selector || "").trim();\n  return value.startsWith(".") || value.startsWith("#") || value.includes(" ") || value.includes("[") || value.includes(":") ? value : "." + value;\n}\n\nfunction toKebabCase(value) {
   return value.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
 }
