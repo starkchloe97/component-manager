@@ -36,6 +36,31 @@ export function useEditor() {
     return addSection(layout, index + 1);
   }
 
+  function createLayoutChildren(layout) {
+    return layout.split("-").map(Number).map((width) => {
+      const column = createEditorNode("column");
+      column.styles.width = "auto";
+      column.styles.minWidth = "0";
+      column.styles.flexGrow = String(width);
+      column.styles.flexBasis = "0";
+      return column;
+    });
+  }
+
+  function addContainer(layout = "100", parentId = null) {
+    const container = createEditorNode("container");
+    const columns = layout.split("-").map(Number);
+    container.styles.display = "grid";
+    container.styles.gridTemplateColumns = columns.map((width) => `${width}fr`).join(" ");
+    container.styles.gap = container.styles.gap || "12px";
+    container.children.push(...createLayoutChildren(layout));
+    const parent = parentId ? findNode(document.children, parentId) : document;
+    if (!parent || !Array.isArray(parent.children)) return null;
+    parent.children.push(container);
+    selectNode(container.id);
+    return container;
+  }
+
   function addNode(type, parentId = null, overrides = {}) {
     const node = createEditorNode(type, overrides);
     const parent = parentId ? findNode(document.children, parentId) : document;
@@ -90,7 +115,7 @@ export function useEditor() {
     return true;
   }
 
-  return { document, selectedNodeId, selectedNode, selectNode, addSection, addSectionAfter, addNode, addComponent, updateNode, moveNode, deleteNode, duplicateNode };
+  return { document, selectedNodeId, selectedNode, selectNode, addSection, addSectionAfter, addContainer, addNode, addComponent, updateNode, moveNode, deleteNode, duplicateNode };
 }
 
 function findNode(nodes, id) { for (const node of nodes) { if (node.id === id) return node; const found = findNode(node.children || [], id); if (found) return found; } return null; }
