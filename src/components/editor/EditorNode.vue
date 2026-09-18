@@ -8,8 +8,9 @@ import { useComponentCopy } from "@/composables/useComponentCopy";
 
 const props = defineProps({ node: { type: Object, required: true } });
 const { selectedNodeId, selectedNode, selectNode, addNode, addComponent, addSectionAfter, addContainer, duplicateNode, deleteNode } = useEditor();
-const { copySection } = useComponentCopy();
+const { copySection, copySelectedComponent } = useComponentCopy();
 const sectionCopyState = ref("idle");
+const componentCopyState = ref("idle");
 const showAdd = ref(false);
 const showSectionPicker = ref(false);
 
@@ -67,6 +68,15 @@ async function copyCurrentSection() {
   sectionCopyState.value = result.ok ? "copied" : "error";
   if (!result.ok) console.error(result.error);
   window.setTimeout(() => { sectionCopyState.value = "idle"; }, 1800);
+}
+async function copyCurrentComponent() {
+  if (componentCopyState.value === "copying") return;
+  selectNode(props.node.id);
+  componentCopyState.value = "copying";
+  const result = await copySelectedComponent();
+  componentCopyState.value = result.ok ? "copied" : "error";
+  if (!result.ok) console.error(result.error);
+  window.setTimeout(() => { componentCopyState.value = "idle"; }, 1800);
 }
 </script>
 
@@ -180,14 +190,26 @@ async function copyCurrentSection() {
       {{ nodeLabel }}
     </div>
 
-    <div v-if="isSelected && node.type !== 'column' && node.type !== 'section'" class="node-toolbar" @click.stop>
+    <div v-if="isSelected && node.type !== 'section' && node.type !== 'column'" class="node-toolbar" @click.stop>
       <span>{{ nodeLabel }}</span>
-      <button v-if="node.type === 'section'" type="button" :disabled="sectionCopyState === 'copying'" @click="copyCurrentSection">{{ sectionCopyState === "copying" ? "Copying…" : sectionCopyState === "copied" ? "Copied!" : sectionCopyState === "error" ? "Copy failed" : "Copy" }}</button>
+      <button
+        v-if="node.type === 'component'"
+        type="button"
+        :disabled="componentCopyState === 'copying'"
+        @click="copyCurrentComponent"
+      >{{ componentCopyState === "copying" ? "Copying…" : componentCopyState === "copied" ? "Copied!" : componentCopyState === "error" ? "Copy failed" : "Copy" }}</button>
       <button type="button" @click="duplicateNode(node.id)">Duplicate</button>
       <button type="button" @click="removeNode">Delete</button>
     </div>
+
     <div v-if="isSelected && (node.type === 'section' || node.type === 'column')" class="node-toolbar" @click.stop>
       <span>{{ nodeLabel }}</span>
+      <button
+        v-if="node.type === 'section'"
+        type="button"
+        :disabled="sectionCopyState === 'copying'"
+        @click="copyCurrentSection"
+      >{{ sectionCopyState === "copying" ? "Copying…" : sectionCopyState === "copied" ? "Copied!" : sectionCopyState === "error" ? "Copy failed" : "Copy" }}</button>
       <button v-if="node.type === 'column'" type="button" @click="showAdd = !showAdd">Add element</button>
       <button type="button" @click="duplicateNode(node.id)">Duplicate</button>
       <button type="button" @click="removeNode">Delete</button>
@@ -224,6 +246,6 @@ async function copyCurrentSection() {
 .node-toolbar{position:absolute;top:-32px;right:0;z-index:150;display:flex;align-items:center;gap:4px;padding:4px;background:#111827;color:#fff;border-radius:6px;font-size:10px}
 .node-toolbar span{padding:0 4px;font-weight:700}
 .editor-container > .editor-node{width:100%;min-width:0}
-.node-toolbar button:disabled{opacity:.45;cursor:default}\n.node-toolbar button{border:0;background:transparent;color:#fff;cursor:pointer;font-size:10px;padding:3px 5px}
+.node-toolbar button:disabled{opacity:.45;cursor:default}.node-toolbar button{border:0;background:transparent;color:#fff;cursor:pointer;font-size:10px;padding:3px 5px}
 .node-toolbar button:hover{background:#273244;border-radius:4px}
 </style>
