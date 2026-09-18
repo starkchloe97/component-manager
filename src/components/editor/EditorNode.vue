@@ -91,6 +91,13 @@ function removeNode() {
           <button v-for="item in registeredComponents" :key="item.id" type="button" @click="addRegistered(item.id)">{{ item.name }}</button>
         </div>
       </div>
+      <SectionLayoutPicker
+        v-if="showSectionPicker"
+        title="Add container"
+        description="Choose the column layout for the new container."
+        @select="addContainerBelow"
+        @close="showSectionPicker = false"
+      />
     </div>
 
     <div v-else-if="node.type === 'container'" class="editor-container" :style="node.styles">
