@@ -24,6 +24,7 @@ const { selectedElement, clearElement } = useComponentEditor();
 const { registerComponent } = useComponentManager();
 const { registerComponent: registerStyleComponent, selectComponent } = useStyleManager();
 const { copySelectedComponent } = useComponentCopy();
+const copyState = ref("idle");
 const { document, selectedNodeId, selectedNode, addSection, selectNode } = useEditor();
 
 registry.forEach((entry) => {
@@ -47,7 +48,14 @@ function closeDrawer() { drawerOpen.value = false; }
 function closeEditor() { drawerOpen.value = false; showAddSection.value = false; clearElement(); emit("close"); }
 function handleElementSelected() { if (!preview.value) drawerOpen.value = true; }
 function togglePreview() { preview.value = !preview.value; drawerOpen.value = false; if (preview.value) clearElement(); }
-async function copyComponent() { await copySelectedComponent(); }
+async function copyComponent() {
+  if (copyState.value === "copying") return;
+  copyState.value = "copying";
+  const result = await copySelectedComponent();
+  copyState.value = result.ok ? "copied" : "error";
+  if (!result.ok) console.error(result.error);
+  window.setTimeout(() => { copyState.value = "idle"; }, 1800);
+}
 function openAddSection() { if (!preview.value) showAddSection.value = true; }
 function addSectionToPage(layout) { addSection(layout); showAddSection.value = false; }
 </script>
@@ -67,7 +75,7 @@ function addSectionToPage(layout) { addSection(layout); showAddSection.value = f
           <button type="button" class="toolbar-button add-section-button" @click="openAddSection">Add section</button>
           <button type="button" class="toolbar-button" :disabled="preview">Undo</button>
           <button type="button" class="toolbar-button" :disabled="preview">Redo</button>
-          <button type="button" class="toolbar-button copy-button" @click="copyComponent">Copy Vue</button>
+          <button type="button" class="toolbar-button copy-button" :disabled="copyState === 'copying'" @click="copyComponent">{{ copyState === "copying" ? "Copying…" : copyState === "copied" ? "Copied!" : copyState === "error" ? "Copy failed" : "Copy Vue" }}</button>
         </div>
       </header>
 
