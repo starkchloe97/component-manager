@@ -162,25 +162,19 @@ async function copyCurrentComponent() {
 
       <div class="component-add" @click.stop>
         <button type="button" class="add-element-button" @click="showAdd = !showAdd">+ Add element</button>
-        <button type="button" class="add-element-button add-section-button" @click="openSectionPicker">+ Add section</button>
         <div v-if="showAdd" class="element-menu">
           <div class="menu-title">Basic elements</div>
-          <button type="button" @click="addComponentBasic('heading')">Heading</button>
-          <button type="button" @click="addComponentBasic('text')">Text</button>
-          <button type="button" @click="addComponentBasic('button')">Button</button>
-          <button type="button" @click="addComponentBasic('image')">Image</button>
+          <button v-for="item in basicElements" :key="item.type" type="button" @click="addBasic(item.type)">{{ item.label }}</button>
           <div class="menu-title">Layout</div>
-          <button type="button" @click="openSectionPicker">Section</button>
-          <div class="menu-title">Registered components</div>
-          <button v-for="item in registeredComponents" :key="item.id" type="button" @click="addRegistered(item.id)">{{ item.name }}</button>
+          <button v-for="item in layoutElements" :key="item.type" type="button" @click="addLayout(item.type)">{{ item.label }}</button>
         </div>
       </div>
 
       <SectionLayoutPicker
         v-if="showSectionPicker"
-        title="Add section"
-        description="Choose the column layout for the new section under this component."
-        @select="addComponentSection"
+        title="Add container"
+        description="Choose the column layout for the new container under this component."
+        @select="addContainerBelow"
         @close="showSectionPicker = false"
       />
     </div>
@@ -277,7 +271,7 @@ async function copyCurrentComponent() {
 .builder-image{max-width:100%}
 .component-node{position:relative;width:100%;min-width:0;box-sizing:border-box;overflow:visible}
 .component-node-label{position:absolute;top:5px;right:5px;z-index:5;padding:3px 6px;border-radius:4px;background:rgba(17,24,39,.78);color:#fff;font-size:8px;pointer-events:none}
-.component-add{position:relative;display:flex;justify-content:center;align-items:center;gap:6px;padding:10px 0}.add-section-button{background:#eff6ff;color:#2563eb;border-color:#bfdbfe}.component-missing{min-height:100px;display:grid;place-items:center;color:#94a3b8;background:#f8fafc}
+.component-add{position:relative;display:flex;justify-content:center;padding:10px 0}.component-missing{min-height:100px;display:grid;place-items:center;color:#94a3b8;background:#f8fafc}
 .node-toolbar{position:absolute;top:-32px;right:0;z-index:150;display:flex;align-items:center;gap:4px;padding:4px;background:#111827;color:#fff;border-radius:6px;font-size:10px}
 .node-toolbar span{padding:0 4px;font-weight:700}
 .editor-container > .editor-node{width:100%;min-width:0}
