@@ -7,7 +7,7 @@ import { editorRegistry } from "@/config/editorRegistry";
 import { useComponentCopy } from "@/composables/useComponentCopy";
 
 const props = defineProps({ node: { type: Object, required: true } });
-const { selectedNodeId, selectedNode, selectNode, addNode, addComponent, addSectionAfter, addContainer, duplicateNode, deleteNode } = useEditor();
+const { selectedNodeId, selectedNode, selectNode, addNode, addComponent, addSectionAfter, addSectionToParent, addContainer, duplicateNode, deleteNode } = useEditor();
 const { copySection, copySelectedComponent } = useComponentCopy();
 const sectionCopyState = ref("idle");
 const componentCopyState = ref("idle");
@@ -56,6 +56,15 @@ function addSectionBelow(layout) {
 }
 function addRegistered(id) {
   addComponent(id, props.node.id);
+  showAdd.value = false;
+}
+function addComponentBasic(type) {
+  addNode(type, props.node.id);
+  showAdd.value = false;
+}
+function addComponentSection(layout) {
+  addSectionToParent(props.node.id, layout);
+  showSectionPicker.value = false;
   showAdd.value = false;
 }
 function removeNode() {
@@ -148,6 +157,31 @@ async function copyCurrentComponent() {
       <div class="component-node-label">{{ componentLabel }}</div>
       <component v-if="componentEntry" :is="componentEntry.component" />
       <div v-else class="component-missing">Component unavailable</div>
+
+      <EditorNode v-for="child in node.children" :key="child.id" :node="child" />
+
+      <div class="component-add" @click.stop>
+        <button type="button" class="add-element-button" @click="showAdd = !showAdd">+ Add element</button>
+        <div v-if="showAdd" class="element-menu">
+          <div class="menu-title">Basic elements</div>
+          <button type="button" @click="addComponentBasic('heading')">Heading</button>
+          <button type="button" @click="addComponentBasic('text')">Text</button>
+          <button type="button" @click="addComponentBasic('button')">Button</button>
+          <button type="button" @click="addComponentBasic('image')">Image</button>
+          <div class="menu-title">Layout</div>
+          <button type="button" @click="showSectionPicker = true">Section</button>
+          <div class="menu-title">Registered components</div>
+          <button v-for="item in registeredComponents" :key="item.id" type="button" @click="addRegistered(item.id)">{{ item.name }}</button>
+        </div>
+      </div>
+
+      <SectionLayoutPicker
+        v-if="showSectionPicker"
+        title="Add section"
+        description="Choose the column layout for the new section under this component."
+        @select="addComponentSection"
+        @close="showSectionPicker = false"
+      />
     </div>
 
     <component
@@ -242,7 +276,7 @@ async function copyCurrentComponent() {
 .builder-image{max-width:100%}
 .component-node{position:relative;width:100%;min-width:0;box-sizing:border-box;overflow:visible}
 .component-node-label{position:absolute;top:5px;right:5px;z-index:5;padding:3px 6px;border-radius:4px;background:rgba(17,24,39,.78);color:#fff;font-size:8px;pointer-events:none}
-.component-missing{min-height:100px;display:grid;place-items:center;color:#94a3b8;background:#f8fafc}
+.component-add{position:relative;display:flex;justify-content:center;padding:10px 0}.component-missing{min-height:100px;display:grid;place-items:center;color:#94a3b8;background:#f8fafc}
 .node-toolbar{position:absolute;top:-32px;right:0;z-index:150;display:flex;align-items:center;gap:4px;padding:4px;background:#111827;color:#fff;border-radius:6px;font-size:10px}
 .node-toolbar span{padding:0 4px;font-weight:700}
 .editor-container > .editor-node{width:100%;min-width:0}
