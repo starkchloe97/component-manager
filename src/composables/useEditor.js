@@ -107,15 +107,13 @@ export function useEditor() {
     return node;
   }
 
-  function addContainerToComponent(layout = "100", parentId = null) {
-    // A layout added from the component canvas is a sibling page section.
-    // The parentId argument is accepted only for compatibility; the page
-    // builder deliberately keeps layout sections flat.
-    const topLevel = parentId ? findTopLevelSection(parentId) : null;
-    const index = topLevel
-      ? document.children.findIndex((node) => node.id === topLevel.id) + 1
-      : document.children.length;
-    return addSection(layout, index, document.children);
+  function addContainerToComponent(layout = "100") {
+    // Component-level layouts belong to componentChildren. They are siblings
+    // of the rendered component content, not page-level document sections.
+    const section = createSection(layout);
+    document.componentChildren.push(section);
+    selectNode(section.id);
+    return section;
   }
 
   function createSection(layout = "100") {
@@ -162,8 +160,12 @@ export function useEditor() {
   // "Container" in the layout picker is a top-level layout section.
   // We deliberately do not create section -> container -> columns nesting.
   function addContainer(layout = "100", parentId = null) {
+    // A layout selected from a node's contextual menu is inserted alongside
+    // the current top-level builder layout, never inside one of its columns.
     const topLevel = parentId ? findTopLevelSection(parentId) : null;
-    const index = topLevel ? document.children.findIndex((node) => node.id === topLevel.id) + 1 : document.children.length;
+    const index = topLevel
+      ? document.children.findIndex((node) => node.id === topLevel.id) + 1
+      : document.children.length;
     return addSection(layout, index, document.children);
   }
 
