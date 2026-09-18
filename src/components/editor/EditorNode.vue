@@ -250,16 +250,17 @@ async function copyCurrentComponent() {
 .editor-node{position:relative;min-width:0}
 .editor-node--selected{outline:2px solid #3b82f6;outline-offset:-2px}
 .editor-section{position:relative;width:100%;min-width:0}
-.section-actions{display:flex;justify-content:center;padding:12px 0 16px;min-height:12px;box-sizing:border-box}
+.section-actions{display:flex;justify-content:center;padding:8px 0 12px;min-height:10px;box-sizing:border-box}
 .add-section-under{border:1px solid #bfdbfe;border-radius:6px;padding:6px 10px;background:#eff6ff;color:#2563eb;font-size:10px;font-weight:700;cursor:pointer}
 .add-section-under:hover{background:#dbeafe;border-color:#93c5fd}
-.editor-column{position:relative;min-width:0;min-height:120px;padding:14px;box-sizing:border-box;border:1px dashed #d5dce7;background:rgba(248,250,252,.72)}
-.editor-column:hover,.editor-container:hover{border-color:#93c5fd}
-.editor-container{position:relative;width:100%;min-width:0;box-sizing:border-box;margin-left:auto;margin-right:auto;padding:14px;border:1px dashed #d5dce7;background:rgba(255,255,255,.72)}
+.editor-column{position:relative;min-width:0;min-height:72px;padding:0;box-sizing:border-box;border:1px solid transparent;background:transparent}
+.editor-column:hover{border-color:#bfdbfe;background:rgba(239,246,255,.16)}
+.editor-container:hover{border-color:#bfdbfe}
+.editor-container{position:relative;width:100%;min-width:0;box-sizing:border-box;margin-left:auto;margin-right:auto;padding:0;border:1px solid transparent;background:transparent}
 .container-empty{min-height:72px;display:grid;place-items:center;color:#94a3b8;font-size:11px;pointer-events:none;text-align:center}
-.container-add{position:relative;display:flex;justify-content:center;padding:9px 0 2px}
+.container-add{position:relative;display:flex;justify-content:center;padding:8px 0 2px}
 .column-empty{min-height:72px;display:grid;place-items:center;color:#94a3b8;font-size:11px;pointer-events:none;text-align:center}
-.column-add{position:relative;display:flex;justify-content:center;padding:9px 0 2px}
+.column-add{position:relative;display:flex;justify-content:center;padding:8px 0 2px}
 .add-element-button{border:1px solid #cbd5e1;border-radius:6px;background:#fff;color:#475569;padding:6px 10px;font-size:10px;cursor:pointer}
 .add-element-button:hover{border-color:#60a5fa;color:#2563eb}
 .element-menu{position:absolute;bottom:36px;left:50%;transform:translateX(-50%);width:240px;max-height:320px;overflow:auto;padding:7px;border:1px solid #dbe3ee;border-radius:9px;background:#fff;box-shadow:0 14px 35px rgba(15,23,42,.16);z-index:100}
@@ -270,7 +271,7 @@ async function copyCurrentComponent() {
 .builder-element--selected{outline:2px solid #2563eb!important;outline-offset:2px}
 .builder-image{max-width:100%}
 .component-node{position:relative;width:100%;min-width:0;box-sizing:border-box;overflow:visible}
-.component-node-label{position:absolute;top:5px;right:5px;z-index:5;padding:3px 6px;border-radius:4px;background:rgba(17,24,39,.78);color:#fff;font-size:8px;pointer-events:none}
+.component-node-label{position:absolute;top:6px;right:6px;z-index:5;padding:3px 6px;border-radius:4px;background:rgba(15,23,42,.78);color:#fff;font-size:8px;pointer-events:none}
 .component-add{position:relative;display:flex;justify-content:center;padding:10px 0}.component-missing{min-height:100px;display:grid;place-items:center;color:#94a3b8;background:#f8fafc}
 .node-toolbar{position:absolute;top:-32px;right:0;z-index:150;display:flex;align-items:center;gap:4px;padding:4px;background:#111827;color:#fff;border-radius:6px;font-size:10px}
 .node-toolbar span{padding:0 4px;font-weight:700}
