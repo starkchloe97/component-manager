@@ -27,42 +27,70 @@ import TextImage6 from "@/components/TextImage/TextImage6.vue";
 import TextImage7 from "@/components/TextImage/TextImage7.vue";
 import TextImage8 from "@/components/TextImage/TextImage8.vue";
 import TextImage9 from "@/components/TextImage/TextImage9.vue";
+import CtaSection1Source from "@/components/CTASection/CtaSection1.vue?raw";
+import CtaSection2Source from "@/components/CTASection/CTASection2.vue?raw";
+import CtaSection3Source from "@/components/CTASection/CtaSection3.vue?raw";
+import CtaSection4Source from "@/components/CTASection/CtaSection4.vue?raw";
+import CtaSection5Source from "@/components/CTASection/CtaSection5.vue?raw";
+import CtaSection6Source from "@/components/CTASection/CtaSection6.vue?raw";
+import CtaSection7Source from "@/components/CTASection/CtaSection7.vue?raw";
+import CtaSection8Source from "@/components/CTASection/CtaSection8.vue?raw";
+import Faq1Source from "@/components/FaqSection/Faq1.vue?raw";
+import Faq2Source from "@/components/FaqSection/Faq2.vue?raw";
+import Faq3Source from "@/components/FaqSection/Faq3.vue?raw";
+import Faq4Source from "@/components/FaqSection/Faq4.vue?raw";
+import Faq5Source from "@/components/FaqSection/Faq5.vue?raw";
+import Hero1Source from "@/components/HeroSection.vue/Hero1.vue?raw";
+import Hero2Source from "@/components/HeroSection.vue/Hero2.vue?raw";
+import Testimonial1Source from "@/components/Testimonials/Testimonial1.vue?raw";
+import Testimonial2Source from "@/components/Testimonials/Testimonial2.vue?raw";
+import Testimonial3Source from "@/components/Testimonials/Testimonial3.vue?raw";
+import Testimonial4Source from "@/components/Testimonials/Testimonial4.vue?raw";
+import Testimonial5Source from "@/components/Testimonials/Testimonial5.vue?raw";
+import TextImage1Source from "@/components/TextImage/TextImage1.vue?raw";
+import TextImage2Source from "@/components/TextImage/TextImage2.vue?raw";
+import TextImage3Source from "@/components/TextImage/TextImage3.vue?raw";
+import TextImage4Source from "@/components/TextImage/TextImage4.vue?raw";
+import TextImage5Source from "@/components/TextImage/TextImage5.vue?raw";
+import TextImage6Source from "@/components/TextImage/TextImage6.vue?raw";
+import TextImage7Source from "@/components/TextImage/TextImage7.vue?raw";
+import TextImage8Source from "@/components/TextImage/TextImage8.vue?raw";
+import TextImage9Source from "@/components/TextImage/TextImage9.vue?raw";
 
-const rawSource = (path) => () => import(`${path}?raw`);
-const entry = (id, name, component, path) => ({ id, name, component, source: rawSource(path) });
+const entry = (id, name, component, source) => ({ id, name, component, source });
 
 export const componentRegistry = {
-  TextImage1: entry("TextImage1", "Text Image 1", TextImage1, "@/components/TextImage/TextImage1.vue"),
-  TextImage2: entry("TextImage2", "Text Image 2", TextImage2, "@/components/TextImage/TextImage2.vue"),
-  TextImage3: entry("TextImage3", "Text Image 3", TextImage3, "@/components/TextImage/TextImage3.vue"),
-  TextImage4: entry("TextImage4", "Text Image 4", TextImage4, "@/components/TextImage/TextImage4.vue"),
-  TextImage5: entry("TextImage5", "Text Image 5", TextImage5, "@/components/TextImage/TextImage5.vue"),
-  TextImage6: entry("TextImage6", "Text Image 6", TextImage6, "@/components/TextImage/TextImage6.vue"),
-  TextImage7: entry("TextImage7", "Text Image 7", TextImage7, "@/components/TextImage/TextImage7.vue"),
-  TextImage8: entry("TextImage8", "Text Image 8", TextImage8, "@/components/TextImage/TextImage8.vue"),
-  TextImage9: entry("TextImage9", "Text Image 9", TextImage9, "@/components/TextImage/TextImage9.vue"),
+  TextImage1: entry("TextImage1", "Text Image 1", TextImage1, TextImage1Source),
+  TextImage2: entry("TextImage2", "Text Image 2", TextImage2, TextImage2Source),
+  TextImage3: entry("TextImage3", "Text Image 3", TextImage3, TextImage3Source),
+  TextImage4: entry("TextImage4", "Text Image 4", TextImage4, TextImage4Source),
+  TextImage5: entry("TextImage5", "Text Image 5", TextImage5, TextImage5Source),
+  TextImage6: entry("TextImage6", "Text Image 6", TextImage6, TextImage6Source),
+  TextImage7: entry("TextImage7", "Text Image 7", TextImage7, TextImage7Source),
+  TextImage8: entry("TextImage8", "Text Image 8", TextImage8, TextImage8Source),
+  TextImage9: entry("TextImage9", "Text Image 9", TextImage9, TextImage9Source),
 
-  CtaSection1: entry("CtaSection1", "CTA Section 1", CtaSection1, "@/components/CTASection/CtaSection1.vue"),
-  CtaSection2: entry("CtaSection2", "CTA Section 2", CtaSection2, "@/components/CTASection/CTASection2.vue"),
-  CtaSection3: entry("CtaSection3", "CTA Section 3", CtaSection3, "@/components/CTASection/CtaSection3.vue"),
-  CtaSection4: entry("CtaSection4", "CTA Section 4", CtaSection4, "@/components/CTASection/CtaSection4.vue"),
-  CtaSection5: entry("CtaSection5", "CTA Section 5", CtaSection5, "@/components/CTASection/CtaSection5.vue"),
-  CtaSection6: entry("CtaSection6", "CTA Section 6", CtaSection6, "@/components/CTASection/CtaSection6.vue"),
-  CtaSection7: entry("CtaSection7", "CTA Section 7", CtaSection7, "@/components/CTASection/CtaSection7.vue"),
-  CtaSection8: entry("CtaSection8", "CTA Section 8", CtaSection8, "@/components/CTASection/CTASection8.vue"),
+  CtaSection1: entry("CtaSection1", "CTA Section 1", CtaSection1, CtaSection1Source),
+  CtaSection2: entry("CtaSection2", "CTA Section 2", CtaSection2, CtaSection2Source),
+  CtaSection3: entry("CtaSection3", "CTA Section 3", CtaSection3, CtaSection3Source),
+  CtaSection4: entry("CtaSection4", "CTA Section 4", CtaSection4, CtaSection4Source),
+  CtaSection5: entry("CtaSection5", "CTA Section 5", CtaSection5, CtaSection5Source),
+  CtaSection6: entry("CtaSection6", "CTA Section 6", CtaSection6, CtaSection6Source),
+  CtaSection7: entry("CtaSection7", "CTA Section 7", CtaSection7, CtaSection7Source),
+  CtaSection8: entry("CtaSection8", "CTA Section 8", CtaSection8, CtaSection8Source),
 
-  Faq1: entry("Faq1", "FAQ 1", Faq1, "@/components/FaqSection/Faq1.vue"),
-  Faq2: entry("Faq2", "FAQ 2", Faq2, "@/components/FaqSection/Faq2.vue"),
-  Faq3: entry("Faq3", "FAQ 3", Faq3, "@/components/FaqSection/Faq3.vue"),
-  Faq4: entry("Faq4", "FAQ 4", Faq4, "@/components/FaqSection/Faq4.vue"),
-  Faq5: entry("Faq5", "FAQ 5", Faq5, "@/components/FaqSection/Faq5.vue"),
+  Faq1: entry("Faq1", "FAQ 1", Faq1, Faq1Source),
+  Faq2: entry("Faq2", "FAQ 2", Faq2, Faq2Source),
+  Faq3: entry("Faq3", "FAQ 3", Faq3, Faq3Source),
+  Faq4: entry("Faq4", "FAQ 4", Faq4, Faq4Source),
+  Faq5: entry("Faq5", "FAQ 5", Faq5, Faq5Source),
 
-  Hero1: entry("Hero1", "Hero 1", Hero1, "@/components/HeroSection.vue/Hero1.vue"),
-  Hero2: entry("Hero2", "Hero 2", Hero2, "@/components/HeroSection.vue/Hero2.vue"),
+  Hero1: entry("Hero1", "Hero 1", Hero1, Hero1Source),
+  Hero2: entry("Hero2", "Hero 2", Hero2, Hero2Source),
 
-  Testimonial1: entry("Testimonial1", "Testimonial 1", Testimonial1, "@/components/Testimonials/Testimonial1.vue"),
-  Testimonial2: entry("Testimonial2", "Testimonial 2", Testimonial2, "@/components/Testimonials/Testimonial2.vue"),
-  Testimonial3: entry("Testimonial3", "Testimonial 3", Testimonial3, "@/components/Testimonials/Testimonial3.vue"),
-  Testimonial4: entry("Testimonial4", "Testimonial 4", Testimonial4, "@/components/Testimonials/Testimonial4.vue"),
-  Testimonial5: entry("Testimonial5", "Testimonial 5", Testimonial5, "@/components/Testimonials/Testimonial5.vue"),
+  Testimonial1: entry("Testimonial1", "Testimonial 1", Testimonial1, Testimonial1Source),
+  Testimonial2: entry("Testimonial2", "Testimonial 2", Testimonial2, Testimonial2Source),
+  Testimonial3: entry("Testimonial3", "Testimonial 3", Testimonial3, Testimonial3Source),
+  Testimonial4: entry("Testimonial4", "Testimonial 4", Testimonial4, Testimonial4Source),
+  Testimonial5: entry("Testimonial5", "Testimonial 5", Testimonial5, Testimonial5Source),
 };
