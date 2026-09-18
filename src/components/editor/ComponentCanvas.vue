@@ -187,6 +187,16 @@ onUnmounted(() => {
       </div>
 
       <div v-if="!preview" class="component-builder-extension" @click.stop>
+        <div class="page-section-list">
+          <div v-for="node in document.children" :key="node.id" class="page-section-node">
+            <EditorNode :node="node" />
+          </div>
+          <div v-if="!document.children.length" class="empty-page-state">
+            <span class="empty-page-title">Build your page</span>
+            <span>Add a section to continue designing.</span>
+          </div>
+        </div>
+
         <EditorNode
           v-for="node in document.componentChildren"
           :key="node.id"
@@ -247,11 +257,10 @@ onUnmounted(() => {
 
 .component-stage {
   position: relative;
-  width: 100%;
-  /* max-width: 1400px; */
-  margin: 24px 0 60px;
+  width: min(100%, 1440px);
+  margin: 18px auto 48px;
   background: #fff;
-  box-shadow: 0 8px 30px rgba(15,23,42,.08);
+  box-shadow: 0 10px 35px rgba(15,23,42,.07);
 }
 
 .component-hit-layer { position: relative; width: 100%; }
@@ -285,11 +294,15 @@ onUnmounted(() => {
 </style>
 
 <style scoped>
-.component-builder-extension{position:relative;padding:0 24px 28px;background:#fff}
-.component-builder-add{position:relative;display:flex;justify-content:center;padding:10px 0 4px}
+.component-builder-extension{position:relative;background:#fff}
+.page-section-list{width:100%}
+.page-section-node{position:relative;width:100%;margin:0}
+.empty-page-state{min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:1px dashed #d7dee8;background:#fafbfc;color:#94a3b8;font-size:10px}
+.empty-page-title{font-size:11px;font-weight:700;color:#64748b}
+.component-builder-add{position:relative;display:flex;justify-content:center;padding:18px 0 24px;background:#fff}
 .extension-add-button{border:1px solid #cbd5e1;border-radius:6px;background:#fff;color:#475569;padding:7px 11px;font-size:10px;cursor:pointer}
 .extension-add-button:hover{border-color:#60a5fa;color:#2563eb}
-.element-menu{position:absolute;bottom:42px;left:50%;transform:translateX(-50%);width:240px;max-height:320px;overflow:auto;padding:7px;border:1px solid #dbe3ee;border-radius:9px;background:#fff;box-shadow:0 14px 35px rgba(15,23,42,.16);z-index:100}
+.element-menu{position:absolute;bottom:48px;left:50%;transform:translateX(-50%);width:240px;max-height:320px;overflow:auto;padding:7px;border:1px solid #dbe3ee;border-radius:9px;background:#fff;box-shadow:0 14px 35px rgba(15,23,42,.16);z-index:100}
 .element-menu button{display:block;width:100%;padding:7px 8px;border:0;border-radius:5px;background:transparent;text-align:left;color:#334155;font-size:10px;cursor:pointer}
 .element-menu button:hover{background:#eff6ff;color:#2563eb}
 .menu-title{padding:7px;color:#94a3b8;font-size:8px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
