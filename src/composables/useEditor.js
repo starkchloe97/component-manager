@@ -134,13 +134,9 @@ export function useEditor() {
   function createSection(layout = "100") {
     const section = createEditorNode("section");
     const columns = layout.split("-").map(Number);
-    section.styles.display = "flex";
-    section.styles.flexDirection = "row";
-    section.styles.flexWrap = "wrap";
-    section.styles.alignItems = "stretch";
-    section.styles.justifyContent = "flex-start";
+    section.styles.display = "grid";
+    section.styles.gridTemplateColumns = columns.map((width) => `${width}fr`).join(" ");
     section.styles.gap = "0px";
-    section.styles.gridTemplateColumns = "";
     section.children.push(...createLayoutChildren(layout));
     return section;
   }
@@ -161,12 +157,9 @@ export function useEditor() {
   function createLayoutChildren(layout) {
     return layout.split("-").map(Number).map((width) => {
       const column = createEditorNode("column");
-      column.styles.width = "auto";
+      column.styles.width = "100%";
       column.styles.minWidth = "0";
       column.styles.minHeight = "72px";
-      column.styles.flexGrow = String(width);
-      column.styles.flexShrink = "1";
-      column.styles.flexBasis = "0";
       column.styles.boxSizing = "border-box";
       column.styles.padding = "0";
       return column;
@@ -316,7 +309,7 @@ function normalizePageStructure(nodes) {
       const total = tracks.reduce((sum, n) => sum + n, 0);
       node.styles.gridTemplateColumns = tracks.map(n => `${n / total}fr`).join(" ");
       directColumns.forEach(column => {
-        column.styles = { ...(column.styles || {}), width: "auto", minWidth: "0", padding: "0", boxSizing: "border-box", flexShrink: "1", flexBasis: column.styles?.flexBasis || "0" };
+        column.styles = { ...(column.styles || {}), width: "100%", minWidth: "0", padding: "0", boxSizing: "border-box" };
         extractNestedLayouts(column);
       });
       return node;
