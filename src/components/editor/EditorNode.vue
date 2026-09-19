@@ -271,13 +271,12 @@ async function copyCurrentComponent() {
 .editor-node--selected > .editor-column,
 .editor-node--selected > .editor-container,
 .editor-node--selected > .component-node{outline:none}
-.editor-section{position:relative;width:100%;min-width:0;display:flex;flex-direction:row;flex-wrap:wrap;align-items:stretch;box-sizing:border-box;transition:outline-color .12s ease}
-.editor-section > .editor-node{min-width:0;box-sizing:border-box;flex:1 1 0}
-.editor-section > .section-actions{flex:0 0 100%}
+.editor-section{position:relative;width:100%;min-width:0;display:grid;box-sizing:border-box;transition:outline-color .12s ease}
+.editor-section > .editor-node{min-width:0;width:100%}
 .section-actions{grid-column:1 / -1;display:flex;justify-content:center;padding:8px 0 12px;min-height:10px;box-sizing:border-box}
 .add-section-under{border:1px solid #bfdbfe;border-radius:6px;padding:6px 10px;background:#eff6ff;color:#2563eb;font-size:10px;font-weight:700;cursor:pointer}
 .add-section-under:hover{background:#dbeafe;border-color:#93c5fd}
-.editor-column{position:relative;min-width:0;min-height:72px;padding:0;box-sizing:border-box;border:1px solid transparent;background:transparent;overflow:visible;flex:1 1 0}
+.editor-column{position:relative;width:100%;min-width:0;min-height:72px;padding:0;box-sizing:border-box;border:1px solid transparent;background:transparent;overflow:visible}
 .editor-column > .editor-node{min-width:0}
 .editor-column:hover{border-color:#bfdbfe;background:rgba(239,246,255,.16)}
 .editor-container:hover{border-color:#bfdbfe}
