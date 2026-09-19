@@ -7,6 +7,8 @@ const document = reactive(createEditorDocument());
 const selectedNodeId = ref(null);
 const activeComponentId = ref(null);
 let persistenceReady = false;
+let persistTimer = null;
+const PERSIST_DELAY = 250;
 
 function storageKey(componentId) {
   return componentId ? STORAGE_PREFIX + componentId : null;
@@ -66,9 +68,26 @@ function persistDocument() {
   }
 }
 
+function scheduleDocumentPersistence() {
+  if (!persistenceReady || typeof window === "undefined") return;
+  if (persistTimer) window.clearTimeout(persistTimer);
+  persistTimer = window.setTimeout(() => {
+    persistTimer = null;
+    persistDocument();
+  }, PERSIST_DELAY);
+}
+
+function flushDocumentPersistence() {
+  if (typeof window !== "undefined" && persistTimer) {
+    window.clearTimeout(persistTimer);
+    persistTimer = null;
+  }
+  persistDocument();
+}
+
 function setActiveComponent(componentId) {
   if (!componentId || activeComponentId.value === componentId) return;
-  if (activeComponentId.value) persistDocument();
+  if (activeComponentId.value) flushDocumentPersistence();
   const stored = readStoredDocument(componentId);
   replaceDocument(stored);
   activeComponentId.value = componentId;
@@ -80,7 +99,7 @@ function setActiveComponent(componentId) {
 }
 
 function clearActiveComponent() {
-  if (activeComponentId.value) persistDocument();
+  if (activeComponentId.value) flushDocumentPersistence();
   activeComponentId.value = null;
   replaceDocument(null);
   selectedNodeId.value = null;
@@ -88,7 +107,8 @@ function clearActiveComponent() {
 }
 
 if (typeof window !== "undefined") {
-  watch(document, persistDocument, { deep: true });
+  watch(document, scheduleDocumentPersistence, { deep: true });
+  window.addEventListener("pagehide", flushDocumentPersistence);
 }
 
 export function useEditor() {

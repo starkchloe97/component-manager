@@ -6,8 +6,12 @@ import SectionLayoutPicker from "./SectionLayoutPicker.vue";
 import { editorRegistry } from "@/config/editorRegistry";
 import { useComponentCopy } from "@/composables/useComponentCopy";
 
-const props = defineProps({ node: { type: Object, required: true } });
-const { selectedNodeId, selectedNode, selectNode, addNode, addComponent, addSectionAfter, addSectionToParent, addContainer, duplicateNode, deleteNode } = useEditor();
+const props = defineProps({
+  node: { type: Object, required: true },
+  parentId: { type: String, default: null },
+  parentType: { type: String, default: null },
+});
+const { selectedNodeId, selectNode, addNode, addComponent, addSectionAfter, addContainer, duplicateNode, deleteNode } = useEditor();
 const { copySection, copySelectedComponent } = useComponentCopy();
 const sectionCopyState = ref("idle");
 const componentCopyState = ref("idle");
@@ -18,17 +22,30 @@ const isSelected = computed(() => selectedNodeId.value === props.node.id);
 const componentEntry = computed(() => componentRegistry[props.node.props?.componentId] || null);
 const componentLabel = computed(() => componentEntry.value?.name || props.node.props?.componentId || "Component");
 const basicElements = computed(() => Object.entries(editorRegistry)
-  .filter(([type, definition]) => definition.category === "Basic")
+  .filter(([, definition]) => definition.category === "Basic")
   .map(([type, definition]) => ({ type, ...definition })));
 const layoutElements = computed(() => Object.entries(editorRegistry)
-  .filter(([type, definition]) => type === "container")
+  .filter(([type]) => type === "container")
   .map(([type, definition]) => ({ type, ...definition })));
 const registeredComponents = computed(() => Object.values(componentRegistry));
 const nodeLabel = computed(() => props.node.type === "component" ? componentLabel.value : (editorRegistry[props.node.type]?.label || props.node.type));
+const parentLabel = computed(() => editorRegistry[props.parentType]?.label || props.parentType || "parent");
 
 function select(event) {
   event.stopPropagation();
+  if (isSelected.value && props.parentId) {
+    selectNode(props.parentId);
+    showAdd.value = false;
+    showSectionPicker.value = false;
+    return;
+  }
   selectNode(props.node.id);
+  showAdd.value = false;
+  showSectionPicker.value = false;
+}
+function selectParent() {
+  if (!props.parentId) return;
+  selectNode(props.parentId);
   showAdd.value = false;
   showSectionPicker.value = false;
 }
@@ -64,15 +81,6 @@ function addRegistered(id) {
   addComponent(id, props.node.id);
   showAdd.value = false;
 }
-function addComponentBasic(type) {
-  addNode(type, props.node.id);
-  showAdd.value = false;
-}
-function addComponentSection(layout) {
-  addSectionToParent(props.node.id, layout);
-  showSectionPicker.value = false;
-  showAdd.value = false;
-}
 function removeNode() {
   deleteNode(props.node.id);
 }
@@ -102,6 +110,8 @@ async function copyCurrentComponent() {
         v-for="child in node.children"
         :key="child.id"
         :node="child"
+        :parent-id="node.id"
+        :parent-type="node.type"
       />
       <div class="section-actions" @click.stop>
         <button type="button" class="add-section-under" @click="openSectionPicker">+ Add section</button>
@@ -115,7 +125,7 @@ async function copyCurrentComponent() {
 
     <div v-else-if="node.type === 'column'" class="editor-column" :style="node.styles">
       <div v-if="!node.children.length" class="column-empty"><small>Empty column</small></div>
-      <EditorNode v-for="child in node.children" :key="child.id" :node="child" />
+      <EditorNode v-for="child in node.children" :key="child.id" :node="child" :parent-id="node.id" :parent-type="node.type" />
       <div class="column-add" @click.stop>
         <button type="button" class="add-element-button" :class="{ 'is-open': showAdd }" @click="toggleAdd" aria-label="Add element">+</button>
         <div v-if="showAdd" class="element-menu">
@@ -138,7 +148,7 @@ async function copyCurrentComponent() {
 
     <div v-else-if="node.type === 'container'" class="editor-container" :style="node.styles">
       <div v-if="!node.children.length" class="container-empty"><span>+</span><small>Empty container</small></div>
-      <EditorNode v-for="child in node.children" :key="child.id" :node="child" />
+      <EditorNode v-for="child in node.children" :key="child.id" :node="child" :parent-id="node.id" :parent-type="node.type" />
       <div class="container-add" @click.stop>
         <button type="button" class="add-element-button" :class="{ 'is-open': showAdd }" @click="showAdd = !showAdd" aria-label="Add element">+</button>
         <div v-if="showAdd" class="element-menu">
@@ -164,7 +174,7 @@ async function copyCurrentComponent() {
       <component v-if="componentEntry" :is="componentEntry.component" />
       <div v-else class="component-missing">Component unavailable</div>
 
-      <EditorNode v-for="child in node.children" :key="child.id" :node="child" />
+      <EditorNode v-for="child in node.children" :key="child.id" :node="child" :parent-id="node.id" :parent-type="node.type" />
 
       <div class="component-add" @click.stop>
         <button type="button" class="add-element-button" :class="{ 'is-open': showAdd }" @click="showAdd = !showAdd" aria-label="Add element">+</button>
@@ -227,6 +237,7 @@ async function copyCurrentComponent() {
 
     <div v-if="isSelected && node.type !== 'section' && node.type !== 'column'" class="node-toolbar" @click.stop>
       <span>{{ nodeLabel }}</span>
+      <button v-if="parentId" type="button" :title="`Select ${parentLabel}`" @click="selectParent">{{ parentLabel }}</button>
       <button
         v-if="node.type === 'component'"
         type="button"
@@ -239,6 +250,7 @@ async function copyCurrentComponent() {
 
     <div v-if="isSelected && (node.type === 'section' || node.type === 'column')" class="node-toolbar" @click.stop>
       <span>{{ nodeLabel }}</span>
+      <button v-if="parentId" type="button" :title="`Select ${parentLabel}`" @click="selectParent">{{ parentLabel }}</button>
       <button
         v-if="node.type === 'section'"
         type="button"
@@ -265,17 +277,17 @@ async function copyCurrentComponent() {
 .add-section-under{border:1px solid #bfdbfe;border-radius:6px;padding:6px 10px;background:#eff6ff;color:#2563eb;font-size:10px;font-weight:700;cursor:pointer}
 .add-section-under:hover{background:#dbeafe;border-color:#93c5fd}
 .editor-column{position:relative;width:100%;min-width:0;min-height:72px;padding:0;box-sizing:border-box;border:1px solid transparent;background:transparent;overflow:visible}
-.editor-column > .editor-node{min-width:0;width:100%}
+.editor-column > .editor-node{min-width:0}
 .editor-column:hover{border-color:#bfdbfe;background:rgba(239,246,255,.16)}
 .editor-container:hover{border-color:#bfdbfe}
 .editor-container{position:relative;width:100%;min-width:0;min-height:0;box-sizing:border-box;margin:0;padding:0;border:1px solid transparent;background:transparent;overflow:visible}
-.editor-container > .editor-node{min-width:0;width:100%}
+.editor-container > .editor-node{min-width:0}
 .container-empty{min-height:72px;display:grid;place-items:center;color:#94a3b8;font-size:11px;pointer-events:none;text-align:center}
 .container-empty span,.column-empty span{width:22px;height:22px;border:1px dashed #94a3b8;border-radius:50%;display:grid;place-items:center;font-size:15px;line-height:1;color:#64748b}
 .container-empty small,.column-empty small{font-size:10px;color:#94a3b8}
-.container-add{grid-column:1 / -1;position:relative;display:flex;justify-content:center;padding:8px 0 2px}
+.container-add{position:absolute;left:50%;bottom:-28px;z-index:10;display:flex;justify-content:center;transform:translateX(-50%)}
 .column-empty{min-height:72px;display:grid;place-items:center;color:#94a3b8;font-size:11px;pointer-events:none;text-align:center}
-.column-add{position:relative;display:flex;justify-content:center;padding:8px 0 2px}
+.column-add{position:absolute;left:50%;bottom:-28px;z-index:10;display:flex;justify-content:center;transform:translateX(-50%)}
 .add-element-button{width:22px;height:22px;padding:0;border:1px solid #cbd5e1;border-radius:50%;background:#fff;color:#64748b;font-size:15px;line-height:20px;cursor:pointer;box-shadow:0 1px 3px rgba(15,23,42,.08)}
 .add-element-button:hover,.add-element-button.is-open{border-color:#2563eb;color:#2563eb;background:#eff6ff}
 .add-element-button.is-open{transform:rotate(45deg)}
@@ -290,10 +302,9 @@ async function copyCurrentComponent() {
 .builder-image{max-width:100%}
 .component-node{position:relative;width:100%;min-width:0;box-sizing:border-box;overflow:visible}
 .component-node-label{position:absolute;top:6px;right:6px;z-index:5;padding:3px 6px;border-radius:4px;background:rgba(15,23,42,.78);color:#fff;font-size:8px;pointer-events:none}
-.component-add{grid-column:1 / -1;position:relative;display:flex;justify-content:center;padding:10px 0}.component-missing{min-height:100px;display:grid;place-items:center;color:#94a3b8;background:#f8fafc}
+.component-add{position:absolute;left:50%;bottom:-28px;z-index:10;display:flex;justify-content:center;transform:translateX(-50%)}.component-missing{min-height:100px;display:grid;place-items:center;color:#94a3b8;background:#f8fafc}
 .node-toolbar{position:absolute;top:-32px;right:0;z-index:150;display:flex;align-items:center;gap:4px;padding:4px;background:#111827;color:#fff;border-radius:6px;font-size:10px}
 .node-toolbar span{padding:0 4px;font-weight:700}
-.editor-container > .editor-node{width:100%;min-width:0}
 .node-toolbar button:disabled{opacity:.45;cursor:default}.node-toolbar button{border:0;background:transparent;color:#fff;cursor:pointer;font-size:10px;padding:3px 5px}
 .node-toolbar button:hover{background:#273244;border-radius:4px}
 </style>

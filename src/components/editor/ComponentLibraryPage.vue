@@ -30,7 +30,7 @@ function closeEditor() { editingId.value = null; if (typeof window !== "undefine
       <span class="component-count">{{ components.length }} components</span>
     </header>
 
-    <section class="component-list" :aria-label="title">
+    <section v-if="!editingComponent" class="component-list" :aria-label="title">
       <article v-for="(item, index) in components" :key="item.id" class="component-card">
         <div class="component-card__header">
           <div>

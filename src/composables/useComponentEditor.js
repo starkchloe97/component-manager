@@ -3,6 +3,10 @@ import { reactive, ref, watch } from "vue";
 const selectedElement = ref(null);
 const STORAGE_KEY = "component-manager:element-overrides";
 const overrides = reactive(loadOverrides());
+const PERSIST_DELAY = 250;
+let persistTimer = null;
+let styleFrame = null;
+const pendingStyleWrites = new Map();
 
 function loadOverrides() {
   if (typeof window === "undefined") return {};
@@ -15,14 +19,71 @@ function loadOverrides() {
   }
 }
 
+function persistOverrides() {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides));
+  } catch (error) {
+    console.warn("Unable to save element edits:", error);
+  }
+}
+
+function scheduleOverridePersistence() {
+  if (typeof window === "undefined") return;
+  if (persistTimer) window.clearTimeout(persistTimer);
+  persistTimer = window.setTimeout(() => {
+    persistTimer = null;
+    persistOverrides();
+  }, PERSIST_DELAY);
+}
+
+function flushOverridePersistence() {
+  if (typeof window !== "undefined" && persistTimer) {
+    window.clearTimeout(persistTimer);
+    persistTimer = null;
+  }
+  persistOverrides();
+}
+
+function queueStyleWrite(componentId, selector, property, value) {
+  let componentWrites = pendingStyleWrites.get(componentId);
+  if (!componentWrites) {
+    componentWrites = new Map();
+    pendingStyleWrites.set(componentId, componentWrites);
+  }
+
+  let selectorWrites = componentWrites.get(selector);
+  if (!selectorWrites) {
+    selectorWrites = new Map();
+    componentWrites.set(selector, selectorWrites);
+  }
+  selectorWrites.set(property, value);
+
+  if (styleFrame !== null || typeof window === "undefined") return;
+  styleFrame = window.requestAnimationFrame(flushStyleWrites);
+}
+
+function flushStyleWrites() {
+  styleFrame = null;
+  pendingStyleWrites.forEach((componentWrites, componentId) => {
+    const roots = document.querySelectorAll(`[data-editor-component-id="${CSS.escape(componentId)}"]`);
+    componentWrites.forEach((styleWrites, selector) => {
+      roots.forEach((root) => {
+        root.querySelectorAll(toSelector(selector)).forEach((element) => {
+          styleWrites.forEach((value, property) => {
+            if (value === "") element.style.removeProperty(property);
+            else element.style[property] = value;
+          });
+        });
+      });
+    });
+  });
+  pendingStyleWrites.clear();
+}
+
 if (typeof window !== "undefined") {
-  watch(overrides, () => {
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides));
-    } catch (error) {
-      console.warn("Unable to save element edits:", error);
-    }
-  }, { deep: true });
+  watch(overrides, scheduleOverridePersistence, { deep: true });
+  window.addEventListener("pagehide", flushOverridePersistence);
 }
 
 function toSelector(selector) { return selector || ""; }
@@ -36,12 +97,7 @@ export function useComponentEditor() {
     if (!overrides[componentId]) overrides[componentId] = {};
     if (!overrides[componentId][selector]) overrides[componentId][selector] = {};
     overrides[componentId][selector][property] = value;
-    document.querySelectorAll(`[data-editor-component-id="${CSS.escape(componentId)}"]`).forEach((root) => {
-      root.querySelectorAll(toSelector(selector)).forEach((element) => {
-        if (value === "") element.style.removeProperty(property);
-        else element.style[property] = value;
-      });
-    });
+    queueStyleWrite(componentId, selector, property, value);
   };
 
   const getStyles = (componentId, selector) => overrides[componentId]?.[selector] || {};
