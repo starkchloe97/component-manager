@@ -30,6 +30,27 @@ const layoutElements = computed(() => Object.entries(editorRegistry)
 const registeredComponents = computed(() => Object.values(componentRegistry));
 const nodeLabel = computed(() => props.node.type === "component" ? componentLabel.value : (editorRegistry[props.node.type]?.label || props.node.type));
 const parentLabel = computed(() => editorRegistry[props.parentType]?.label || props.parentType || "parent");
+const layoutStyleKeys = new Set([
+  "display", "flexDirection", "flexWrap", "justifyContent", "alignItems", "alignContent",
+  "justifyItems", "gridTemplateColumns", "gridTemplateRows", "gridAutoColumns", "gridAutoRows",
+  "gap", "columnGap", "rowGap",
+]);
+const isLeafNode = computed(() => ["heading", "text", "button", "image"].includes(props.node.type));
+const usesLayoutHost = computed(() => isLeafNode.value && ["flex", "grid"].includes(props.node.styles?.display));
+const layoutHostStyles = computed(() => {
+  if (!usesLayoutHost.value) return undefined;
+  const styles = { width: "100%" };
+  Object.entries(props.node.styles || {}).forEach(([key, value]) => {
+    if (layoutStyleKeys.has(key)) styles[key] = value;
+  });
+  return styles;
+});
+const elementStyles = computed(() => {
+  if (!usesLayoutHost.value) return props.node.styles;
+  return Object.fromEntries(
+    Object.entries(props.node.styles || {}).filter(([key]) => !layoutStyleKeys.has(key)),
+  );
+});
 
 function select(event) {
   event.stopPropagation();
@@ -104,7 +125,7 @@ async function copyCurrentComponent() {
 </script>
 
 <template>
-  <div class="editor-node" :class="{ 'editor-node--selected': isSelected }" @click="select">
+  <div class="editor-node" :class="{ 'editor-node--selected': isSelected }" :style="layoutHostStyles" @click="select">
     <section v-if="node.type === 'section'" class="editor-section" :style="node.styles">
       <EditorNode
         v-for="child in node.children"
@@ -200,7 +221,7 @@ async function copyCurrentComponent() {
       :is="node.props.tag || 'h2'"
       class="builder-element"
       :class="{ 'builder-element--selected': isSelected }"
-      :style="node.styles"
+      :style="elementStyles"
       @click.stop="select"
     >{{ node.props.text }}</component>
 
@@ -208,7 +229,7 @@ async function copyCurrentComponent() {
       v-else-if="node.type === 'text'"
       class="builder-element"
       :class="{ 'builder-element--selected': isSelected }"
-      :style="node.styles"
+      :style="elementStyles"
       @click.stop="select"
     >{{ node.props.text }}</p>
 
@@ -217,7 +238,7 @@ async function copyCurrentComponent() {
       class="builder-element"
       :class="{ 'builder-element--selected': isSelected }"
       :href="node.props.href || '#'"
-      :style="node.styles"
+      :style="elementStyles"
       @click.prevent.stop="select"
     >{{ node.props.text }}</a>
 
@@ -227,7 +248,7 @@ async function copyCurrentComponent() {
       :class="{ 'builder-element--selected': isSelected }"
       :src="node.props.src"
       :alt="node.props.alt"
-      :style="node.styles"
+      :style="elementStyles"
       @click.stop="select"
     />
 
