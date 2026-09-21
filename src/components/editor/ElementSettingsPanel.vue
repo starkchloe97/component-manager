@@ -2,13 +2,34 @@
 import { computed, ref } from "vue";
 import { useComponentEditor } from "@/composables/useComponentEditor";
 
-const { selectedElement, getStyles, setStyle } = useComponentEditor();
+const { selectedElement, getStyles, setStyle, getContent, setContent, resetContent } = useComponentEditor();
 const element = computed(() => selectedElement.value);
-const open = ref({ layout:true, spacing:true, flex:false, grid:false, typography:true, appearance:false });
+const open = ref({ content:true, layout:true, spacing:true, flex:false, grid:false, typography:true, appearance:false });
 
 const unitKeys = new Set(["width","maxWidth","minWidth","height","minHeight","gap","columnGap","rowGap","flexBasis","padding","paddingTop","paddingRight","paddingBottom","paddingLeft","margin","marginTop","marginRight","marginBottom","marginLeft","fontSize","letterSpacing","borderWidth","borderRadius"]);
 const numericKeys = new Set(["zIndex","flexGrow","flexShrink"]);
 function current(key){ return element.value ? getStyles(element.value.componentId, element.value.selector)[key] ?? "" : ""; }
+function currentContent(){
+  if (!element.value?.editableText) return "";
+  return getContent(element.value.componentId, element.value.contentSelector) ?? element.value.textValue ?? "";
+}
+function updateContent(value){
+  if (!element.value?.editableText) return;
+  setContent(
+    element.value.componentId,
+    element.value.contentSelector,
+    value,
+    {
+      originalText: element.value.textValue,
+      occurrence: element.value.textOccurrence,
+      tag: element.value.tag,
+    },
+  );
+}
+function resetTextContent(){
+  if (!element.value?.editableText) return;
+  resetContent(element.value.componentId, element.value.contentSelector);
+}
 function normalize(key, raw){
   let v=String(raw ?? "").trim();
   if(!v) return "";
@@ -27,7 +48,30 @@ const isGrid=computed(()=>display.value==="grid");
 <template>
 <aside v-if="element" class="panel">
 <header><div class="icon">✦</div><div><span>EDITING</span><strong>{{ element.label }}</strong></div><code>{{ element.selector }}</code></header>
-<div class="body">
+<div class="body"><section v-if="element.editableText" class="card content-card">
+<button class="head" type="button" @click="toggle('content')">
+<b>Content</b>
+<span>{{open.content?'⌃':'⌄'}}</span>
+</button>
+<div v-if="open.content" class="content content-editor">
+<textarea
+  :value="currentContent()"
+  rows="5"
+  :placeholder="element.tag === 'a' || element.tag === 'button' ? 'Enter text…' : 'Edit text content…'"
+  @input="updateContent($event.target.value)"
+></textarea>
+<div class="content-actions">
+  <span>Changes are saved automatically.</span>
+  <button
+    v-if="currentContent() !== element.textValue"
+    type="button"
+    @click="resetTextContent"
+  >Reset</button>
+</div>
+</div>
+</section>
+
+
 <section class="card">
 <button class="head" @click="toggle('layout')"><b>Layout</b><span>{{open.layout?'⌃':'⌄'}}</span></button>
 <div v-if="open.layout" class="content">
@@ -108,5 +152,23 @@ const isGrid=computed(()=>display.value==="grid");
 </template>
 
 <style scoped>
-.panel{width:100%;height:100%;display:flex;flex-direction:column;background:#f6f7f9;color:#0f172a;font:12px Inter,system-ui,sans-serif}.panel header{height:58px;flex:0 0 58px;display:flex;align-items:center;gap:10px;padding:0 14px;background:#fff;border-bottom:1px solid #e5e7eb}.icon{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:#3b82f6;color:#fff}.panel header div:nth-child(2){display:flex;flex-direction:column;gap:2px}.panel header span{font-size:9px;font-weight:800;letter-spacing:.12em;color:#94a3b8}.panel header strong{font-size:13px}.panel header code{margin-left:auto;max-width:110px;padding:4px 6px;border-radius:6px;background:#f1f5f9;color:#64748b;font-size:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.body{flex:1;min-height:0;overflow:auto;padding:10px;display:flex;flex-direction:column;gap:8px}.card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden}.head{width:100%;height:40px;border:0;background:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 11px;color:#334155;cursor:pointer}.head:hover{background:#f8fafc}.content{padding:2px 10px 10px;display:flex;flex-direction:column;gap:7px}.row{display:grid;grid-template-columns:86px minmax(0,1fr);align-items:center;gap:7px}.row label,.color label{font-size:10px;color:#64748b}.row input,.row select,.content input:not([type=color]),.content select{width:100%;height:28px;box-sizing:border-box;border:1px solid #e2e8f0;border-radius:7px;background:#fff;padding:0 8px;color:#0f172a;font:11px Inter,system-ui,sans-serif;outline:0}.row input:focus,.row select:focus,.content input:focus,.content select:focus{border-color:#60a5fa;box-shadow:0 0 0 3px rgba(59,130,246,.1)}.spacing{padding-top:3px}.subhead{display:grid;grid-template-columns:1fr 90px;gap:5px;align-items:center;margin-bottom:5px}.subhead b{font-size:10px;color:#475569}.sides{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}.sides input{text-align:center}.color{display:grid;grid-template-columns:86px 30px minmax(0,1fr);gap:6px;align-items:center}.color input[type=color]{width:30px;height:28px;padding:2px;border:1px solid #e2e8f0;border-radius:7px}
+.panel{width:100%;height:100%;display:flex;flex-direction:column;background:#f6f7f9;color:#0f172a;font:12px Inter,system-ui,sans-serif}.panel header{height:58px;flex:0 0 58px;display:flex;align-items:center;gap:10px;padding:0 14px;background:#fff;border-bottom:1px solid #e5e7eb}.icon{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:#3b82f6;color:#fff}.panel header div:nth-child(2){display:flex;flex-direction:column;gap:2px}.panel header span{font-size:9px;font-weight:800;letter-spacing:.12em;color:#94a3b8}.panel header strong{font-size:13px}.panel header code{margin-left:auto;max-width:110px;padding:4px 6px;border-radius:6px;background:#f1f5f9;color:#64748b;font-size:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.body{flex:1;min-height:0;overflow:auto;padding:10px;display:flex;flex-direction:column;gap:8px}.card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden}.head{width:100%;height:40px;border:0;background:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 11px;color:#334155;cursor:pointer}.head:hover{background:#f8fafc}.content{padding:2px 10px 10px;display:flex;flex-direction:column;gap:7px}
+.content-editor textarea{
+  width:100%;
+  min-height:92px;
+  resize:vertical;
+  box-sizing:border-box;
+  padding:9px 10px;
+  border:1px solid #e2e8f0;
+  border-radius:7px;
+  background:#fff;
+  color:#0f172a;
+  font:11px/1.5 Inter,system-ui,sans-serif;
+  outline:0;
+}
+.content-editor textarea:hover{border-color:#cbd5e1}
+.content-editor textarea:focus{border-color:#60a5fa;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+.content-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#94a3b8;font-size:9px}
+.content-actions button{border:0;background:transparent;color:#2563eb;font:600 10px Inter,system-ui,sans-serif;cursor:pointer;padding:2px 0}
+.content-actions button:hover{text-decoration:underline}.row{display:grid;grid-template-columns:86px minmax(0,1fr);align-items:center;gap:7px}.row label,.color label{font-size:10px;color:#64748b}.row input,.row select,.content input:not([type=color]),.content select{width:100%;height:28px;box-sizing:border-box;border:1px solid #e2e8f0;border-radius:7px;background:#fff;padding:0 8px;color:#0f172a;font:11px Inter,system-ui,sans-serif;outline:0}.row input:focus,.row select:focus,.content input:focus,.content select:focus{border-color:#60a5fa;box-shadow:0 0 0 3px rgba(59,130,246,.1)}.spacing{padding-top:3px}.subhead{display:grid;grid-template-columns:1fr 90px;gap:5px;align-items:center;margin-bottom:5px}.subhead b{font-size:10px;color:#475569}.sides{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}.sides input{text-align:center}.color{display:grid;grid-template-columns:86px 30px minmax(0,1fr);gap:6px;align-items:center}.color input[type=color]{width:30px;height:28px;padding:2px;border:1px solid #e2e8f0;border-radius:7px}
 </style>
