@@ -195,9 +195,6 @@ function replaceTextOccurrence(source, original, replacement, occurrence) {
   }
 }
 
-function appendBuilderContent(source, componentChildren, sections) {");
-}
-
 function appendBuilderContent(source, componentChildren, sections) {
   const children = Array.isArray(componentChildren) ? componentChildren : [];
   const pageSections = Array.isArray(sections) ? sections.filter((node) => node?.type === "section") : [];
