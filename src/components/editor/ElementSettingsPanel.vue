@@ -23,6 +23,7 @@ function updateContent(value){
       originalText: element.value.textValue,
       occurrence: element.value.textOccurrence,
       tag: element.value.tag,
+      className: element.value.className,
     },
   );
 }
