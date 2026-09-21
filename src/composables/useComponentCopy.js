@@ -164,22 +164,44 @@ function appendContentOverrides(source, content) {
 }
 
 function replaceTagTextOccurrence(source, tag, original, replacement, occurrence) {
-  const templateMatch = source.match(/<template\b[^>]*>[\s\S]*?<\/template>/i);
+  const templateMatch = source.match(/<template\\b[^>]*>[\\s\\S]*?<\\/template>/i);
   if (!templateMatch) return source;
+
   const template = templateMatch[0];
-  const pattern = new RegExp("(<" + tag + "\\b[^>]*>)([\\s\\S]*?)(</" + tag + ">)", "gi");
-  let index = -1;
+  const pattern = new RegExp(
+    "(<" + tag + "\\b[^>]*>)([\\s\\S]*?)(</" + tag + ">)",
+    "gi"
+  );
+  let index = 0;
   let match;
+
   while ((match = pattern.exec(template))) {
     const inner = match[2];
+
+    // Only replace true text-only source elements. Never destroy inline
+    // markup such as <span>, links, icons, or Vue components.
     if (inner.includes("<") || inner.includes(">")) continue;
-    if (inner.trim() !== original.trim()) continue;
-    index += 1;
-    if (index !== occurrence) continue;
-    const nextInner = inner.replace(original, replacement);
-    const nextTemplate = template.slice(0, match.index) + match[1] + nextInner + match[3] + template.slice(match.index + match[0].length);
+
+    if (index !== occurrence) {
+      index += 1;
+      continue;
+    }
+
+    const safeReplacement = escapeHtml(replacement);
+    const nextInner = inner.includes("{{") || inner.trim() !== original.trim()
+      ? safeReplacement
+      : inner.replace(original, safeReplacement);
+
+    const nextTemplate =
+      template.slice(0, match.index) +
+      match[1] +
+      nextInner +
+      match[3] +
+      template.slice(match.index + match[0].length);
+
     return source.replace(template, nextTemplate);
   }
+
   return source;
 }
 
