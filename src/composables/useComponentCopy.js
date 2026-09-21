@@ -5,7 +5,7 @@ import { useEditor } from "./useEditor";
 
 export function useComponentCopy() {
   const { selectedComponent } = useStyleManager();
-  const { overrides } = useComponentEditor();
+  const { overrides, contentOverrides } = useComponentEditor();
   const { document } = useEditor();
 
   const copySelectedComponent = async () => {
@@ -30,6 +30,10 @@ export function useComponentCopy() {
       const withElementStyles = appendElementOverrides(
         withStyles,
         overrides[component.id] || {}
+      );
+      const withContent = appendContentOverrides(
+        withElementStyles,
+        contentOverrides[component.id] || {}
       );
       const finalSource = appendBuilderContent(
         withElementStyles,
@@ -145,7 +149,7 @@ function toKebabCase(value) {
 }
 
 
-function appendBuilderContent(source, componentChildren, sections) {
+function appendContentOverrides(source, content) {\n  const entries = Object.values(content || {}).filter((entry) => entry && typeof entry === "object" && entry.text !== undefined);\n  if (!entries.length) return source;\n  let updatedSource = source;\n  entries.forEach((entry) => {\n    const original = String(entry.originalText ?? "");\n    const replacement = String(entry.text ?? "");\n    if (!original || original === replacement) return;\n    if (entry.tag) updatedSource = replaceTagTextOccurrence(updatedSource, entry.tag, original, replacement, Number(entry.occurrence) || 0);\n    else updatedSource = replaceTextOccurrence(updatedSource, original, replacement, Number(entry.occurrence) || 0);\n  });\n  return updatedSource;\n}\n\nfunction replaceTagTextOccurrence(source, tag, original, replacement, occurrence) {\n  const templateMatch = source.match(/<template\\b[^>]*>[\\s\\S]*?<\\/template>/i);\n  if (!templateMatch) return source;\n  const template = templateMatch[0];\n  const escapedTag = String(tag).replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\function appendBuilderContent(source, componentChildren, sections) {");\n  const pattern = new RegExp("(<" + escapedTag + "\\\\b[^>]*>)([\\s\\S]*?)(</" + escapedTag + ">)", "gi");\n  let index = -1;\n  let match;\n  while ((match = pattern.exec(template))) {\n    const inner = match[2];\n    if (inner.includes("<") || inner.includes(">")) continue;\n    if (inner.trim() !== original.trim()) continue;\n    index += 1;\n    if (index !== occurrence) continue;\n    const nextInner = inner.replace(original, replacement);\n    const nextTemplate = template.slice(0, match.index) + match[1] + nextInner + match[3] + template.slice(match.index + match[0].length);\n    return source.replace(template, nextTemplate);\n  }\n  return source;\n}\n\nfunction replaceTextOccurrence(source, original, replacement, occurrence) {\n  const escaped = String(original).replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\function appendBuilderContent(source, componentChildren, sections) {");\n  const pattern = new RegExp(escaped, "g");\n  let index = 0;\n  return source.replace(pattern, (match) => index++ === occurrence ? replacement : match);\n}\n\nfunction appendBuilderContent(source, componentChildren, sections) {
   const children = Array.isArray(componentChildren) ? componentChildren : [];
   const pageSections = Array.isArray(sections) ? sections.filter((node) => node?.type === "section") : [];
   const nodes = [...children, ...pageSections];
