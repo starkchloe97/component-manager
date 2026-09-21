@@ -164,7 +164,7 @@ function appendContentOverrides(source, content) {
 }
 
 function replaceTagTextOccurrence(source, tag, original, replacement, occurrence) {
-  const templateMatch = source.match(/<template\\b[^>]*>[\\s\\S]*?<\\/template>/i);
+  const templateMatch = source.match(/<template\b[^>]*>[\s\S]*?<\/template>/i);
   if (!templateMatch) return source;
 
   const template = templateMatch[0];
