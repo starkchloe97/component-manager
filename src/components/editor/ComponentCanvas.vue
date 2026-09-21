@@ -23,7 +23,7 @@ const showContainerPicker = ref(false);
 const basicElements = computed(() => Object.entries(editorRegistry).filter(([type, definition]) => definition.category === "Basic").map(([type, definition]) => ({ type, ...definition })));
 const layoutElements = computed(() => Object.entries(editorRegistry).filter(([type]) => type === "container").map(([type, definition]) => ({ type, ...definition })));
 const componentName = computed(() => props.component?.name || props.component?.id || "Component");
-const selectableTags = "section, div, h1, h2, h3, h4, h5, h6, p, span, a, button, img, ul, ol, li, form, input, textarea, label";
+const selectableTags = "section, div, h1, h2, h3, h4, h5, h6, p, span, strong, em, small, blockquote, figcaption, a, button, img, ul, ol, li, form, input, textarea, label";
 
 const elementMap = {
   "section-title": "Heading", "section-label": "Label", "body-text": "Text", "feature-title": "Feature title",
@@ -33,7 +33,8 @@ const elementMap = {
 
 const tagMap = {
   h1: "Heading", h2: "Heading", h3: "Heading", h4: "Heading", h5: "Heading", h6: "Heading", p: "Text",
-  img: "Image", a: "Link", button: "Button", section: "Section", div: "Container", span: "Text", ul: "List",
+  img: "Image", a: "Link", button: "Button", section: "Section", div: "Container", span: "Text",
+  strong: "Text", em: "Text", small: "Text", blockquote: "Quote", figcaption: "Caption", ul: "List",
   ol: "List", li: "List item", form: "Form", input: "Input", textarea: "Text area", label: "Label",
 };
 
@@ -56,14 +57,34 @@ function describeElement(element) {
   const tag = element.tagName?.toLowerCase();
   if (!tagMap[tag] && !className) return null;
 
-  let selector;
-  if (className) selector = `.${className}`;
-  else {
-    const key = element.getAttribute("data-editor-element") || elementPath(element);
-    element.setAttribute("data-editor-element", key);
-    selector = `[data-editor-element="${CSS.escape(key)}"]`;
-  }
-  return { label: className ? elementMap[className] : tagMap[tag], selector, tag, element, componentId: props.component.id };
+  const key = element.getAttribute("data-editor-element") || elementPath(element);
+  element.setAttribute("data-editor-element", key);
+
+  // Preserve class/tag selectors for the existing style system. Content
+  // editing always uses the unique editor identity so duplicate classes
+  // never cause multiple text nodes to change.
+  const selector = className
+    ? `.${className}`
+    : `[data-editor-element="${CSS.escape(key)}"]`;
+  const contentSelector = `[data-editor-element="${CSS.escape(key)}"]`;
+  const editableText = ["h1","h2","h3","h4","h5","h6","p","span","strong","em","small","blockquote","figcaption","a","button","li","label"].includes(tag) && element.children.length === 0;
+  const textValue = editableText ? element.textContent || "" : "";
+  const matchingText = editableText
+    ? Array.from(stage.value?.querySelectorAll(tag) || []).filter((candidate) => (candidate.textContent || "") === textValue)
+    : [];
+  const textOccurrence = matchingText.indexOf(element);
+
+  return {
+    label: className ? elementMap[className] : tagMap[tag],
+    selector,
+    contentSelector,
+    tag,
+    element,
+    componentId: props.component.id,
+    editableText,
+    textValue,
+    textOccurrence: Math.max(0, textOccurrence),
+  };
 }
 
 function setHoverElement(element) {
@@ -150,8 +171,17 @@ function addContainer(layout) {
   showAdd.value = false;
 }
 
+function prepareEditorElements() {
+  const hitLayer = stage.value?.querySelector(".component-hit-layer");
+  if (!hitLayer) return;
+  hitLayer.querySelectorAll(selectableTags).forEach((element) => describeElement(element));
+}
+
 function refreshOverrides() {
-  nextTick(() => applyOverrides(stage.value, props.component.id));
+  nextTick(() => {
+    prepareEditorElements();
+    applyOverrides(stage.value, props.component.id);
+  });
 }
 
 onMounted(refreshOverrides);

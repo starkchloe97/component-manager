@@ -5,7 +5,7 @@ import { useEditor } from "./useEditor";
 
 export function useComponentCopy() {
   const { selectedComponent } = useStyleManager();
-  const { overrides } = useComponentEditor();
+  const { overrides, contentOverrides } = useComponentEditor();
   const { document } = useEditor();
 
   const copySelectedComponent = async () => {
@@ -31,8 +31,12 @@ export function useComponentCopy() {
         withStyles,
         overrides[component.id] || {}
       );
-      const finalSource = appendBuilderContent(
+      const withContent = appendContentOverrides(
         withElementStyles,
+        contentOverrides[component.id] || {}
+      );
+      const finalSource = appendBuilderContent(
+        withContent,
         document.componentChildren,
         document.children
       );
@@ -144,6 +148,52 @@ function toKebabCase(value) {
   return value.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
 }
 
+
+function appendContentOverrides(source, content) {
+  const entries = Object.values(content || {}).filter((entry) => entry && typeof entry === "object" && entry.text !== undefined);
+  if (!entries.length) return source;
+  let updatedSource = source;
+  entries.forEach((entry) => {
+    const original = String(entry.originalText ?? "");
+    const replacement = String(entry.text ?? "");
+    if (!original || original === replacement) return;
+    if (entry.tag) updatedSource = replaceTagTextOccurrence(updatedSource, entry.tag, original, replacement, Number(entry.occurrence) || 0);
+    else updatedSource = replaceTextOccurrence(updatedSource, original, replacement, Number(entry.occurrence) || 0);
+  });
+  return updatedSource;
+}
+
+function replaceTagTextOccurrence(source, tag, original, replacement, occurrence) {
+  const templateMatch = source.match(/<template\b[^>]*>[\s\S]*?<\/template>/i);
+  if (!templateMatch) return source;
+  const template = templateMatch[0];
+  const pattern = new RegExp("(<" + tag + "\\b[^>]*>)([\\s\\S]*?)(</" + tag + ">)", "gi");
+  let index = -1;
+  let match;
+  while ((match = pattern.exec(template))) {
+    const inner = match[2];
+    if (inner.includes("<") || inner.includes(">")) continue;
+    if (inner.trim() !== original.trim()) continue;
+    index += 1;
+    if (index !== occurrence) continue;
+    const nextInner = inner.replace(original, replacement);
+    const nextTemplate = template.slice(0, match.index) + match[1] + nextInner + match[3] + template.slice(match.index + match[0].length);
+    return source.replace(template, nextTemplate);
+  }
+  return source;
+}
+
+function replaceTextOccurrence(source, original, replacement, occurrence) {
+  let from = 0;
+  let index = 0;
+  while (true) {
+    const found = source.indexOf(original, from);
+    if (found === -1) return source;
+    if (index === occurrence) return source.slice(0, found) + replacement + source.slice(found + original.length);
+    index += 1;
+    from = found + original.length;
+  }
+}
 
 function appendBuilderContent(source, componentChildren, sections) {
   const children = Array.isArray(componentChildren) ? componentChildren : [];

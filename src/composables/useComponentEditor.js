@@ -1,48 +1,65 @@
 import { reactive, ref, watch } from "vue";
 
 const selectedElement = ref(null);
-const STORAGE_KEY = "component-manager:element-overrides";
-const overrides = reactive(loadOverrides());
+const STYLE_STORAGE_KEY = "component-manager:element-overrides";
+const CONTENT_STORAGE_KEY = "component-manager:content-overrides";
+const overrides = reactive(loadStorage(STYLE_STORAGE_KEY));
+const contentOverrides = reactive(loadStorage(CONTENT_STORAGE_KEY));
 const PERSIST_DELAY = 250;
-let persistTimer = null;
+let stylePersistTimer = null;
+let contentPersistTimer = null;
 let styleFrame = null;
+let contentFrame = null;
 const pendingStyleWrites = new Map();
+const pendingContentWrites = new Map();
 
-function loadOverrides() {
+function loadStorage(key) {
   if (typeof window === "undefined") return {};
   try {
-    const parsed = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || "{}");
+    const parsed = JSON.parse(window.localStorage.getItem(key) || "{}");
     return parsed && typeof parsed === "object" ? parsed : {};
   } catch (error) {
-    console.warn("Unable to restore element edits:", error);
+    console.warn("Unable to restore editor overrides:", error);
     return {};
   }
 }
 
-function persistOverrides() {
+function persistStorage(key, value) {
   if (typeof window === "undefined") return;
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides));
+    window.localStorage.setItem(key, JSON.stringify(value));
   } catch (error) {
-    console.warn("Unable to save element edits:", error);
+    console.warn("Unable to save editor overrides:", error);
   }
 }
 
-function scheduleOverridePersistence() {
+function schedulePersistence(kind) {
   if (typeof window === "undefined") return;
-  if (persistTimer) window.clearTimeout(persistTimer);
-  persistTimer = window.setTimeout(() => {
-    persistTimer = null;
-    persistOverrides();
-  }, PERSIST_DELAY);
+  const timerKey = kind === "content" ? "contentPersistTimer" : "stylePersistTimer";
+  const delay = PERSIST_DELAY;
+  if (kind === "content") {
+    if (contentPersistTimer) window.clearTimeout(contentPersistTimer);
+    contentPersistTimer = window.setTimeout(() => {
+      contentPersistTimer = null;
+      persistStorage(CONTENT_STORAGE_KEY, contentOverrides);
+    }, delay);
+    return;
+  }
+  if (stylePersistTimer) window.clearTimeout(stylePersistTimer);
+  stylePersistTimer = window.setTimeout(() => {
+    stylePersistTimer = null;
+    persistStorage(STYLE_STORAGE_KEY, overrides);
+  }, delay);
 }
 
-function flushOverridePersistence() {
-  if (typeof window !== "undefined" && persistTimer) {
-    window.clearTimeout(persistTimer);
-    persistTimer = null;
-  }
-  persistOverrides();
+function flushPersistence() {
+  if (typeof window === "undefined") return;
+  if (stylePersistTimer) window.clearTimeout(stylePersistTimer);
+  if (contentPersistTimer) window.clearTimeout(contentPersistTimer);
+  stylePersistTimer = null;
+  contentPersistTimer = null;
+  persistStorage(STYLE_STORAGE_KEY, overrides);
+  persistStorage(CONTENT_STORAGE_KEY, contentOverrides);
 }
 
 function queueStyleWrite(componentId, selector, property, value) {
@@ -51,14 +68,12 @@ function queueStyleWrite(componentId, selector, property, value) {
     componentWrites = new Map();
     pendingStyleWrites.set(componentId, componentWrites);
   }
-
   let selectorWrites = componentWrites.get(selector);
   if (!selectorWrites) {
     selectorWrites = new Map();
     componentWrites.set(selector, selectorWrites);
   }
   selectorWrites.set(property, value);
-
   if (styleFrame !== null || typeof window === "undefined") return;
   styleFrame = window.requestAnimationFrame(flushStyleWrites);
 }
@@ -81,12 +96,48 @@ function flushStyleWrites() {
   pendingStyleWrites.clear();
 }
 
-if (typeof window !== "undefined") {
-  watch(overrides, scheduleOverridePersistence, { deep: true });
-  window.addEventListener("pagehide", flushOverridePersistence);
+function queueContentWrite(componentId, selector, value) {
+  let componentWrites = pendingContentWrites.get(componentId);
+  if (!componentWrites) {
+    componentWrites = new Map();
+    pendingContentWrites.set(componentId, componentWrites);
+  }
+  componentWrites.set(selector, value);
+  if (contentFrame !== null || typeof window === "undefined") return;
+  contentFrame = window.requestAnimationFrame(flushContentWrites);
 }
 
-function toSelector(selector) { return selector || ""; }
+function flushContentWrites() {
+  contentFrame = null;
+  pendingContentWrites.forEach((componentWrites, componentId) => {
+    const roots = document.querySelectorAll(`[data-editor-component-id="${CSS.escape(componentId)}"]`);
+    componentWrites.forEach((value, selector) => {
+      roots.forEach((root) => {
+        root.querySelectorAll(toSelector(selector)).forEach((element) => {
+          if (value === "") return;
+          element.textContent = value;
+        });
+      });
+    });
+  });
+  pendingContentWrites.clear();
+}
+
+if (typeof window !== "undefined") {
+  watch(overrides, () => schedulePersistence("style"), { deep: true });
+  watch(contentOverrides, () => schedulePersistence("content"), { deep: true });
+  window.addEventListener("pagehide", flushPersistence);
+}
+
+function toSelector(selector) {
+  return selector || "";
+}
+
+function ensurePath(target, componentId, selector) {
+  if (!target[componentId]) target[componentId] = {};
+  if (!target[componentId][selector]) target[componentId][selector] = {};
+  return target[componentId][selector];
+}
 
 export function useComponentEditor() {
   const selectElement = (payload) => { selectedElement.value = payload; };
@@ -94,26 +145,76 @@ export function useComponentEditor() {
 
   const setStyle = (componentId, selector, property, value) => {
     if (!componentId || !selector || !property) return;
-    if (!overrides[componentId]) overrides[componentId] = {};
-    if (!overrides[componentId][selector]) overrides[componentId][selector] = {};
-    overrides[componentId][selector][property] = value;
+    ensurePath(overrides, componentId, selector)[property] = value;
     queueStyleWrite(componentId, selector, property, value);
   };
 
   const getStyles = (componentId, selector) => overrides[componentId]?.[selector] || {};
 
-  const applyOverrides = (root, componentId) => {
-    const componentOverrides = overrides[componentId];
-    if (!root || !componentOverrides) return;
-    Object.entries(componentOverrides).forEach(([selector, styles]) => {
-      root.querySelectorAll(toSelector(selector)).forEach((element) => {
-        Object.entries(styles).forEach(([property, value]) => {
-          if (value === "") element.style.removeProperty(property);
-          else element.style[property] = value;
-        });
-      });
-    });
+  const setContent = (componentId, selector, value, metadata = {}) => {
+    if (!componentId || !selector) return;
+    const entry = ensurePath(contentOverrides, componentId, selector);
+    const next = String(value ?? "");
+    entry.text = next;
+    if (metadata.originalText !== undefined) entry.originalText = String(metadata.originalText);
+    if (metadata.occurrence !== undefined) entry.occurrence = Number(metadata.occurrence) || 0;
+    entry.tag = metadata.tag || entry.tag || "";
+    queueContentWrite(componentId, selector, next);
   };
 
-  return { selectedElement, overrides, selectElement, clearElement, setStyle, getStyles, applyOverrides };
+  const getContent = (componentId, selector) => contentOverrides[componentId]?.[selector]?.text ?? null;
+
+  const getContentEntry = (componentId, selector) => contentOverrides[componentId]?.[selector] || null;
+
+  const resetContent = (componentId, selector) => {
+    if (!componentId || !selector) return;
+    const original = contentOverrides[componentId]?.[selector]?.originalText ?? null;
+    if (contentOverrides[componentId]) {
+      delete contentOverrides[componentId][selector];
+      if (!Object.keys(contentOverrides[componentId]).length) delete contentOverrides[componentId];
+    }
+    if (original !== null) queueContentWrite(componentId, selector, original);
+  };
+
+  const applyOverrides = (root, componentId) => {
+    if (!root || !componentId) return;
+
+    const componentStyles = overrides[componentId];
+    if (componentStyles) {
+      Object.entries(componentStyles).forEach(([selector, styles]) => {
+        root.querySelectorAll(toSelector(selector)).forEach((element) => {
+          Object.entries(styles).forEach(([property, value]) => {
+            if (value === "") element.style.removeProperty(property);
+            else element.style[property] = value;
+          });
+        });
+      });
+    }
+
+    const componentContent = contentOverrides[componentId];
+    if (componentContent) {
+      Object.entries(componentContent).forEach(([selector, entry]) => {
+        const value = typeof entry === "string" ? entry : entry?.text;
+        if (value === null || value === undefined) return;
+        root.querySelectorAll(toSelector(selector)).forEach((element) => {
+          element.textContent = value;
+        });
+      });
+    }
+  };
+
+  return {
+    selectedElement,
+    overrides,
+    contentOverrides,
+    selectElement,
+    clearElement,
+    setStyle,
+    getStyles,
+    setContent,
+    getContent,
+    getContentEntry,
+    resetContent,
+    applyOverrides,
+  };
 }
