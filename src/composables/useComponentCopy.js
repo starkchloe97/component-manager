@@ -149,7 +149,52 @@ function toKebabCase(value) {
 }
 
 
-function appendContentOverrides(source, content) {\n  const entries = Object.values(content || {}).filter((entry) => entry && typeof entry === "object" && entry.text !== undefined);\n  if (!entries.length) return source;\n  let updatedSource = source;\n  entries.forEach((entry) => {\n    const original = String(entry.originalText ?? "");\n    const replacement = String(entry.text ?? "");\n    if (!original || original === replacement) return;\n    if (entry.tag) {\n      updatedSource = replaceTagTextOccurrence(updatedSource, entry.tag, original, replacement, Number(entry.occurrence) || 0);\n    } else {\n      updatedSource = replaceTextOccurrence(updatedSource, original, replacement, Number(entry.occurrence) || 0);\n    }\n  });\n  return updatedSource;\n}\n\nfunction replaceTagTextOccurrence(source, tag, original, replacement, occurrence) {\n  const templateMatch = source.match(/<template\\b[^>]*>[\\s\\S]*?<\\/template>/i);\n  if (!templateMatch) return source;\n  const template = templateMatch[0];\n  const escapedTag = escapeRegExp(String(tag));\n  const pattern = new RegExp("(<" + escapedTag + "\\\\b[^>]*>)([\\s\\S]*?)(</" + escapedTag + ">)", "gi");\n  let index = -1;\n  let match;\n  while ((match = pattern.exec(template))) {\n    const inner = match[2];\n    if (inner.includes("<") || inner.includes(">")) continue;\n    if (inner.trim() !== original.trim()) continue;\n    index += 1;\n    if (index !== occurrence) continue;\n    const nextInner = inner.replace(original, replacement);\n    const nextTemplate = template.slice(0, match.index) + match[1] + nextInner + match[3] + template.slice(match.index + match[0].length);\n    return source.replace(template, nextTemplate);\n  }\n  return source;\n}\n\nfunction replaceTextOccurrence(source, original, replacement, occurrence) {\n  const pattern = new RegExp(escapeRegExp(original), "g");\n  let index = 0;\n  return source.replace(pattern, (match) => index++ === occurrence ? replacement : match);\n}\n\nfunction escapeRegExp(value) {\n  return String(value).replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&");\n}\n\nfunction appendBuilderContent(source, componentChildren, sections) {");\n  const pattern = new RegExp("(<" + escapedTag + "\\\\b[^>]*>)([\\s\\S]*?)(</" + escapedTag + ">)", "gi");\n  let index = -1;\n  let match;\n  while ((match = pattern.exec(template))) {\n    const inner = match[2];\n    if (inner.includes("<") || inner.includes(">")) continue;\n    if (inner.trim() !== original.trim()) continue;\n    index += 1;\n    if (index !== occurrence) continue;\n    const nextInner = inner.replace(original, replacement);\n    const nextTemplate = template.slice(0, match.index) + match[1] + nextInner + match[3] + template.slice(match.index + match[0].length);\n    return source.replace(template, nextTemplate);\n  }\n  return source;\n}\n\nfunction replaceTextOccurrence(source, original, replacement, occurrence) {\n  const escaped = String(original).replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\function appendBuilderContent(source, componentChildren, sections) {");\n  const pattern = new RegExp(escaped, "g");\n  let index = 0;\n  return source.replace(pattern, (match) => index++ === occurrence ? replacement : match);\n}\n\nfunction appendBuilderContent(source, componentChildren, sections) {
+function appendContentOverrides(source, content) {
+  const entries = Object.values(content || {}).filter((entry) => entry && typeof entry === "object" && entry.text !== undefined);
+  if (!entries.length) return source;
+  let updatedSource = source;
+  entries.forEach((entry) => {
+    const original = String(entry.originalText ?? "");
+    const replacement = String(entry.text ?? "");
+    if (!original || original === replacement) return;
+    if (entry.tag) updatedSource = replaceTagTextOccurrence(updatedSource, entry.tag, original, replacement, Number(entry.occurrence) || 0);
+    else updatedSource = replaceTextOccurrence(updatedSource, original, replacement, Number(entry.occurrence) || 0);
+  });
+  return updatedSource;
+}
+
+function replaceTagTextOccurrence(source, tag, original, replacement, occurrence) {
+  const templateMatch = source.match(/<template\b[^>]*>[\s\S]*?<\/template>/i);
+  if (!templateMatch) return source;
+  const template = templateMatch[0];
+  const escapedTag = escapeRegExp(String(tag));
+  const pattern = new RegExp("(<" + escapedTag + "\\b[^>]*>)([\\s\\S]*?)(</" + escapedTag + ">)", "gi");
+  let index = -1;
+  let match;
+  while ((match = pattern.exec(template))) {
+    const inner = match[2];
+    if (inner.includes("<") || inner.includes(">")) continue;
+    if (inner.trim() !== original.trim()) continue;
+    index += 1;
+    if (index !== occurrence) continue;
+    const nextInner = inner.replace(original, replacement);
+    const nextTemplate = template.slice(0, match.index) + match[1] + nextInner + match[3] + template.slice(match.index + match[0].length);
+    return source.replace(template, nextTemplate);
+  }
+  return source;
+}
+
+function replaceTextOccurrence(source, original, replacement, occurrence) {
+  const pattern = new RegExp(escapeRegExp(original), "g");
+  let index = 0;
+  return source.replace(pattern, (match) => index++ === occurrence ? replacement : match);
+}
+
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\function appendBuilderContent(source, componentChildren, sections) {");
+}
+
+function appendBuilderContent(source, componentChildren, sections) {
   const children = Array.isArray(componentChildren) ? componentChildren : [];
   const pageSections = Array.isArray(sections) ? sections.filter((node) => node?.type === "section") : [];
   const nodes = [...children, ...pageSections];
