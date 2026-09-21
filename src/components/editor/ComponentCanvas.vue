@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, onUpdated, ref, watch } from "vue";
 import EditorNode from "./EditorNode.vue";
 import SectionLayoutPicker from "./SectionLayoutPicker.vue";
 import { editorRegistry } from "@/config/editorRegistry";
@@ -52,36 +52,43 @@ function elementPath(element) {
 
 function describeElement(element) {
   if (!element || element === stage.value || element === canvas.value) return null;
-  const classes = typeof element.className === "string" ? element.className.split(/\s+/).filter(Boolean) : [];
+
+  const classes = typeof element.className === "string"
+    ? element.className.split(/\s+/).filter(Boolean)
+    : [];
   const className = classes.find((name) => elementMap[name]);
   const tag = element.tagName?.toLowerCase();
+
   if (!tagMap[tag] && !className) return null;
 
   const key = element.getAttribute("data-editor-element") || elementPath(element);
   element.setAttribute("data-editor-element", key);
 
-  // Preserve class/tag selectors for the existing style system. Content
-  // editing always uses the unique editor identity so duplicate classes
-  // never cause multiple text nodes to change.
+  // Style overrides keep the existing class/tag selector behavior.
+  // Content overrides always use this element's unique editor key.
   const selector = className
     ? `.${className}`
     : `[data-editor-element="${CSS.escape(key)}"]`;
   const contentSelector = `[data-editor-element="${CSS.escape(key)}"]`;
-  // Registered components often use semantic classes on generic elements
-  // (e.g. <div class="section-title">) rather than literal h1/p tags.
-  // Treat those known text roles as editable too, while still requiring a
-  // leaf element so nested component markup is never replaced accidentally.
-  const textRoleClasses = new Set([
-    "section-title", "section-label", "body-text",
-    "feature-title", "feature-desc",
-  ]);
-  const textTag = ["h1","h2","h3","h4","h5","h6","p","span","strong","em","small","blockquote","figcaption","a","button","li","label"].includes(tag);
-  const editableText = (textTag || textRoleClasses.has(className)) && element.children.length === 0;
+
+  // Any leaf element with rendered text is editable. This removes the
+  // brittle dependency on a hard-coded list of semantic CSS classes.
+  const nonTextTags = new Set(["img", "input", "textarea", "select", "option", "br", "hr", "svg"]);
+  const hasRenderedText = typeof element.textContent === "string" && element.textContent.trim().length > 0;
+  const editableText = !nonTextTags.has(tag) && element.children.length === 0 && hasRenderedText;
   const textValue = editableText ? element.textContent || "" : "";
-  const matchingText = editableText
-    ? Array.from(stage.value?.querySelectorAll(tag) || []).filter((candidate) => (candidate.textContent || "") === textValue)
+
+  // Export/copy needs a deterministic source occurrence. Runtime editing
+  // remains scoped by contentSelector, so duplicate text/classes never collide.
+  const sameTagEditableElements = editableText
+    ? Array.from(stage.value?.querySelectorAll(tag) || []).filter((candidate) => {
+        if (candidate.children.length > 0) return false;
+        const candidateTag = candidate.tagName?.toLowerCase();
+        if (nonTextTags.has(candidateTag)) return false;
+        return typeof candidate.textContent === "string" && candidate.textContent.trim().length > 0;
+      })
     : [];
-  const textOccurrence = matchingText.indexOf(element);
+  const textOccurrence = sameTagEditableElements.indexOf(element);
 
   return {
     label: className ? elementMap[className] : tagMap[tag],
@@ -194,6 +201,7 @@ function refreshOverrides() {
 }
 
 onMounted(refreshOverrides);
+onUpdated(refreshOverrides);
 watch(() => props.component.id, () => {
   clearVisualState();
   refreshOverrides();
