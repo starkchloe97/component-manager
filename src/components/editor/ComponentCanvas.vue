@@ -171,8 +171,17 @@ function addContainer(layout) {
   showAdd.value = false;
 }
 
+function prepareEditorElements() {
+  const hitLayer = stage.value?.querySelector(".component-hit-layer");
+  if (!hitLayer) return;
+  hitLayer.querySelectorAll(selectableTags).forEach((element) => describeElement(element));
+}
+
 function refreshOverrides() {
-  nextTick(() => applyOverrides(stage.value, props.component.id));
+  nextTick(() => {
+    prepareEditorElements();
+    applyOverrides(stage.value, props.component.id);
+  });
 }
 
 onMounted(refreshOverrides);
