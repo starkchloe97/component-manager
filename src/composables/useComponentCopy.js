@@ -157,7 +157,14 @@ function appendContentOverrides(source, content) {
     const original = String(entry.originalText ?? "");
     const replacement = String(entry.text ?? "");
     if (!original || original === replacement) return;
-    if (entry.tag) updatedSource = replaceTagTextOccurrence(updatedSource, entry.tag, entry.className || "", original, replacement, Number(entry.occurrence) || 0);
+    if (entry.tag) updatedSource = replaceTagTextOccurrence(
+      updatedSource,
+      entry.tag,
+      entry.className === undefined ? null : String(entry.className || ""),
+      original,
+      replacement,
+      Number(entry.occurrence) || 0
+    );
     else updatedSource = replaceTextOccurrence(updatedSource, original, replacement, Number(entry.occurrence) || 0);
   });
   return updatedSource;
@@ -172,6 +179,7 @@ function replaceTagTextOccurrence(source, tag, className, original, replacement,
     "(<" + tag + "\\b[^>]*>)([\\s\\S]*?)(</" + tag + ">)",
     "gi"
   );
+  const legacyMatch = className === null;
   const classPattern = className
     ? new RegExp("\\bclass\\s*=\\s*[\\\"'][^\\\"']*\\b" + escapeRegExp(className) + "\\b[^\\\"']*[\\\"']", "i")
     : null;
@@ -185,6 +193,7 @@ function replaceTagTextOccurrence(source, tag, className, original, replacement,
 
     if (classPattern && !classPattern.test(openingTag)) continue;
     if (inner.includes("<") || inner.includes(">")) continue;
+    if (legacyMatch && inner.trim() !== original.trim()) continue;
 
     if (index !== occurrence) {
       index += 1;
