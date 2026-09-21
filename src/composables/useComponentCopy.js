@@ -173,7 +173,7 @@ function replaceTagTextOccurrence(source, tag, className, original, replacement,
     "gi"
   );
   const classPattern = className
-    ? new RegExp("\\bclass\\s*=\\s*[\\\"']([^\\\"']*(?:^|\\s)" + escapeRegExp(className) + "(?:\\s|$)[^\\\"']*)[\\\"']", "i")
+    ? new RegExp("\\bclass\\s*=\\s*[\\\"'][^\\\"']*\\b" + escapeRegExp(className) + "\\b[^\\\"']*[\\\"']", "i")
     : null;
 
   let index = 0;
@@ -291,6 +291,10 @@ function styleAttribute(styles) {
     .filter(([, value]) => value !== null && value !== undefined && String(value).trim() !== "")
     .map(([property, value]) => `${toKebabCase(property)}: ${String(value).trim()};`)
     .join(" ");
+}
+
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^$()|[\\]\\\\]/g, "\\\\$&");
 }
 
 function escapeHtml(value) {
