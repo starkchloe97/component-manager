@@ -91,7 +91,7 @@ function describeElement(element) {
   const textOccurrence = sameTagEditableElements.indexOf(element);
 
   return {
-    label: className ? elementMap[className] : tagMap[tag],
+    label: className ? elementMap[className] : editableText ? "Text" : tagMap[tag],
     selector,
     contentSelector,
     tag,
