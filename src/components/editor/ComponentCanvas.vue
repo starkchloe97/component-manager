@@ -80,21 +80,23 @@ function describeElement(element) {
 
   // Export/copy needs a deterministic source occurrence. Runtime editing
   // remains scoped by contentSelector, so duplicate text/classes never collide.
-  const sameTagEditableElements = editableText
+  const sameTextRoleElements = editableText
     ? Array.from(stage.value?.querySelectorAll(tag) || []).filter((candidate) => {
         if (candidate.children.length > 0) return false;
         const candidateTag = candidate.tagName?.toLowerCase();
         if (nonTextTags.has(candidateTag)) return false;
+        if (className && !candidate.classList.contains(className)) return false;
         return typeof candidate.textContent === "string" && candidate.textContent.trim().length > 0;
       })
     : [];
-  const textOccurrence = sameTagEditableElements.indexOf(element);
+  const textOccurrence = sameTextRoleElements.indexOf(element);
 
   return {
     label: className ? elementMap[className] : editableText ? "Text" : tagMap[tag],
     selector,
     contentSelector,
     tag,
+    className: className || "",
     element,
     componentId: props.component.id,
     editableText,
