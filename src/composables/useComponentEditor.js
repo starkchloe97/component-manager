@@ -114,7 +114,6 @@ function flushContentWrites() {
     componentWrites.forEach((value, selector) => {
       roots.forEach((root) => {
         root.querySelectorAll(toSelector(selector)).forEach((element) => {
-          if (value === "") return;
           element.textContent = value;
         });
       });
@@ -156,9 +155,13 @@ export function useComponentEditor() {
     const entry = ensurePath(contentOverrides, componentId, selector);
     const next = String(value ?? "");
     entry.text = next;
-    if (metadata.originalText !== undefined) entry.originalText = String(metadata.originalText);
+    // Capture the source value only once. Re-selecting an already edited
+    // element must never turn the edited value into the new reset baseline.
+    if (entry.originalText === undefined && metadata.originalText !== undefined) {
+      entry.originalText = String(metadata.originalText);
+    }
     if (metadata.occurrence !== undefined) entry.occurrence = Number(metadata.occurrence) || 0;
-    entry.tag = metadata.tag || entry.tag || "";
+    if (metadata.tag) entry.tag = metadata.tag;
     queueContentWrite(componentId, selector, next);
   };
 
