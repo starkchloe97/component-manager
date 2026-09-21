@@ -162,6 +162,7 @@ export function useComponentEditor() {
     }
     if (metadata.occurrence !== undefined) entry.occurrence = Number(metadata.occurrence) || 0;
     if (metadata.tag) entry.tag = metadata.tag;
+    if (metadata.className !== undefined) entry.className = String(metadata.className || "");
     queueContentWrite(componentId, selector, next);
   };
 
