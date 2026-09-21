@@ -212,6 +212,8 @@ export function useEditor() {
     if (!node) return null;
     if (patch.props) node.props = { ...node.props, ...patch.props };
     if (patch.styles) node.styles = { ...node.styles, ...patch.styles };
+    const updatedColumnWidth = node.type === "column" && Object.prototype.hasOwnProperty.call(patch.styles || {}, "width");
+    if (updatedColumnWidth) syncSectionColumnWidths(id);
     Object.entries(patch).forEach(([key, value]) => { if (key !== "props" && key !== "styles") node[key] = value; });
     return node;
   }
@@ -284,6 +286,31 @@ function findTopLevelSection(id) {
   };
   return walk(document.children);
 }
+function getPercentWidth(value) {
+  const match = /^\s*(\d+(?:\.\d+)?)%\s*$/.exec(String(value ?? ""));
+  if (!match) return null;
+  const percentage = Number(match[1]);
+  return percentage > 0 && percentage < 100 ? percentage : null;
+}
+
+function syncSectionColumnWidths(columnId) {
+  const section = findParentInDocument(columnId);
+  if (section?.type !== "section") return;
+
+  const columns = (section.children || []).filter((child) => child.type === "column");
+  const changedIndex = columns.findIndex((column) => column.id === columnId);
+  const changedWidth = getPercentWidth(columns[changedIndex]?.styles?.width);
+  if (columns.length !== 2 || changedIndex === -1 || changedWidth === null) return;
+
+  const adjacentColumn = columns[changedIndex === 0 ? 1 : 0];
+  const adjacentWidth = 100 - changedWidth;
+  adjacentColumn.styles = { ...adjacentColumn.styles, width: `${adjacentWidth}%` };
+  section.styles = {
+    ...section.styles,
+    gridTemplateColumns: columns.map((column) => `${getPercentWidth(column.styles.width) || 50}fr`).join(" "),
+  };
+}
+
 function normalizePageStructure(nodes) {
   const source = Array.isArray(nodes) ? [...nodes] : [];
   const result = [];

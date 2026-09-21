@@ -51,6 +51,27 @@ const elementStyles = computed(() => {
     Object.entries(props.node.styles || {}).filter(([key]) => !layoutStyleKeys.has(key)),
   );
 });
+// A node always has an editor wrapper. For images, that wrapper is the flex
+// item a column positions, so width must live on it rather than only on the
+// inner <img>. Otherwise `align-items: center` centers a full-width wrapper
+// while its half-width image remains visually left aligned.
+const rootStyles = computed(() => {
+  if (props.node.type === "image") return props.node.styles;
+  return layoutHostStyles.value;
+});
+const imageStyles = computed(() => {
+  if (props.node.type !== "image") return elementStyles.value;
+  const contentStyles = { ...(props.node.styles || {}) };
+  delete contentStyles.width;
+  delete contentStyles.maxWidth;
+  delete contentStyles.display;
+  return {
+    ...contentStyles,
+    width: "100%",
+    maxWidth: "100%",
+    display: "block",
+  };
+});
 
 function select(event) {
   event.stopPropagation();
@@ -125,7 +146,7 @@ async function copyCurrentComponent() {
 </script>
 
 <template>
-  <div class="editor-node" :class="{ 'editor-node--selected': isSelected }" :style="layoutHostStyles" @click="select">
+  <div class="editor-node" :class="{ 'editor-node--selected': isSelected }" :style="rootStyles" @click="select">
     <section v-if="node.type === 'section'" class="editor-section" :style="node.styles">
       <EditorNode
         v-for="child in node.children"
@@ -248,7 +269,7 @@ async function copyCurrentComponent() {
       :class="{ 'builder-element--selected': isSelected }"
       :src="node.props.src"
       :alt="node.props.alt"
-      :style="elementStyles"
+      :style="imageStyles"
       @click.stop="select"
     />
 
