@@ -168,11 +168,12 @@ export function useComponentEditor() {
 
   const resetContent = (componentId, selector) => {
     if (!componentId || !selector) return;
+    const original = contentOverrides[componentId]?.[selector]?.originalText ?? null;
     if (contentOverrides[componentId]) {
       delete contentOverrides[componentId][selector];
       if (!Object.keys(contentOverrides[componentId]).length) delete contentOverrides[componentId];
     }
-    queueContentWrite(componentId, selector, "");
+    if (original !== null) queueContentWrite(componentId, selector, original);
   };
 
   const applyOverrides = (root, componentId) => {
