@@ -23,7 +23,7 @@ const showContainerPicker = ref(false);
 const basicElements = computed(() => Object.entries(editorRegistry).filter(([type, definition]) => definition.category === "Basic").map(([type, definition]) => ({ type, ...definition })));
 const layoutElements = computed(() => Object.entries(editorRegistry).filter(([type]) => type === "container").map(([type, definition]) => ({ type, ...definition })));
 const componentName = computed(() => props.component?.name || props.component?.id || "Component");
-const selectableTags = "section, div, h1, h2, h3, h4, h5, h6, p, span, a, button, img, ul, ol, li, form, input, textarea, label";
+const selectableTags = "section, div, h1, h2, h3, h4, h5, h6, p, span, strong, em, small, blockquote, figcaption, a, button, img, ul, ol, li, form, input, textarea, label";
 
 const elementMap = {
   "section-title": "Heading", "section-label": "Label", "body-text": "Text", "feature-title": "Feature title",
@@ -33,7 +33,8 @@ const elementMap = {
 
 const tagMap = {
   h1: "Heading", h2: "Heading", h3: "Heading", h4: "Heading", h5: "Heading", h6: "Heading", p: "Text",
-  img: "Image", a: "Link", button: "Button", section: "Section", div: "Container", span: "Text", ul: "List",
+  img: "Image", a: "Link", button: "Button", section: "Section", div: "Container", span: "Text",
+  strong: "Text", em: "Text", small: "Text", blockquote: "Quote", figcaption: "Caption", ul: "List",
   ol: "List", li: "List item", form: "Form", input: "Input", textarea: "Text area", label: "Label",
 };
 
@@ -66,7 +67,7 @@ function describeElement(element) {
     ? `.${className}`
     : `[data-editor-element="${CSS.escape(key)}"]`;
   const contentSelector = `[data-editor-element="${CSS.escape(key)}"]`;
-  const editableText = ["h1","h2","h3","h4","h5","h6","p","span","a","button","li","label"].includes(tag);
+  const editableText = ["h1","h2","h3","h4","h5","h6","p","span","strong","em","small","blockquote","figcaption","a","button","li","label"].includes(tag) && element.children.length === 0;
   const textValue = editableText ? element.textContent || "" : "";
   const matchingText = editableText
     ? Array.from(stage.value?.querySelectorAll(tag) || []).filter((candidate) => (candidate.textContent || "") === textValue)
