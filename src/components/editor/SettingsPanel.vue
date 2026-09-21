@@ -2,9 +2,9 @@
 import { computed, ref } from "vue";
 import { useComponentEditor } from "@/composables/useComponentEditor";
 
-const { selectedElement, getStyles, setStyle, getContent, setContent, resetContent } = useComponentEditor();
+const { selectedElement, getStyles, setStyle } = useComponentEditor();
 const element = computed(() => selectedElement.value);
-const open = ref({ content: true, layout: true, spacing: true, typography: false, appearance: false });
+const open = ref({ layout: true, spacing: true, typography: false, appearance: false });
 
 const groups = [
   { key: "layout", title: "Layout", keys: ["width", "maxWidth", "height", "display", "gap"] },
@@ -68,9 +68,6 @@ const icons = {
 
 /* ---- core logic (unchanged behavior) ---- */
 function current(key) { return element.value ? getStyles(element.value.componentId, element.value.selector)[key] ?? "" : ""; }
-function currentContent() { return element.value?.editableText ? (getContent(element.value.componentId, element.value.contentSelector) ?? element.value.textValue ?? "") : ""; }
-function updateContent(raw) { if (!element.value?.editableText) return; setContent(element.value.componentId, element.value.contentSelector, raw, { originalText: element.value.textValue, occurrence: element.value.textOccurrence, tag: element.value.tag }); }
-function resetTextContent() { if (element.value?.editableText) resetContent(element.value.componentId, element.value.contentSelector); }
 function update(key, raw) {
   if (!element.value) return;
   let next = String(raw ?? "").trim();
@@ -117,20 +114,6 @@ function colorInputValue(key) { const v = current(key); return /^#[0-9a-f]{6}$/i
       </header>
 
       <div class="settings-body">
-      <section v-if="element.editableText" class="group-card">
-        <button class="group-head" type="button" :aria-expanded="open.content" @click="toggle('content')">
-          <span class="group-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5h14M5 12h10M5 19h14"/></svg></span>
-          <span class="group-title">Content</span><span class="head-spacer" />
-          <span v-if="currentContent() !== element.textValue" class="icon-btn group-reset" title="Reset content" @click.stop="resetTextContent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span>
-          <span class="chevron" :class="{ closed: !open.content }"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>
-        </button>
-        <div class="acc" :class="{ open: open.content }"><div class="acc-inner" :inert="!open.content">
-          <div class="group-content">
-            <div class="content-field"><textarea :value="currentContent()" rows="5" :placeholder="element.tag === 'button' || element.tag === 'a' ? 'Enter link text…' : 'Enter text…'" @input="updateContent($event.target.value)" /></div>
-            <div class="content-hint">Changes are saved automatically and apply only to this element.</div>
-          </div>
-        </div></div>
-      </section>
         <section v-for="group in groups" :key="group.key" class="group-card">
           <button class="group-head" type="button" :aria-expanded="open[group.key]" @click="toggle(group.key)">
             <span class="group-icon" v-html="icons[group.key]" />
@@ -445,10 +428,6 @@ function colorInputValue(key) { const v = current(key); return /^#[0-9a-f]{6}$/i
 .acc.open { grid-template-rows: 1fr; }
 .acc-inner { overflow: hidden; min-height: 0; }
 .group-content { padding: 2px 10px 10px; }
-.content-field textarea { width:100%; min-height:96px; resize:vertical; padding:9px 10px; border:1px solid var(--border); border-radius:8px; background:var(--surface); color:var(--text); font:inherit; font-size:12px; line-height:1.5; outline:0; transition:border-color .15s, box-shadow .15s; }
-.content-field textarea:hover { border-color:var(--border-strong); }
-.content-field textarea:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-ring); }
-.content-hint { margin-top:6px; font-size:9px; line-height:1.45; color:var(--text-3); }
 
 /* ---------- Controls ---------- */
 .control {
