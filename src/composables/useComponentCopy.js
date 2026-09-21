@@ -157,13 +157,13 @@ function appendContentOverrides(source, content) {
     const original = String(entry.originalText ?? "");
     const replacement = String(entry.text ?? "");
     if (!original || original === replacement) return;
-    if (entry.tag) updatedSource = replaceTagTextOccurrence(updatedSource, entry.tag, original, replacement, Number(entry.occurrence) || 0);
+    if (entry.tag) updatedSource = replaceTagTextOccurrence(updatedSource, entry.tag, entry.className || "", original, replacement, Number(entry.occurrence) || 0);
     else updatedSource = replaceTextOccurrence(updatedSource, original, replacement, Number(entry.occurrence) || 0);
   });
   return updatedSource;
 }
 
-function replaceTagTextOccurrence(source, tag, original, replacement, occurrence) {
+function replaceTagTextOccurrence(source, tag, className, original, replacement, occurrence) {
   const templateMatch = source.match(/<template\b[^>]*>[\s\S]*?<\/template>/i);
   if (!templateMatch) return source;
 
@@ -172,14 +172,18 @@ function replaceTagTextOccurrence(source, tag, original, replacement, occurrence
     "(<" + tag + "\\b[^>]*>)([\\s\\S]*?)(</" + tag + ">)",
     "gi"
   );
+  const classPattern = className
+    ? new RegExp("\\bclass\\s*=\\s*[\\\"']([^\\\"']*(?:^|\\s)" + escapeRegExp(className) + "(?:\\s|$)[^\\\"']*)[\\\"']", "i")
+    : null;
+
   let index = 0;
   let match;
 
   while ((match = pattern.exec(template))) {
+    const openingTag = match[1];
     const inner = match[2];
 
-    // Only replace true text-only source elements. Never destroy inline
-    // markup such as <span>, links, icons, or Vue components.
+    if (classPattern && !classPattern.test(openingTag)) continue;
     if (inner.includes("<") || inner.includes(">")) continue;
 
     if (index !== occurrence) {
@@ -194,7 +198,7 @@ function replaceTagTextOccurrence(source, tag, original, replacement, occurrence
 
     const nextTemplate =
       template.slice(0, match.index) +
-      match[1] +
+      openingTag +
       nextInner +
       match[3] +
       template.slice(match.index + match[0].length);
@@ -204,6 +208,7 @@ function replaceTagTextOccurrence(source, tag, original, replacement, occurrence
 
   return source;
 }
+
 
 function replaceTextOccurrence(source, original, replacement, occurrence) {
   let from = 0;
