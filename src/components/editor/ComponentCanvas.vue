@@ -56,14 +56,34 @@ function describeElement(element) {
   const tag = element.tagName?.toLowerCase();
   if (!tagMap[tag] && !className) return null;
 
-  let selector;
-  if (className) selector = `.${className}`;
-  else {
-    const key = element.getAttribute("data-editor-element") || elementPath(element);
-    element.setAttribute("data-editor-element", key);
-    selector = `[data-editor-element="${CSS.escape(key)}"]`;
-  }
-  return { label: className ? elementMap[className] : tagMap[tag], selector, tag, element, componentId: props.component.id };
+  const key = element.getAttribute("data-editor-element") || elementPath(element);
+  element.setAttribute("data-editor-element", key);
+
+  // Preserve class/tag selectors for the existing style system. Content
+  // editing always uses the unique editor identity so duplicate classes
+  // never cause multiple text nodes to change.
+  const selector = className
+    ? `.${className}`
+    : `[data-editor-element="${CSS.escape(key)}"]`;
+  const contentSelector = `[data-editor-element="${CSS.escape(key)}"]`;
+  const editableText = ["h1","h2","h3","h4","h5","h6","p","span","a","button","li","label"].includes(tag);
+  const textValue = editableText ? element.textContent || "" : "";
+  const matchingText = editableText
+    ? Array.from(stage.value?.querySelectorAll(tag) || []).filter((candidate) => (candidate.textContent || "") === textValue)
+    : [];
+  const textOccurrence = matchingText.indexOf(element);
+
+  return {
+    label: className ? elementMap[className] : tagMap[tag],
+    selector,
+    contentSelector,
+    tag,
+    element,
+    componentId: props.component.id,
+    editableText,
+    textValue,
+    textOccurrence: Math.max(0, textOccurrence),
+  };
 }
 
 function setHoverElement(element) {
