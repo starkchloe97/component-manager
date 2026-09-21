@@ -167,8 +167,7 @@ function replaceTagTextOccurrence(source, tag, original, replacement, occurrence
   const templateMatch = source.match(/<template\b[^>]*>[\s\S]*?<\/template>/i);
   if (!templateMatch) return source;
   const template = templateMatch[0];
-  const escapedTag = escapeRegExp(String(tag));
-  const pattern = new RegExp("(<" + escapedTag + "\\b[^>]*>)([\\s\\S]*?)(</" + escapedTag + ">)", "gi");
+  const pattern = new RegExp("(<" + tag + "\\b[^>]*>)([\\s\\S]*?)(</" + tag + ">)", "gi");
   let index = -1;
   let match;
   while ((match = pattern.exec(template))) {
@@ -185,13 +184,18 @@ function replaceTagTextOccurrence(source, tag, original, replacement, occurrence
 }
 
 function replaceTextOccurrence(source, original, replacement, occurrence) {
-  const pattern = new RegExp(escapeRegExp(original), "g");
+  let from = 0;
   let index = 0;
-  return source.replace(pattern, (match) => index++ === occurrence ? replacement : match);
+  while (true) {
+    const found = source.indexOf(original, from);
+    if (found === -1) return source;
+    if (index === occurrence) return source.slice(0, found) + replacement + source.slice(found + original.length);
+    index += 1;
+    from = found + original.length;
+  }
 }
 
-function escapeRegExp(value) {
-  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\function appendBuilderContent(source, componentChildren, sections) {");
+function appendBuilderContent(source, componentChildren, sections) {");
 }
 
 function appendBuilderContent(source, componentChildren, sections) {
