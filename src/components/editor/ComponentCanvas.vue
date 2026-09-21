@@ -67,7 +67,16 @@ function describeElement(element) {
     ? `.${className}`
     : `[data-editor-element="${CSS.escape(key)}"]`;
   const contentSelector = `[data-editor-element="${CSS.escape(key)}"]`;
-  const editableText = ["h1","h2","h3","h4","h5","h6","p","span","strong","em","small","blockquote","figcaption","a","button","li","label"].includes(tag) && element.children.length === 0;
+  // Registered components often use semantic classes on generic elements
+  // (e.g. <div class="section-title">) rather than literal h1/p tags.
+  // Treat those known text roles as editable too, while still requiring a
+  // leaf element so nested component markup is never replaced accidentally.
+  const textRoleClasses = new Set([
+    "section-title", "section-label", "body-text",
+    "feature-title", "feature-desc",
+  ]);
+  const textTag = ["h1","h2","h3","h4","h5","h6","p","span","strong","em","small","blockquote","figcaption","a","button","li","label"].includes(tag);
+  const editableText = (textTag || textRoleClasses.has(className)) && element.children.length === 0;
   const textValue = editableText ? element.textContent || "" : "";
   const matchingText = editableText
     ? Array.from(stage.value?.querySelectorAll(tag) || []).filter((candidate) => (candidate.textContent || "") === textValue)
