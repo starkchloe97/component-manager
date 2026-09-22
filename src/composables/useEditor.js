@@ -159,12 +159,10 @@ export function useEditor() {
   }
 
   function addContainerToComponent(layout = "100") {
-    // Component-level layouts belong to componentChildren. They are siblings
-    // of the rendered component content, not page-level document sections.
-    const section = createSection(layout);
-    document.componentChildren.push(section);
-    selectNode(section.id);
-    return section;
+    const container = createContainer(layout);
+    document.componentChildren.push(container);
+    selectNode(container.id);
+    return container;
   }
 
   function createSection(layout = "100") {
@@ -177,12 +175,21 @@ export function useEditor() {
     return section;
   }
 
-  function createContainer() {
-    // A container is only the node the user explicitly requested.
-    // Do not manufacture sections, columns, or any other structural children.
+  function createContainer(layout = null) {
+    // A container is always a standalone root/layout node. Columns are created
+    // only when the user explicitly chooses a layout in the picker.
     const container = createEditorNode("container");
+    container.styles.display = "grid";
     container.styles.width = "100%";
     container.styles.maxWidth = "100%";
+    container.styles.gap = "0px";
+
+    if (layout) {
+      const columns = layout.split("-").map(Number);
+      container.styles.gridTemplateColumns = columns.map((width) => `${width}fr`).join(" ");
+      container.children.push(...createLayoutChildren(layout));
+    }
+
     return container;
   }
 
@@ -374,10 +381,10 @@ function getPercentWidth(value) {
 }
 
 function syncSectionColumnWidths(columnId) {
-  const section = findParentInDocument(columnId);
-  if (section?.type !== "section") return;
+  const layout = findParentInDocument(columnId);
+  if (!layout || !["section", "container"].includes(layout.type)) return;
 
-  const columns = (section.children || []).filter((child) => child.type === "column");
+  const columns = (layout.children || []).filter((child) => child.type === "column");
   const changedIndex = columns.findIndex((column) => column.id === columnId);
   const changedWidth = getPercentWidth(columns[changedIndex]?.styles?.width);
   if (columns.length !== 2 || changedIndex === -1 || changedWidth === null) return;
@@ -385,8 +392,8 @@ function syncSectionColumnWidths(columnId) {
   const adjacentColumn = columns[changedIndex === 0 ? 1 : 0];
   const adjacentWidth = 100 - changedWidth;
   adjacentColumn.styles = { ...adjacentColumn.styles, width: `${adjacentWidth}%` };
-  section.styles = {
-    ...section.styles,
+  layout.styles = {
+    ...layout.styles,
     gridTemplateColumns: columns.map((column) => `${getPercentWidth(column.styles.width) || 50}fr`).join(" "),
   };
 }
