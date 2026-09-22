@@ -142,7 +142,18 @@ async function resetComponent() {
 
 const canUndo = computed(() => historyPast.value.length > 0);
 const canRedo = computed(() => historyFuture.value.length > 0);
-const hasComponentChanges = computed(() => historyCurrent.value && historyBaseline.value && snapshotKey(historyCurrent.value) !== snapshotKey(historyBaseline.value));
+const hasComponentChanges = computed(() => {
+  const componentId = activeComponentId.value || activeId.value;
+  if (!componentId) return false;
+  const state = getComponentState(componentId);
+  const hasOverrides =
+    Object.keys(state.styles || {}).length > 0 ||
+    Object.keys(state.content || {}).length > 0;
+  const hasDocumentChanges =
+    (document.children?.length || 0) > 0 ||
+    (document.componentChildren?.length || 0) > 0;
+  return hasOverrides || hasDocumentChanges;
+});
 const activeComponent = computed(() => componentRegistry[activeId.value] || null);
 const hasSelectedElement = computed(() => !!selectedElement.value || !!selectedNode.value);
 
@@ -158,9 +169,18 @@ watch(
   { deep: true }
 );
 
+function initializeHistory() {
+  const componentId = activeComponentId.value || activeId.value;
+  if (!componentId) return;
+  resetHistoryForComponent(componentId);
+}
+
 watch(activeComponentId, (componentId) => {
   if (componentId) resetHistoryForComponent(componentId);
 }, { flush: "post" });
+
+initializeHistory();
+
 function selectComponentById(id) {
   activeId.value = id;
   setActiveComponent(id);
