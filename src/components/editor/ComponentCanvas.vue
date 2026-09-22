@@ -1,6 +1,7 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, onUpdated, ref, watch } from "vue";
 import EditorNode from "./EditorNode.vue";
+import SectionLayoutPicker from "./SectionLayoutPicker.vue";
 import { useComponentEditor } from "@/composables/useComponentEditor";
 import { useEditor } from "@/composables/useEditor";
 
@@ -15,7 +16,8 @@ const stage = ref(null);
 const hoveredElement = ref(null);
 const selectedDomElement = ref(null);
 const { selectedElement, selectElement, clearElement, applyOverrides } = useComponentEditor();
-const { selectNode, document } = useEditor();
+const { selectNode, document, addSection } = useEditor();
+const showEmptySectionPicker = ref(false);
 const componentName = computed(() => props.component?.name || props.component?.id || "Component");
 const selectableTags = "section, div, h1, h2, h3, h4, h5, h6, p, span, strong, em, small, blockquote, figcaption, a, button, img, ul, ol, li, form, input, textarea, label";
 
@@ -161,6 +163,11 @@ function handleClick(event) {
   emit("element-selected", descriptor);
 }
 
+function addFirstSection(layout) {
+  addSection(layout);
+  showEmptySectionPicker.value = false;
+}
+
 function handleStageClick(event) {
   if (event.target === stage.value && !props.preview) {
     clearVisualState();
@@ -220,11 +227,22 @@ onUnmounted(() => {
       <div v-if="!preview" class="component-builder-extension" @click.stop>
         <div class="page-section-list">
           <div v-for="node in document.children" :key="node.id" class="page-section-node">
-            <EditorNode :node="node" />
+            <EditorNode :node="node" :root-section="true" />
           </div>
-          <div v-if="!document.children.length" class="empty-page-state">
+          <div v-if="!document.children.length" class="empty-page-state" @click.stop>
             <span class="empty-page-title">Build your page</span>
             <span>Add a section to continue designing.</span>
+            <button
+              type="button"
+              class="section-insert-button empty-section-button"
+              aria-label="Add first section"
+              @click="showEmptySectionPicker = true"
+            >+</button>
+            <SectionLayoutPicker
+              v-if="showEmptySectionPicker"
+              @select="addFirstSection"
+              @close="showEmptySectionPicker = false"
+            />
           </div>
         </div>
 
@@ -314,6 +332,7 @@ onUnmounted(() => {
 .component-builder-extension{position:relative;background:#fff}
 .page-section-list{width:100%}
 .page-section-node{position:relative;width:100%;margin:0}
-.empty-page-state{min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:1px dashed #d7dee8;background:#fafbfc;color:#94a3b8;font-size:10px}
+.empty-page-state{position:relative;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:1px dashed #d7dee8;background:#fafbfc;color:#94a3b8;font-size:10px}
 .empty-page-title{font-size:11px;font-weight:700;color:#64748b}
+.empty-section-button{margin-top:6px;opacity:1;pointer-events:auto;position:relative;bottom:auto;left:auto;right:auto;display:grid;place-items:center;width:24px;height:24px;padding:0;border:1px solid #bfdbfe;border-radius:50%;background:#fff;color:#2563eb;font-size:16px;font-weight:600;line-height:21px;cursor:pointer;box-shadow:0 2px 7px rgba(15,23,42,.1);}
 </style>
