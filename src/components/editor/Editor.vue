@@ -19,12 +19,13 @@ const activeId = ref(props.initialComponentId || registry[0]?.id || null);
 const preview = ref(false);
 const drawerOpen = ref(false);
 const showAddSection = ref(false);
+const showAddContainer = ref(false);
 const { selectedElement, overrides, contentOverrides, clearElement, getComponentState, restoreComponentState, resetComponentState } = useComponentEditor();
 const { registerComponent } = useComponentManager();
 const { registerComponent: registerStyleComponent, selectComponent } = useStyleManager();
 const { copySelectedComponent } = useComponentCopy();
 const copyState = ref("idle");
-const { document, selectedNodeId, selectedNode, activeComponentId, setActiveComponent, resetActiveComponent, clearActiveComponent, addSection, selectNode, getDocumentSnapshot, restoreDocumentSnapshot } = useEditor();
+const { document, selectedNodeId, selectedNode, activeComponentId, setActiveComponent, resetActiveComponent, clearActiveComponent, addSection, addContainer, selectNode, getDocumentSnapshot, restoreDocumentSnapshot } = useEditor();
 
 registry.forEach((entry) => {
   const config = { name: entry.name, component: entry.component, source: entry.source, styles: {} };
@@ -200,8 +201,10 @@ async function copyComponent() {
   if (!result.ok) console.error(result.error);
   window.setTimeout(() => { copyState.value = "idle"; }, 1800);
 }
-function openAddSection() { if (!preview.value) showAddSection.value = true; }
+function openAddSection() { if (!preview.value) { showAddSection.value = true; showAddContainer.value = false; } }
+function openAddContainer() { if (!preview.value) { showAddContainer.value = true; showAddSection.value = false; } }
 function addSectionToPage(layout) { addSection(layout); showAddSection.value = false; }
+function addContainerToPage(layout) { addContainer(layout); showAddContainer.value = false; }
 </script>
 
 <template>
@@ -217,6 +220,7 @@ function addSectionToPage(layout) { addSection(layout); showAddSection.value = f
         </div>
         <div class="toolbar-actions">
           <button type="button" class="toolbar-button add-section-button" @click="openAddSection">Add section</button>
+          <button type="button" class="toolbar-button add-container-button" @click="openAddContainer">Add container</button>
           <button type="button" class="toolbar-button" :disabled="preview || !canUndo" @click="undo">Undo</button>
           <button type="button" class="toolbar-button" :disabled="preview || !canRedo" @click="redo">Redo</button>
           <button type="button" class="toolbar-button reset-component-button" :disabled="preview" @click="resetComponent">Reset</button>
@@ -250,6 +254,14 @@ function addSectionToPage(layout) { addSection(layout); showAddSection.value = f
       </div>
 
       <SectionLayoutPicker v-if="showAddSection" @select="addSectionToPage" @close="showAddSection = false" />
+      <SectionLayoutPicker
+        v-if="showAddContainer"
+        title="Add container"
+        description="Choose a layout, or start with an empty container."
+        :allow-empty-container="true"
+        @select="addContainerToPage"
+        @close="showAddContainer = false"
+      />
     </section>
   </div>
 </template>
@@ -371,6 +383,10 @@ function addSectionToPage(layout) { addSection(layout); showAddSection.value = f
 
 .add-section-button {
   background: #334155;
+  color: #fff
+}
+.add-container-button {
+  background: #475569;
   color: #fff
 }
 
