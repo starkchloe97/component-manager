@@ -1,18 +1,11 @@
 <script setup>
-
-    import LLC1 from '@/components/LLCPackages/LLC1.vue';
-    import LLC2 from '@/components/LLCPackages/LLC2.vue';
-    import LLC3 from '@/components/LLCPackages/LLC3.vue';
-    import LLC4 from '@/components/LLCPackages/LLC4.vue';
-
+import ComponentLibraryPage from "@/components/editor/ComponentLibraryPage.vue";
 </script>
 
-
 <template>
-
-    <LLC1 />
-    <LLC2 />
-    <LLC3 />
-    <LLC4 />
-
+  <ComponentLibraryPage
+    title="LLC Package Components"
+    prefix="LLC"
+    description="Browse every LLC package component and open the shared editor to customize any element inside it."
+  />
 </template>
