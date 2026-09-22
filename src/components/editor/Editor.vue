@@ -168,6 +168,16 @@ watch(activeComponentId, (componentId) => {
   if (componentId) resetHistoryForComponent(componentId);
 }, { flush: "post" });
 
+// EditorNode selections do not bubble through ComponentCanvas because the
+// node controls intentionally stop propagation. Open the same settings
+// drawer used by legacy component-element editing whenever a builder node
+// becomes selected.
+watch(selectedNodeId, (nodeId) => {
+  if (nodeId && !preview.value) {
+    drawerOpen.value = true;
+  }
+});
+
 initializeHistory();
 
 function selectComponentById(id) {
