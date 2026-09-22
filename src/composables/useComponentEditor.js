@@ -184,6 +184,15 @@ export function useComponentEditor() {
     if (original !== null) queueContentWrite(componentId, selector, original);
   };
 
+  const resetComponentState = (componentId) => {
+    if (!componentId) return false;
+    delete overrides[componentId];
+    delete contentOverrides[componentId];
+    pendingStyleWrites.delete(componentId);
+    pendingContentWrites.delete(componentId);
+    flushPersistence();
+    return true;
+  };
   const getComponentState = (componentId) => ({
     styles: deepClone(overrides[componentId] || {}),
     content: deepClone(contentOverrides[componentId] || {}),
@@ -264,6 +273,7 @@ export function useComponentEditor() {
     resetContent,
     getComponentState,
     restoreComponentState,
+    resetComponentState,
     applyOverrides,
   };
 }
