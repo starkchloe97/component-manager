@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
 import ComponentCanvas from "./ComponentCanvas.vue";
 import SectionLayoutPicker from "./SectionLayoutPicker.vue";
 import SettingsPanel from "./SettingsPanel.vue";
@@ -91,9 +91,10 @@ async function restoreHistorySnapshot(snapshot) {
   historyRestoring.value = true;
   clearElement();
   restoreDocumentSnapshot(snapshot.document);
+  await nextTick();
   restoreComponentState(snapshot.componentId, snapshot.component);
   historyCurrent.value = cloneHistory(snapshot);
-  await Promise.resolve();
+  await nextTick();
   historyRestoring.value = false;
 }
 
