@@ -398,12 +398,32 @@ function normalizePageStructure(nodes) {
   const source = Array.isArray(nodes) ? [...nodes] : [];
   const result = [];
 
+  function normalizeContainerNode(node) {
+    if (!node) return null;
+    node.styles = {
+      ...(node.styles || {}),
+      display: "grid",
+      gap: "0px",
+      width: "100%",
+      maxWidth: node.styles?.maxWidth || "100%",
+    };
+
+    // Containers are first-class nodes and may contain columns, nested
+    // containers, or editable elements. Never promote them to sections.
+    const columns = (node.children || []).filter(child => child?.type === "column");
+    if (columns.length) {
+      const tracks = columns.map(column => {
+        const n = Number.parseFloat(column.styles?.width);
+        return Number.isFinite(n) && n > 0 ? n : 1;
+      });
+      const total = tracks.reduce((sum, n) => sum + n, 0);
+      node.styles.gridTemplateColumns = tracks.map(n => `${n / total}fr`).join(" ");
+    }
+    return node;
+  }
+
   function asSection(node) {
     if (!node) return null;
-    if (node.type === "container") {
-      node.type = "section";
-      node.styles = { ...(node.styles || {}), display: "grid", gap: "0px", width: "100%" };
-    }
     if (node.type !== "section") return null;
     node.styles = { ...(node.styles || {}), display: "grid", gap: "0px", width: "100%" };
 
@@ -450,9 +470,12 @@ function normalizePageStructure(nodes) {
   }
 
   for (const node of source) {
-    if (node?.type === "section" || node?.type === "container") {
+    if (node?.type === "section") {
       const section = asSection(node);
       if (section) result.push(section);
+    } else if (node?.type === "container") {
+      const container = normalizeContainerNode(node);
+      if (container) result.push(container);
     } else {
       result.push(node);
     }
