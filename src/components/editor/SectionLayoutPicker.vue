@@ -2,10 +2,12 @@
 const props = defineProps({
   title: { type: String, default: "Add section" },
   description: { type: String, default: "Choose the column layout for the new section." },
+  allowEmptyContainer: { type: Boolean, default: false },
 });
 const emit = defineEmits(["select", "close"]);
 
 const layouts = [
+  ...(props.allowEmptyContainer ? [{ label: "Empty Container", value: null, empty: true }] : []),
   { label: "Full Width", value: "100" },
   { label: "50 / 50", value: "50-50" },
   { label: "33 / 67", value: "33-67" },
@@ -31,12 +33,15 @@ const layouts = [
       <div class="layouts">
         <button
           v-for="layout in layouts"
-          :key="layout.value"
+          :key="layout.value ?? 'empty'"
           type="button"
           class="layout"
           @click="emit('select', layout.value)"
         >
-          <span class="preview">
+          <span v-if="layout.empty" class="preview empty-preview">
+            <i />
+          </span>
+          <span v-else class="preview">
             <i
               v-for="width in layout.value.split('-')"
               :key="width"
@@ -57,6 +62,6 @@ const layouts = [
 .picker-header div{display:flex;flex-direction:column;gap:4px}.picker-header strong{font-size:13px;color:#1e293b}.picker-header span{font-size:11px;color:#64748b}.close{width:28px;height:28px;border:0;border-radius:6px;background:transparent;color:#64748b;font-size:19px;cursor:pointer}.close:hover{background:#e2e8f0;color:#1e293b}
 .layouts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:14px}
 .layout{min-width:0;padding:11px;border:1px solid #e2e8f0;border-radius:8px;background:#fff;color:#334155;text-align:left;cursor:pointer}.layout:hover{border-color:#93c5fd;background:#eff6ff}.layout>span:last-child{display:block;margin-top:8px;font-size:10px;font-weight:700}
-.preview{display:flex;gap:3px;width:100%;height:34px}.preview i{display:block;min-width:0;border-radius:3px;background:#cbd5e1}.layout:hover .preview i{background:#93c5fd}
+.preview{display:flex;gap:3px;width:100%;height:34px}.preview i{display:block;min-width:0;border-radius:3px;background:#cbd5e1}.empty-preview{border:1px dashed #94a3b8;border-radius:3px;box-sizing:border-box;align-items:center;justify-content:center}.empty-preview i{width:10px;height:10px;border-radius:50%;background:#94a3b8}.layout:hover .preview i{background:#93c5fd}
 @media(max-width:520px){.layouts{grid-template-columns:1fr}}
 </style>
