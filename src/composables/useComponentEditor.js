@@ -132,6 +132,10 @@ function toSelector(selector) {
   return selector || "";
 }
 
+function deepClone(value) {
+  return value == null ? value : JSON.parse(JSON.stringify(value));
+}
+
 function ensurePath(target, componentId, selector) {
   if (!target[componentId]) target[componentId] = {};
   if (!target[componentId][selector]) target[componentId][selector] = {};
@@ -180,6 +184,45 @@ export function useComponentEditor() {
     if (original !== null) queueContentWrite(componentId, selector, original);
   };
 
+  const getComponentState = (componentId) => ({
+    styles: deepClone(overrides[componentId] || {}),
+    content: deepClone(contentOverrides[componentId] || {}),
+  });
+
+  const restoreComponentState = (componentId, state = {}) => {
+    if (!componentId) return;
+
+    const oldStyles = deepClone(overrides[componentId] || {});
+    const oldContent = deepClone(contentOverrides[componentId] || {});
+    const roots = typeof window !== "undefined"
+      ? document.querySelectorAll(`[data-editor-component-id="${CSS.escape(componentId)}"]`)
+      : [];
+
+    roots.forEach((root) => {
+      Object.entries(oldStyles).forEach(([selector, styles]) => {
+        root.querySelectorAll(toSelector(selector)).forEach((element) => {
+          Object.keys(styles || {}).forEach((property) => element.style.removeProperty(property));
+        });
+      });
+      Object.entries(oldContent).forEach(([selector, entry]) => {
+        const original = typeof entry === "string" ? null : entry?.originalText;
+        if (original === undefined || original === null) return;
+        root.querySelectorAll(toSelector(selector)).forEach((element) => {
+          element.textContent = original;
+        });
+      });
+    });
+
+    if (overrides[componentId]) delete overrides[componentId];
+    if (contentOverrides[componentId]) delete contentOverrides[componentId];
+
+    const nextStyles = deepClone(state.styles || {});
+    const nextContent = deepClone(state.content || {});
+    if (Object.keys(nextStyles).length) overrides[componentId] = nextStyles;
+    if (Object.keys(nextContent).length) contentOverrides[componentId] = nextContent;
+
+    roots.forEach((root) => applyOverrides(root, componentId));
+  };
   const applyOverrides = (root, componentId) => {
     if (!root || !componentId) return;
 
@@ -219,6 +262,8 @@ export function useComponentEditor() {
     getContent,
     getContentEntry,
     resetContent,
+    getComponentState,
+    restoreComponentState,
     applyOverrides,
   };
 }
