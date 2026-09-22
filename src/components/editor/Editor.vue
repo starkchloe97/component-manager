@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import ComponentCanvas from "./ComponentCanvas.vue";
 import SectionLayoutPicker from "./SectionLayoutPicker.vue";
 import SettingsPanel from "./SettingsPanel.vue";
@@ -19,12 +19,12 @@ const activeId = ref(props.initialComponentId || registry[0]?.id || null);
 const preview = ref(false);
 const drawerOpen = ref(false);
 const showAddSection = ref(false);
-const { selectedElement, clearElement } = useComponentEditor();
+const { selectedElement, overrides, contentOverrides, clearElement, getComponentState, restoreComponentState } = useComponentEditor();
 const { registerComponent } = useComponentManager();
 const { registerComponent: registerStyleComponent, selectComponent } = useStyleManager();
 const { copySelectedComponent } = useComponentCopy();
 const copyState = ref("idle");
-const { document, selectedNodeId, selectedNode, setActiveComponent, clearActiveComponent, addSection, selectNode } = useEditor();
+const { document, selectedNodeId, selectedNode, activeComponentId, setActiveComponent, clearActiveComponent, addSection, selectNode, getDocumentSnapshot, restoreDocumentSnapshot } = useEditor();
 
 registry.forEach((entry) => {
   const config = { name: entry.name, component: entry.component, source: entry.source, styles: {} };
@@ -34,9 +34,110 @@ registry.forEach((entry) => {
 selectComponent(activeId.value);
 setActiveComponent(activeId.value);
 
+const HISTORY_LIMIT = 50;
+const historyPast = ref([]);
+const historyFuture = ref([]);
+const historyCurrent = ref(null);
+const historyBaseline = ref(null);
+const historyTimer = ref(null);
+const historyRestoring = ref(false);
+
+function cloneHistory(value) { return JSON.parse(JSON.stringify(value)); }
+
+function createSnapshot() {
+  const componentId = activeComponentId.value || activeId.value;
+  return { componentId, document: getDocumentSnapshot(), component: getComponentState(componentId) };
+}
+
+function snapshotKey(snapshot) { return JSON.stringify(snapshot); }
+
+function pristineSnapshot(componentId) {
+  return { componentId, document: { children: [], componentChildren: [] }, component: { styles: {}, content: {} } };
+}
+
+function clearHistoryTimer() {
+  if (historyTimer.value !== null && typeof window !== "undefined") window.clearTimeout(historyTimer.value);
+  historyTimer.value = null;
+}
+
+function commitHistorySnapshot() {
+  clearHistoryTimer();
+  if (historyRestoring.value || !activeComponentId.value) return;
+  const next = createSnapshot();
+  if (!historyCurrent.value) { historyCurrent.value = next; return; }
+  if (snapshotKey(next) === snapshotKey(historyCurrent.value)) return;
+  historyPast.value.push(historyCurrent.value);
+  if (historyPast.value.length > HISTORY_LIMIT) historyPast.value.shift();
+  historyCurrent.value = next;
+  historyFuture.value = [];
+}
+
+function scheduleHistorySnapshot() {
+  clearHistoryTimer();
+  if (typeof window === "undefined") return;
+  historyTimer.value = window.setTimeout(() => { historyTimer.value = null; commitHistorySnapshot(); }, 300);
+}
+
+function resetHistoryForComponent(componentId) {
+  clearHistoryTimer();
+  historyPast.value = [];
+  historyFuture.value = [];
+  historyBaseline.value = pristineSnapshot(componentId);
+  historyCurrent.value = createSnapshot();
+}
+
+async function restoreHistorySnapshot(snapshot) {
+  if (!snapshot || snapshot.componentId !== activeComponentId.value) return;
+  historyRestoring.value = true;
+  clearElement();
+  restoreDocumentSnapshot(snapshot.document);
+  restoreComponentState(snapshot.componentId, snapshot.component);
+  historyCurrent.value = cloneHistory(snapshot);
+  await Promise.resolve();
+  historyRestoring.value = false;
+}
+
+function flushPendingHistory() { if (historyTimer.value !== null) commitHistorySnapshot(); }
+
+async function undo() {
+  flushPendingHistory();
+  const previous = historyPast.value.pop();
+  if (!previous || !historyCurrent.value) return;
+  historyFuture.value.unshift(historyCurrent.value);
+  await restoreHistorySnapshot(previous);
+}
+
+async function redo() {
+  flushPendingHistory();
+  const next = historyFuture.value.shift();
+  if (!next || !historyCurrent.value) return;
+  historyPast.value.push(historyCurrent.value);
+  await restoreHistorySnapshot(next);
+}
+
+async function resetComponent() {
+  flushPendingHistory();
+  if (!historyCurrent.value || !historyBaseline.value) return;
+  if (snapshotKey(historyCurrent.value) === snapshotKey(historyBaseline.value)) return;
+  historyPast.value.push(historyCurrent.value);
+  if (historyPast.value.length > HISTORY_LIMIT) historyPast.value.shift();
+  historyFuture.value = [];
+  await restoreHistorySnapshot(historyBaseline.value);
+}
+
+const canUndo = computed(() => historyPast.value.length > 0);
+const canRedo = computed(() => historyFuture.value.length > 0);
+const hasComponentChanges = computed(() => historyCurrent.value && historyBaseline.value && snapshotKey(historyCurrent.value) !== snapshotKey(historyBaseline.value));
 const activeComponent = computed(() => componentRegistry[activeId.value] || null);
 const hasSelectedElement = computed(() => !!selectedElement.value || !!selectedNode.value);
 
+watch([document, overrides, contentOverrides], () => {
+  if (!historyRestoring.value && activeComponentId.value) scheduleHistorySnapshot();
+}, { deep: true });
+
+watch(activeComponentId, (componentId) => {
+  if (componentId) resetHistoryForComponent(componentId);
+}, { flush: "post" });
 function selectComponentById(id) {
   activeId.value = id;
   setActiveComponent(id);
@@ -74,9 +175,9 @@ function addSectionToPage(layout) { addSection(layout); showAddSection.value = f
         </div>
         <div class="toolbar-actions">
           <button type="button" class="toolbar-button add-section-button" @click="openAddSection">Add section</button>
-          <button type="button" class="toolbar-button" :disabled="preview">Undo</button>
-          <button type="button" class="toolbar-button" :disabled="preview">Redo</button>
-          <button type="button" class="toolbar-button copy-button" :disabled="copyState === 'copying'" @click="copyComponent">{{ copyState === "copying" ? "Copying…" : copyState === "copied" ? "Copied!" : copyState === "error" ? "Copy failed" : "Copy Vue" }}</button>
+          <button type="button" class="toolbar-button" :disabled="preview || !canUndo" @click="undo">Undo</button>
+          <button type="button" class="toolbar-button" :disabled="preview || !canRedo" @click="redo">Redo</button>
+          <button type="button" class="toolbar-button reset-component-button" :disabled="preview || !hasComponentChanges" @click="resetComponent">Reset</button>\n          <button type="button" class="toolbar-button copy-button" :disabled="copyState === 'copying'" @click="copyComponent">{{ copyState === "copying" ? "Copying…" : copyState === "copied" ? "Copied!" : copyState === "error" ? "Copy failed" : "Copy Vue" }}</button>
         </div>
       </header>
 
@@ -400,7 +501,7 @@ function addSectionToPage(layout) { addSection(layout); showAddSection.value = f
 
 @media(max-width:760px) {
   .editor.drawer-open .editor-workspace { padding-right: 0; }
-  .toolbar-actions .toolbar-button:not(.copy-button):not(.add-section-button) {
+  .toolbar-actions .toolbar-button:not(.copy-button):not(.add-section-button):not(.reset-component-button) {
     display: none
   }
 
