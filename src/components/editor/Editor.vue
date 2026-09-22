@@ -178,7 +178,8 @@ function addSectionToPage(layout) { addSection(layout); showAddSection.value = f
           <button type="button" class="toolbar-button add-section-button" @click="openAddSection">Add section</button>
           <button type="button" class="toolbar-button" :disabled="preview || !canUndo" @click="undo">Undo</button>
           <button type="button" class="toolbar-button" :disabled="preview || !canRedo" @click="redo">Redo</button>
-          <button type="button" class="toolbar-button reset-component-button" :disabled="preview || !hasComponentChanges" @click="resetComponent">Reset</button>\n          <button type="button" class="toolbar-button copy-button" :disabled="copyState === 'copying'" @click="copyComponent">{{ copyState === "copying" ? "Copying…" : copyState === "copied" ? "Copied!" : copyState === "error" ? "Copy failed" : "Copy Vue" }}</button>
+          <button type="button" class="toolbar-button reset-component-button" :disabled="preview || !hasComponentChanges" @click="resetComponent">Reset</button>
+          <button type="button" class="toolbar-button copy-button" :disabled="copyState === 'copying'" @click="copyComponent">{{ copyState === "copying" ? "Copying…" : copyState === "copied" ? "Copied!" : copyState === "error" ? "Copy failed" : "Copy Vue" }}</button>
         </div>
       </header>
 
