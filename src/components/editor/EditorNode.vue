@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useEditor } from "@/composables/useEditor";
 import { componentRegistry } from "@/config/componentRegistry";
 import SectionLayoutPicker from "./SectionLayoutPicker.vue";
@@ -19,6 +19,8 @@ const componentCopyState = ref("idle");
 const showAdd = ref(false);
 const showSectionPicker = ref(false);
 const showContainerPicker = ref(false);
+const leafElement = ref(null);
+const leafToolbarStyle = ref({});
 
 const isSelected = computed(() => selectedNodeId.value === props.node.id);
 const componentEntry = computed(() => componentRegistry[props.node.props?.componentId] || null);
@@ -71,6 +73,17 @@ const imageStyles = computed(() => {
   };
 });
 
+function updateLeafToolbarPosition() {
+  if (!isSelected.value || !leafElement.value) return;
+  const rect = leafElement.value.getBoundingClientRect();
+  leafToolbarStyle.value = {
+    top: Math.max(4, rect.top - 36) + "px",
+    left: Math.max(4, rect.right - 180) + "px",
+  };
+}
+function handleLeafViewportChange() {
+  updateLeafToolbarPosition();
+}
 function select(event) {
   event.stopPropagation();
   if (isSelected.value && props.parentId) {
@@ -313,6 +326,7 @@ async function copyCurrentComponent() {
     :class="{ 'builder-element--selected': isSelected }"
     :style="elementStyles"
     @click.stop="select"
+    ref="leafElement"
   >{{ node.props.text }}</component>
 
   <p
@@ -321,6 +335,7 @@ async function copyCurrentComponent() {
     :class="{ 'builder-element--selected': isSelected }"
     :style="elementStyles"
     @click.stop="select"
+    ref="leafElement"
   >{{ node.props.text }}</p>
 
   <a
@@ -330,6 +345,7 @@ async function copyCurrentComponent() {
     :href="node.props.href || '#'"
     :style="elementStyles"
     @click.prevent.stop="select"
+    ref="leafElement"
   >{{ node.props.text }}</a>
 
   <img
@@ -340,6 +356,7 @@ async function copyCurrentComponent() {
     :alt="node.props.alt"
     :style="imageStyles"
     @click.stop="select"
+    ref="leafElement"
   />
 
   <div
@@ -356,6 +373,7 @@ async function copyCurrentComponent() {
   <div
     v-if="isSelected && ['heading', 'text', 'button', 'image'].includes(node.type)"
     class="node-toolbar node-toolbar--leaf"
+    :style="leafToolbarStyle"
     @click.stop
   >
     <span>{{ nodeLabel }}</span>
@@ -721,7 +739,7 @@ async function copyCurrentComponent() {
 .component-node-label{position:absolute;top:6px;right:6px;z-index:5;padding:3px 6px;border-radius:4px;background:rgba(15,23,42,.78);color:#fff;font-size:8px;pointer-events:none}
 .component-missing{min-height:100px;display:grid;place-items:center;color:#94a3b8;background:#f8fafc}
 
-.node-toolbar--leaf{position:fixed;top:auto;right:auto;z-index:1000}
+.node-toolbar--leaf{position:fixed;z-index:1000}
 
 .node-toolbar{
   position:absolute;
