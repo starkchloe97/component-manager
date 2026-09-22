@@ -244,6 +244,16 @@ export function useEditor() {
     return container;
   }
 
+  function addContainerAfter(nodeId, layout = null) {
+    const container = createContainer(layout);
+    const parent = findParentInDocument(nodeId);
+    const list = parent ? parent.children : rootListFor(nodeId);
+    const index = list.findIndex((node) => node.id === nodeId);
+    list.splice(index >= 0 ? index + 1 : list.length, 0, container);
+    selectNode(container.id);
+    return container;
+  }
+
   function addNode(type, parentId = null, overrides = {}) {
     const node = createEditorNode(type, overrides);
     const parent = parentId ? findNodeInDocument(parentId) : document;
