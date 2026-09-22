@@ -42,6 +42,21 @@ import Faq4Source from "@/components/FaqSection/Faq4.vue?raw";
 import Faq5Source from "@/components/FaqSection/Faq5.vue?raw";
 import Hero1Source from "@/components/HeroSection.vue/Hero1.vue?raw";
 import Hero2Source from "@/components/HeroSection.vue/Hero2.vue?raw";
+import Hero3 from "@/components/HeroSection.vue/Hero3.vue";
+import Hero3Source from "@/components/HeroSection.vue/Hero3.vue?raw";
+import Hero4 from "@/components/HeroSection.vue/Hero4.vue";
+import Hero4Source from "@/components/HeroSection.vue/Hero4.vue?raw";
+import Hero5 from "@/components/HeroSection.vue/Hero5.vue";
+import Hero5Source from "@/components/HeroSection.vue/Hero5.vue?raw";
+import Hero6 from "@/components/HeroSection.vue/Hero6.vue";
+import Hero6Source from "@/components/HeroSection.vue/Hero6.vue?raw";
+import Hero7 from "@/components/HeroSection.vue/Hero7.vue";
+import Hero7Source from "@/components/HeroSection.vue/Hero7.vue?raw";
+import Hero8 from "@/components/HeroSection.vue/Hero8.vue";
+import Hero8Source from "@/components/HeroSection.vue/Hero8.vue?raw";
+import Hero9 from "@/components/HeroSection.vue/Hero9.vue";
+import Hero9Source from "@/components/HeroSection.vue/Hero9.vue?raw";
+
 import Testimonial1Source from "@/components/Testimonials/Testimonial1.vue?raw";
 import Testimonial2Source from "@/components/Testimonials/Testimonial2.vue?raw";
 import Testimonial3Source from "@/components/Testimonials/Testimonial3.vue?raw";
@@ -110,6 +125,14 @@ export const componentRegistry = {
 
   Hero1: entry("Hero1", "Hero 1", Hero1, Hero1Source),
   Hero2: entry("Hero2", "Hero 2", Hero2, Hero2Source),
+  Hero3: entry("Hero3", "Hero 3", Hero3, Hero3Source),
+  Hero4: entry("Hero4", "Hero 4", Hero4, Hero4Source),
+  Hero5: entry("Hero5", "Hero 5", Hero5, Hero5Source),
+  Hero6: entry("Hero6", "Hero 6", Hero6, Hero6Source),
+  Hero7: entry("Hero7", "Hero 7", Hero7, Hero7Source),
+  Hero8: entry("Hero8", "Hero 8", Hero8, Hero8Source),
+  Hero9: entry("Hero9", "Hero 9", Hero9, Hero9Source),
+
 
   Testimonial1: entry("Testimonial1", "Testimonial 1", Testimonial1, Testimonial1Source),
   Testimonial2: entry("Testimonial2", "Testimonial 2", Testimonial2, Testimonial2Source),
