@@ -185,9 +185,11 @@ export function useEditor() {
   }
 
   function addSectionAfter(sectionId, layout = "100") {
-    const topLevel = findTopLevelSection(sectionId);
-    const index = topLevel ? document.children.findIndex((node) => node.id === topLevel.id) + 1 : document.children.length;
-    return addSection(layout, index, document.children);
+    const root = findRootLayoutContext(sectionId);
+    const list = root?.list || document.children;
+    const rootNode = root?.node || null;
+    const index = rootNode ? list.findIndex((node) => node.id === rootNode.id) + 1 : list.length;
+    return addSection(layout, index, list);
   }
 
   function createLayoutChildren(layout) {
@@ -344,6 +346,20 @@ function findTopLevelSection(id) {
     return null;
   };
   return walk(document.children);
+}
+
+function findRootLayoutContext(id) {
+  const find = (nodes, list, ancestor = null) => {
+    for (const node of nodes || []) {
+      if (node.id === id) {
+        return { node: node.type === "section" ? node : ancestor, list };
+      }
+      const found = find(node.children || [], list, node.type === "section" ? node : ancestor);
+      if (found) return found;
+    }
+    return null;
+  };
+  return find(document.children, document.children) || find(document.componentChildren, document.componentChildren);
 }
 function getPercentWidth(value) {
   const match = /^\s*(\d+(?:\.\d+)?)%\s*$/.exec(String(value ?? ""));
