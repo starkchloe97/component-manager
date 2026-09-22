@@ -111,7 +111,26 @@ if (typeof window !== "undefined") {
   window.addEventListener("pagehide", flushDocumentPersistence);
 }
 
+function cloneState(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
 export function useEditor() {
+  const getDocumentSnapshot = () => ({
+    children: cloneState(document.children),
+    componentChildren: cloneState(document.componentChildren),
+  });
+
+  const restoreDocumentSnapshot = (snapshot = {}) => {
+    replaceDocument({
+      children: cloneState(snapshot.children || []),
+      componentChildren: cloneState(snapshot.componentChildren || []),
+      version: document.version,
+    });
+    selectedNodeId.value = null;
+    scheduleDocumentPersistence();
+  };
+
   const selectedNode = computed(() => selectedNodeId.value ? findNodeInDocument(selectedNodeId.value) : null);
   const selectNode = (id) => { selectedNodeId.value = id; };
 
@@ -250,7 +269,29 @@ export function useEditor() {
     return true;
   }
 
-  return { document, selectedNodeId, selectedNode, activeComponentId, setActiveComponent, clearActiveComponent, selectNode, addSection, addSectionAfter, addSectionToParent, addContainer, addComponentElement, addContainerToComponent, addNode, addComponent, updateNode, moveNode, deleteNode, duplicateNode };
+  return {
+    document,
+    selectedNodeId,
+    selectedNode,
+    activeComponentId,
+    setActiveComponent,
+    clearActiveComponent,
+    selectNode,
+    addSection,
+    addSectionAfter,
+    addSectionToParent,
+    addContainer,
+    addComponentElement,
+    addContainerToComponent,
+    addNode,
+    addComponent,
+    updateNode,
+    moveNode,
+    deleteNode,
+    duplicateNode,
+    getDocumentSnapshot,
+    restoreDocumentSnapshot,
+  };
 }
 
 function findNode(nodes, id) {
