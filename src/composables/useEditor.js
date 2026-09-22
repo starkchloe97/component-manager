@@ -98,6 +98,23 @@ function setActiveComponent(componentId) {
   persistDocument();
 }
 
+function resetActiveComponent() {
+  const componentId = activeComponentId.value;
+  if (!componentId) return false;
+
+  if (typeof window !== "undefined") {
+    if (persistTimer) {
+      window.clearTimeout(persistTimer);
+      persistTimer = null;
+    }
+    window.localStorage.removeItem(storageKey(componentId));
+  }
+
+  replaceDocument(null);
+  selectedNodeId.value = null;
+  persistenceReady = true;
+  return true;
+}
 function clearActiveComponent() {
   if (activeComponentId.value) flushDocumentPersistence();
   activeComponentId.value = null;
@@ -275,6 +292,7 @@ export function useEditor() {
     selectedNode,
     activeComponentId,
     setActiveComponent,
+    resetActiveComponent,
     clearActiveComponent,
     selectNode,
     addSection,
