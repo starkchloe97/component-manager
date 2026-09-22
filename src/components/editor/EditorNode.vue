@@ -12,7 +12,7 @@ const props = defineProps({
   parentType: { type: String, default: null },
   rootSection: { type: Boolean, default: false },
 });
-const { selectedNodeId, selectNode, addNode, addComponent, addSectionAfter, addContainer, duplicateNode, deleteNode } = useEditor();
+const { selectedNodeId, selectNode, addNode, addComponent, addSectionAfter, addContainer, addContainerAfter, duplicateNode, deleteNode } = useEditor();
 const { copySection, copySelectedComponent } = useComponentCopy();
 const sectionCopyState = ref("idle");
 const componentCopyState = ref("idle");
@@ -125,6 +125,15 @@ function addContainerBelow(layout) {
   addContainer(layout, props.node.id);
   showContainerPicker.value = false;
   showAdd.value = false;
+}
+function addContainerAfterCurrent(layout) {
+  addContainerAfter(props.node.id, layout);
+  showContainerPicker.value = false;
+  showAdd.value = false;
+}
+function openContainerPicker() {
+  showContainerPicker.value = true;
+  showSectionPicker.value = false;
 }
 function openSectionPicker() {
   showSectionPicker.value = true;
@@ -281,9 +290,29 @@ async function copyCurrentComponent() {
         @close="showContainerPicker = false"
       />
     </div>
+    <div v-if="isSelected" class="node-toolbar container-toolbar" @click.stop>
+      <span>{{ nodeLabel }}</span>
+      <button type="button" @click="openSectionPicker">Add section</button>
+      <button type="button" @click="openContainerPicker">Add container</button>
+      <button type="button" @click="duplicateNode(node.id)">Duplicate</button>
+      <button type="button" @click="removeNode">Delete</button>
+    </div>
+    <SectionLayoutPicker
+      v-if="showSectionPicker"
+      @select="addSectionBelow"
+      @close="showSectionPicker = false"
+    />
+    <SectionLayoutPicker
+      v-if="showContainerPicker"
+      title="Add container"
+      description="Choose a layout for the new container."
+      :allow-empty-container="true"
+      @select="addContainerAfterCurrent"
+      @close="showContainerPicker = false"
+    />
   </div>
 
-  <div v-else-if="node.type === 'component'" class="editor-node" :class="{ 'editor-node--selected': isSelected }" @click="select">
+  <div v-else-if="node.type === 'component' class="editor-node" :class="{ 'editor-node--selected': isSelected }" @click="select">
     <div class="component-node" :style="node.styles">
       <div class="component-node-label">{{ componentLabel }}</div>
       <component v-if="componentEntry" :is="componentEntry.component" />
@@ -610,7 +639,7 @@ async function copyCurrentComponent() {
   font-size:10px;
 }
 .section-toolbar{top:-4px;right:6px}
-.column-toolbar{top:2px;right:6px}
+.column-toolbar{top:2px;right:6px}\n.container-toolbar{top:2px;right:6px}
 .node-toolbar span{padding:0 4px;font-weight:700}
 .node-toolbar button:disabled{opacity:.45;cursor:default}
 .node-toolbar button{border:0;background:transparent;color:#fff;cursor:pointer;font-size:10px;padding:3px 5px}
