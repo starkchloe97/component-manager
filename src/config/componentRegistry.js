@@ -56,6 +56,29 @@ import TextImage6Source from "@/components/TextImage/TextImage6.vue?raw";
 import TextImage7Source from "@/components/TextImage/TextImage7.vue?raw";
 import TextImage8Source from "@/components/TextImage/TextImage8.vue?raw";
 import TextImage9Source from "@/components/TextImage/TextImage9.vue?raw";
+import Pricing1 from "@/components/PricingSection/Pricing1.vue";
+import Pricing2 from "@/components/PricingSection/Pricing2.vue";
+import Pricing3 from "@/components/PricingSection/Pricing3.vue";
+import Pricing4 from "@/components/PricingSection/Pricing4.vue";
+import Pricing5 from "@/components/PricingSection/Pricing5.vue";
+import Pricing6 from "@/components/PricingSection/Pricing6.vue";
+import Pricing7 from "@/components/PricingSection/Pricing7.vue";
+import LLC1 from "@/components/LLCPackages/LLC1.vue";
+import LLC2 from "@/components/LLCPackages/LLC2.vue";
+import LLC3 from "@/components/LLCPackages/LLC3.vue";
+import LLC4 from "@/components/LLCPackages/LLC4.vue";
+import Pricing1Source from "@/components/PricingSection/Pricing1.vue?raw";
+import Pricing2Source from "@/components/PricingSection/Pricing2.vue?raw";
+import Pricing3Source from "@/components/PricingSection/Pricing3.vue?raw";
+import Pricing4Source from "@/components/PricingSection/Pricing4.vue?raw";
+import Pricing5Source from "@/components/PricingSection/Pricing5.vue?raw";
+import Pricing6Source from "@/components/PricingSection/Pricing6.vue?raw";
+import Pricing7Source from "@/components/PricingSection/Pricing7.vue?raw";
+import LLC1Source from "@/components/LLCPackages/LLC1.vue?raw";
+import LLC2Source from "@/components/LLCPackages/LLC2.vue?raw";
+import LLC3Source from "@/components/LLCPackages/LLC3.vue?raw";
+import LLC4Source from "@/components/LLCPackages/LLC4.vue?raw";
+
 
 const entry = (id, name, component, source) => ({ id, name, component, source });
 
@@ -93,4 +116,17 @@ export const componentRegistry = {
   Testimonial3: entry("Testimonial3", "Testimonial 3", Testimonial3, Testimonial3Source),
   Testimonial4: entry("Testimonial4", "Testimonial 4", Testimonial4, Testimonial4Source),
   Testimonial5: entry("Testimonial5", "Testimonial 5", Testimonial5, Testimonial5Source),
+
+  Pricing1: entry("Pricing1", "Pricing 1", Pricing1, Pricing1Source),
+  Pricing2: entry("Pricing2", "Pricing 2", Pricing2, Pricing2Source),
+  Pricing3: entry("Pricing3", "Pricing 3", Pricing3, Pricing3Source),
+  Pricing4: entry("Pricing4", "Pricing 4", Pricing4, Pricing4Source),
+  Pricing5: entry("Pricing5", "Pricing 5", Pricing5, Pricing5Source),
+  Pricing6: entry("Pricing6", "Pricing 6", Pricing6, Pricing6Source),
+  Pricing7: entry("Pricing7", "Pricing 7", Pricing7, Pricing7Source),
+
+  LLC1: entry("LLC1", "LLC Package 1", LLC1, LLC1Source),
+  LLC2: entry("LLC2", "LLC Package 2", LLC2, LLC2Source),
+  LLC3: entry("LLC3", "LLC Package 3", LLC3, LLC3Source),
+  LLC4: entry("LLC4", "LLC Package 4", LLC4, LLC4Source),
 };
