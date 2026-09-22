@@ -173,6 +173,7 @@ async function copyCurrentComponent() {
         v-if="showContainerPicker"
         title="Add container"
         description="Choose a layout for this container."
+        :allow-empty-container="true"
         @select="addContainerBelow"
         @close="showContainerPicker = false"
       />
