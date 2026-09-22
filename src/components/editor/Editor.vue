@@ -119,7 +119,7 @@ async function redo() {
 async function resetComponent() {
   flushPendingHistory();
   const componentId = activeComponentId.value;
-  if (!componentId || !hasComponentChanges.value) return;
+  if (!componentId) return;
 
   const current = createSnapshot();
   historyPast.value.push(current);
@@ -142,18 +142,7 @@ async function resetComponent() {
 
 const canUndo = computed(() => historyPast.value.length > 0);
 const canRedo = computed(() => historyFuture.value.length > 0);
-const hasComponentChanges = computed(() => {
-  const componentId = activeComponentId.value || activeId.value;
-  if (!componentId) return false;
-  const state = getComponentState(componentId);
-  const hasOverrides =
-    Object.keys(state.styles || {}).length > 0 ||
-    Object.keys(state.content || {}).length > 0;
-  const hasDocumentChanges =
-    (document.children?.length || 0) > 0 ||
-    (document.componentChildren?.length || 0) > 0;
-  return hasOverrides || hasDocumentChanges;
-});
+const hasComponentChanges = computed(() => true);
 const activeComponent = computed(() => componentRegistry[activeId.value] || null);
 const hasSelectedElement = computed(() => !!selectedElement.value || !!selectedNode.value);
 
@@ -220,7 +209,7 @@ function addSectionToPage(layout) { addSection(layout); showAddSection.value = f
           <button type="button" class="toolbar-button add-section-button" @click="openAddSection">Add section</button>
           <button type="button" class="toolbar-button" :disabled="preview || !canUndo" @click="undo">Undo</button>
           <button type="button" class="toolbar-button" :disabled="preview || !canRedo" @click="redo">Redo</button>
-          <button type="button" class="toolbar-button reset-component-button" :disabled="preview || !hasComponentChanges" @click="resetComponent">Reset</button>
+          <button type="button" class="toolbar-button reset-component-button" :disabled="preview" @click="resetComponent">Reset</button>
           <button type="button" class="toolbar-button copy-button" :disabled="copyState === 'copying'" @click="copyComponent">{{ copyState === "copying" ? "Copying…" : copyState === "copied" ? "Copied!" : copyState === "error" ? "Copy failed" : "Copy Vue" }}</button>
         </div>
       </header>
