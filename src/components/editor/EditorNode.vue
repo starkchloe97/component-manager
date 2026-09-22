@@ -162,9 +162,7 @@ async function copyCurrentComponent() {
 
       <SectionLayoutPicker
         v-if="showSectionPicker"
-        title="Add container"
-        description="Choose a layout for this container."
-        @select="addContainerBelow"
+        @select="addSectionBelow"
         @close="showSectionPicker = false"
       />
 
