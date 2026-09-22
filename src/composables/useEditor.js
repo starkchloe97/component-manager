@@ -177,6 +177,18 @@ export function useEditor() {
     return section;
   }
 
+  function createContainer(layout = "100") {
+    const container = createEditorNode("container");
+    const columns = layout.split("-").map(Number);
+    container.styles.display = "grid";
+    container.styles.gridTemplateColumns = columns.map((width) => `${width}fr`).join(" ");
+    container.styles.gap = "0px";
+    container.styles.width = "100%";
+    container.styles.maxWidth = "100%";
+    container.children.push(...createLayoutChildren(layout));
+    return container;
+  }
+
   function addSection(layout = "100", index = document.children.length, list = document.children) {
     const section = createSection(layout);
     list.splice(Math.max(0, Math.min(index, list.length)), 0, section);
@@ -210,24 +222,22 @@ export function useEditor() {
     return addSection(layout, index, document.children);
   }
 
-  // "Container" in the layout picker is a top-level layout section.
-  // We deliberately do not create section -> container -> columns nesting.
+  // A container is a first-class layout node. Creating one from the
+  // container/column controls keeps it in that parent; creating one without
+  // a container/column context puts it directly at the page root.
   function addContainer(layout = "100", parentId = null) {
-    // The explicit section + control is the only path that creates a new
-    // page-level section. "Add container" from an existing layout keeps the
-    // current insertion context, just like nested Elementor containers.
     const parent = parentId ? findNodeInDocument(parentId) : null;
     if (parent?.type === "column" || parent?.type === "container") {
-      const section = createSection(layout);
-      section.styles.width = "100%";
-      section.styles.maxWidth = "100%";
-      parent.children.push(section);
-      selectNode(section.id);
-      return section;
+      const container = createContainer(layout);
+      parent.children.push(container);
+      selectNode(container.id);
+      return container;
     }
 
-    // No layout context means this is an explicit root insertion.
-    return addSection(layout, document.children.length, document.children);
+    const container = createContainer(layout);
+    document.children.push(container);
+    selectNode(container.id);
+    return container;
   }
 
   function addNode(type, parentId = null, overrides = {}) {
