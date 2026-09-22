@@ -213,6 +213,7 @@ async function copyCurrentComponent() {
         v-if="showContainerPicker"
         title="Add container"
         description="Choose a layout for this container."
+        :allow-empty-container="true"
         @select="addContainerBelow"
         @close="showContainerPicker = false"
       />
@@ -236,6 +237,7 @@ async function copyCurrentComponent() {
         v-if="showSectionPicker"
         title="Add container"
         description="Choose the column layout for the new container."
+        :allow-empty-container="true"
         @select="addContainerBelow"
         @close="showSectionPicker = false"
       />
@@ -262,6 +264,7 @@ async function copyCurrentComponent() {
         v-if="showSectionPicker"
         title="Add container"
         description="Choose the column layout for the new container under this component."
+        :allow-empty-container="true"
         @select="addContainerBelow"
         @close="showSectionPicker = false"
       />
