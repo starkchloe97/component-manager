@@ -88,7 +88,7 @@ const isGrid=computed(()=>display.value==="grid");
 <div class="content-actions">
   <span>Changes are saved automatically.</span>
   <button
-    v-if="currentContent() !== element.textValue"
+    v-if="hasContentOverride()"
     type="button"
     @click="resetTextContent"
   >Reset</button>
