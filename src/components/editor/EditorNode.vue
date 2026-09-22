@@ -224,7 +224,16 @@ async function copyCurrentComponent() {
       <div v-if="!node.children.length" class="container-empty"><span>+</span><small>Empty container</small></div>
       <EditorNode v-for="child in node.children" :key="child.id" :node="child" :parent-id="node.id" :parent-type="node.type" />
       <div class="container-add" @click.stop>
-        <button type="button" class="add-element-button" :class="{ 'is-open': showAdd }" @click="toggleAdd" aria-label="Add element">+</button>
+        <button
+          type="button"
+          class="container-add-trigger"
+          :class="{ 'is-open': showAdd }"
+          @click="toggleAdd"
+          aria-label="Add element to container"
+        >
+          <span class="container-add-icon">+</span>
+          <span>Add element</span>
+        </button>
         <div v-if="showAdd" class="element-menu">
           <div class="menu-title">Basic elements</div>
           <button v-for="item in basicElements" :key="item.type" type="button" @click="addBasic(item.type)">{{ item.label }}</button>
@@ -454,8 +463,34 @@ async function copyCurrentComponent() {
   position:relative;
   display:flex;
   justify-content:center;
-  padding:7px 0 2px;
+  padding:8px 0 4px;
   z-index:20;
+}
+.container-add-trigger{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  min-width:92px;
+  height:28px;
+  padding:0 10px;
+  border:1px dashed #cbd5e1;
+  border-radius:6px;
+  background:#fff;
+  color:#64748b;
+  font-size:10px;
+  font-weight:600;
+  cursor:pointer;
+  box-shadow:0 1px 4px rgba(15,23,42,.06);
+}
+.container-add-trigger:hover,.container-add-trigger.is-open{
+  border-color:#2563eb;
+  color:#2563eb;
+  background:#eff6ff;
+}
+.container-add-icon{
+  font-size:15px;
+  line-height:1;
 }
 .add-element-button{
   width:24px;
