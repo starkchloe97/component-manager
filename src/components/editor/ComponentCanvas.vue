@@ -16,8 +16,9 @@ const stage = ref(null);
 const hoveredElement = ref(null);
 const selectedDomElement = ref(null);
 const { selectedElement, selectElement, clearElement, applyOverrides } = useComponentEditor();
-const { selectNode, document, addSection } = useEditor();
+const { selectNode, document, addSection, addContainer } = useEditor();
 const showEmptySectionPicker = ref(false);
+const showEmptyContainerPicker = ref(false);
 const componentName = computed(() => props.component?.name || props.component?.id || "Component");
 const selectableTags = "section, div, h1, h2, h3, h4, h5, h6, p, span, strong, em, small, blockquote, figcaption, a, button, img, ul, ol, li, form, input, textarea, label";
 
@@ -167,6 +168,10 @@ function addFirstSection(layout) {
   addSection(layout);
   showEmptySectionPicker.value = false;
 }
+function addFirstContainer(layout) {
+  addContainer(layout);
+  showEmptyContainerPicker.value = false;
+}
 
 function handleStageClick(event) {
   if (event.target === stage.value && !props.preview) {
@@ -232,16 +237,32 @@ onUnmounted(() => {
           <div v-if="!document.children.length" class="empty-page-state" @click.stop>
             <span class="empty-page-title">Build your page</span>
             <span>Add a section to continue designing.</span>
-            <button
-              type="button"
-              class="section-insert-button empty-section-button"
-              aria-label="Add first section"
-              @click="showEmptySectionPicker = true"
-            >+</button>
+            <div class="empty-page-actions">
+              <button
+                type="button"
+                class="section-insert-button empty-section-button"
+                aria-label="Add first section"
+                @click="showEmptySectionPicker = true"
+              >+ Section</button>
+              <button
+                type="button"
+                class="section-insert-button empty-container-button"
+                aria-label="Add first container"
+                @click="showEmptyContainerPicker = true"
+              >+ Container</button>
+            </div>
             <SectionLayoutPicker
               v-if="showEmptySectionPicker"
               @select="addFirstSection"
               @close="showEmptySectionPicker = false"
+            />
+            <SectionLayoutPicker
+              v-if="showEmptyContainerPicker"
+              title="Add container"
+              description="Choose a layout, or start with an empty container."
+              :allow-empty-container="true"
+              @select="addFirstContainer"
+              @close="showEmptyContainerPicker = false"
             />
           </div>
         </div>
@@ -334,5 +355,7 @@ onUnmounted(() => {
 .page-section-node{position:relative;width:100%;margin:0}
 .empty-page-state{position:relative;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:1px dashed #d7dee8;background:#fafbfc;color:#94a3b8;font-size:10px}
 .empty-page-title{font-size:11px;font-weight:700;color:#64748b}
-.empty-section-button{margin-top:6px;opacity:1;pointer-events:auto;position:relative;bottom:auto;left:auto;right:auto;display:grid;place-items:center;width:24px;height:24px;padding:0;border:1px solid #bfdbfe;border-radius:50%;background:#fff;color:#2563eb;font-size:16px;font-weight:600;line-height:21px;cursor:pointer;box-shadow:0 2px 7px rgba(15,23,42,.1);}
+.empty-page-actions{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px}
+.empty-section-button,.empty-container-button{opacity:1;pointer-events:auto;position:relative;bottom:auto;left:auto;right:auto;display:inline-flex;align-items:center;justify-content:center;height:30px;padding:0 11px;border:1px solid #bfdbfe;border-radius:7px;background:#fff;color:#2563eb;font-size:11px;font-weight:600;line-height:1;cursor:pointer;box-shadow:0 2px 7px rgba(15,23,42,.1)}
+.empty-container-button{border-color:#cbd5e1;color:#475569}
 </style>
