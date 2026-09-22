@@ -1,7 +1,6 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, onUpdated, ref, watch } from "vue";
 import EditorNode from "./EditorNode.vue";
-import { editorRegistry } from "@/config/editorRegistry";
 import { useComponentEditor } from "@/composables/useComponentEditor";
 import { useEditor } from "@/composables/useEditor";
 
@@ -17,8 +16,6 @@ const hoveredElement = ref(null);
 const selectedDomElement = ref(null);
 const { selectedElement, selectElement, clearElement, applyOverrides } = useComponentEditor();
 const { selectNode, document } = useEditor();
-const basicElements = computed(() => Object.entries(editorRegistry).filter(([type, definition]) => definition.category === "Basic").map(([type, definition]) => ({ type, ...definition })));
-const layoutElements = computed(() => Object.entries(editorRegistry).filter(([type]) => type === "container").map(([type, definition]) => ({ type, ...definition })));
 const componentName = computed(() => props.component?.name || props.component?.id || "Component");
 const selectableTags = "section, div, h1, h2, h3, h4, h5, h6, p, span, strong, em, small, blockquote, figcaption, a, button, img, ul, ol, li, form, input, textarea, label";
 
