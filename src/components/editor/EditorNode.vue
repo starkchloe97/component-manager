@@ -290,6 +290,9 @@ async function copyCurrentComponent() {
         @close="showContainerPicker = false"
       />
     </div>
+    <div class="section-insert-control container-insert-control" @click.stop>
+      <button type="button" class="section-insert-button" aria-label="Add section below container" @click="openSectionPicker">+</button>
+    </div>
     <div v-if="isSelected" class="node-toolbar container-toolbar" @click.stop>
       <span>{{ nodeLabel }}</span>
       <button type="button" @click="openSectionPicker">Add section</button>
@@ -456,6 +459,17 @@ async function copyCurrentComponent() {
   opacity:1;
   pointer-events:auto;
 }
+.container-insert-control{
+  opacity:0;
+  pointer-events:none;
+}
+.editor-node--selected > .container-insert-control,
+.editor-node:hover > .container-insert-control,
+.container-insert-control:focus-within{
+  opacity:1;
+  pointer-events:auto;
+}
+
 .section-insert-button{
   width:24px;
   height:24px;
