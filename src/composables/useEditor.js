@@ -177,15 +177,12 @@ export function useEditor() {
     return section;
   }
 
-  function createContainer(layout = "100") {
+  function createContainer() {
+    // A container is only the node the user explicitly requested.
+    // Do not manufacture sections, columns, or any other structural children.
     const container = createEditorNode("container");
-    const columns = layout.split("-").map(Number);
-    container.styles.display = "grid";
-    container.styles.gridTemplateColumns = columns.map((width) => `${width}fr`).join(" ");
-    container.styles.gap = "0px";
     container.styles.width = "100%";
     container.styles.maxWidth = "100%";
-    container.children.push(...createLayoutChildren(layout));
     return container;
   }
 
