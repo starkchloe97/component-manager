@@ -146,7 +146,7 @@ async function copyCurrentComponent() {
 </script>
 
 <template>
-  <div class="editor-node" :class="{ 'editor-node--selected': isSelected }" :style="rootStyles" @click="select">
+  <div class="editor-node" :class="{ 'editor-node--selected': isSelected, 'editor-node--section': node.type === 'section' }" :style="rootStyles" @click="select">
     <template v-if="node.type === 'section'">
       <section class="editor-section" :style="node.styles">
         <EditorNode
@@ -159,9 +159,7 @@ async function copyCurrentComponent() {
       </section>
 
       <div class="section-insert-control" @click.stop>
-        <span class="section-insert-line" aria-hidden="true"></span>
         <button type="button" class="section-insert-button" aria-label="Add section below" @click="openSectionPicker">+</button>
-        <span class="section-insert-line" aria-hidden="true"></span>
       </div>
 
       <SectionLayoutPicker
@@ -319,6 +317,7 @@ async function copyCurrentComponent() {
 
 <style scoped>
 .editor-node{position:relative;min-width:0}
+.editor-node--section{margin-bottom:34px}
 .editor-node--selected{outline:2px solid #2563eb;outline-offset:-2px}
 .editor-node--selected > .editor-section,
 .editor-node--selected > .editor-column,
@@ -340,17 +339,25 @@ async function copyCurrentComponent() {
 .editor-section > .editor-node{min-width:0;width:100%}
 
 .section-insert-control{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:-34px;
+  height:34px;
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:8px;
-  width:100%;
-  height:34px;
-  padding:0 12px;
-  box-sizing:border-box;
-  background:transparent;
+  z-index:80;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .12s ease;
 }
-.section-insert-line{height:1px;flex:1;max-width:260px;background:#dbe3ee}
+.editor-node--section:hover > .section-insert-control,
+.editor-node--section.editor-node--selected > .section-insert-control,
+.editor-node--section > .section-insert-control:focus-within{
+  opacity:1;
+  pointer-events:auto;
+}
 .section-insert-button{
   width:24px;
   height:24px;
@@ -363,10 +370,15 @@ async function copyCurrentComponent() {
   font-weight:600;
   line-height:21px;
   cursor:pointer;
-  box-shadow:0 2px 7px rgba(15,23,42,.08);
-  transition:transform .12s ease,background .12s ease,border-color .12s ease;
+  box-shadow:0 2px 7px rgba(15,23,42,.10);
+  transition:transform .12s ease,background .12s ease,border-color .12s ease,box-shadow .12s ease;
 }
-.section-insert-button:hover{background:#eff6ff;border-color:#60a5fa;transform:scale(1.06)}
+.section-insert-button:hover{
+  background:#eff6ff;
+  border-color:#60a5fa;
+  transform:scale(1.08);
+  box-shadow:0 3px 10px rgba(37,99,235,.14);
+}
 
 .editor-column{
   position:relative;
