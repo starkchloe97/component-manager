@@ -1,7 +1,6 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, onUpdated, ref, watch } from "vue";
 import EditorNode from "./EditorNode.vue";
-import SectionLayoutPicker from "./SectionLayoutPicker.vue";
 import { editorRegistry } from "@/config/editorRegistry";
 import { useComponentEditor } from "@/composables/useComponentEditor";
 import { useEditor } from "@/composables/useEditor";
@@ -17,9 +16,7 @@ const stage = ref(null);
 const hoveredElement = ref(null);
 const selectedDomElement = ref(null);
 const { selectedElement, selectElement, clearElement, applyOverrides } = useComponentEditor();
-const { selectNode, document, addComponentElement, addContainerToComponent } = useEditor();
-const showAdd = ref(false);
-const showContainerPicker = ref(false);
+const { selectNode, document } = useEditor();
 const basicElements = computed(() => Object.entries(editorRegistry).filter(([type, definition]) => definition.category === "Basic").map(([type, definition]) => ({ type, ...definition })));
 const layoutElements = computed(() => Object.entries(editorRegistry).filter(([type]) => type === "container").map(([type, definition]) => ({ type, ...definition })));
 const componentName = computed(() => props.component?.name || props.component?.id || "Component");
@@ -176,18 +173,6 @@ function handleStageClick(event) {
 }
 
 
-function addBasic(type) {
-  addComponentElement(type);
-  showAdd.value = false;
-}
-function addLayout(type) {
-  if (type === "container") showContainerPicker.value = true;
-}
-function addContainer(layout) {
-  addContainerToComponent(layout);
-  showContainerPicker.value = false;
-  showAdd.value = false;
-}
 
 function prepareEditorElements() {
   const hitLayer = stage.value?.querySelector(".component-hit-layer");
@@ -252,24 +237,10 @@ onUnmounted(() => {
           :node="node"
         />
 
-        <div class="component-builder-add">
-          <button type="button" class="extension-add-button" @click="showAdd = !showAdd">+ Add element</button>
 
-          <div v-if="showAdd" class="element-menu">
-            <div class="menu-title">Basic elements</div>
-            <button v-for="item in basicElements" :key="item.type" type="button" @click="addBasic(item.type)">{{ item.label }}</button>
-            <div class="menu-title">Layout</div>
-            <button v-for="item in layoutElements" :key="item.type" type="button" @click="addLayout(item.type)">{{ item.label }}</button>
-          </div>
-        </div>
-
-        <SectionLayoutPicker
-          v-if="showContainerPicker"
-          title="Add container"
-          description="Choose the column layout for the new container."
-          @select="addContainer"
-          @close="showContainerPicker = false"
-        />
+        <!-- Root-level section insertion is intentionally handled by the
+             + control between sections in EditorNode. There is no second
+             "Add element" control at the bottom of the canvas. -->
       </div>
     </div>
   </main>
@@ -348,11 +319,4 @@ onUnmounted(() => {
 .page-section-node{position:relative;width:100%;margin:0}
 .empty-page-state{min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:1px dashed #d7dee8;background:#fafbfc;color:#94a3b8;font-size:10px}
 .empty-page-title{font-size:11px;font-weight:700;color:#64748b}
-.component-builder-add{position:relative;display:flex;justify-content:center;padding:18px 0 24px;background:#fff}
-.extension-add-button{border:1px solid #cbd5e1;border-radius:6px;background:#fff;color:#475569;padding:7px 11px;font-size:10px;cursor:pointer}
-.extension-add-button:hover{border-color:#60a5fa;color:#2563eb}
-.element-menu{position:absolute;bottom:48px;left:50%;transform:translateX(-50%);width:240px;max-height:320px;overflow:auto;padding:7px;border:1px solid #dbe3ee;border-radius:9px;background:#fff;box-shadow:0 14px 35px rgba(15,23,42,.16);z-index:100}
-.element-menu button{display:block;width:100%;padding:7px 8px;border:0;border-radius:5px;background:transparent;text-align:left;color:#334155;font-size:10px;cursor:pointer}
-.element-menu button:hover{background:#eff6ff;color:#2563eb}
-.menu-title{padding:7px;color:#94a3b8;font-size:8px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
 </style>
