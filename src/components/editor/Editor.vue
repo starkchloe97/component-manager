@@ -19,12 +19,12 @@ const activeId = ref(props.initialComponentId || registry[0]?.id || null);
 const preview = ref(false);
 const drawerOpen = ref(false);
 const showAddSection = ref(false);
-const { selectedElement, overrides, contentOverrides, clearElement, getComponentState, restoreComponentState } = useComponentEditor();
+const { selectedElement, overrides, contentOverrides, clearElement, getComponentState, restoreComponentState, resetComponentState } = useComponentEditor();
 const { registerComponent } = useComponentManager();
 const { registerComponent: registerStyleComponent, selectComponent } = useStyleManager();
 const { copySelectedComponent } = useComponentCopy();
 const copyState = ref("idle");
-const { document, selectedNodeId, selectedNode, activeComponentId, setActiveComponent, clearActiveComponent, addSection, selectNode, getDocumentSnapshot, restoreDocumentSnapshot } = useEditor();
+const { document, selectedNodeId, selectedNode, activeComponentId, setActiveComponent, resetActiveComponent, clearActiveComponent, addSection, selectNode, getDocumentSnapshot, restoreDocumentSnapshot } = useEditor();
 
 registry.forEach((entry) => {
   const config = { name: entry.name, component: entry.component, source: entry.source, styles: {} };
@@ -118,12 +118,26 @@ async function redo() {
 
 async function resetComponent() {
   flushPendingHistory();
-  if (!historyCurrent.value || !historyBaseline.value) return;
-  if (snapshotKey(historyCurrent.value) === snapshotKey(historyBaseline.value)) return;
-  historyPast.value.push(historyCurrent.value);
+  const componentId = activeComponentId.value;
+  if (!componentId || !hasComponentChanges.value) return;
+
+  const current = createSnapshot();
+  historyPast.value.push(current);
   if (historyPast.value.length > HISTORY_LIMIT) historyPast.value.shift();
   historyFuture.value = [];
-  await restoreHistorySnapshot(historyBaseline.value);
+
+  historyRestoring.value = true;
+  clearElement();
+  resetComponentState(componentId);
+  resetActiveComponent();
+  historyCurrent.value = {
+    componentId,
+    document: { children: [], componentChildren: [] },
+    component: { styles: {}, content: {} },
+  };
+  historyBaseline.value = cloneHistory(historyCurrent.value);
+  await nextTick();
+  historyRestoring.value = false;
 }
 
 const canUndo = computed(() => historyPast.value.length > 0);
