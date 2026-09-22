@@ -83,6 +83,7 @@ function select(event) {
   selectNode(props.node.id);
   showAdd.value = false;
   showSectionPicker.value = false;
+  showContainerPicker.value = false;
 }
 function selectParent() {
   if (!props.parentId) return;
@@ -234,12 +235,12 @@ async function copyCurrentComponent() {
         </div>
       </div>
       <SectionLayoutPicker
-        v-if="showSectionPicker"
+        v-if="showContainerPicker"
         title="Add container"
         description="Choose the column layout for the new container."
         :allow-empty-container="true"
         @select="addContainerBelow"
-        @close="showSectionPicker = false"
+        @close="showContainerPicker = false"
       />
     </div>
 
@@ -261,12 +262,12 @@ async function copyCurrentComponent() {
       </div>
 
       <SectionLayoutPicker
-        v-if="showSectionPicker"
+        v-if="showContainerPicker"
         title="Add container"
         description="Choose the column layout for the new container under this component."
         :allow-empty-container="true"
         @select="addContainerBelow"
-        @close="showSectionPicker = false"
+        @close="showContainerPicker = false"
       />
     </div>
 
