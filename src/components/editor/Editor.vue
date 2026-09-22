@@ -132,9 +132,17 @@ const hasComponentChanges = computed(() => historyCurrent.value && historyBaseli
 const activeComponent = computed(() => componentRegistry[activeId.value] || null);
 const hasSelectedElement = computed(() => !!selectedElement.value || !!selectedNode.value);
 
-watch([document, overrides, contentOverrides], () => {
-  if (!historyRestoring.value && activeComponentId.value) scheduleHistorySnapshot();
-}, { deep: true });
+watch(
+  [
+    () => document,
+    () => overrides[activeComponentId.value] || null,
+    () => contentOverrides[activeComponentId.value] || null,
+  ],
+  () => {
+    if (!historyRestoring.value && activeComponentId.value) scheduleHistorySnapshot();
+  },
+  { deep: true }
+);
 
 watch(activeComponentId, (componentId) => {
   if (componentId) resetHistoryForComponent(componentId);
