@@ -11,7 +11,7 @@ const props = defineProps({
   parentId: { type: String, default: null },
   parentType: { type: String, default: null },
 });
-const { selectedNodeId, selectNode, addNode, addComponent, addSectionAfter, duplicateNode, deleteNode } = useEditor();
+const { selectedNodeId, selectNode, addNode, addComponent, addSectionAfter, addContainer, duplicateNode, deleteNode } = useEditor();
 const { copySection, copySelectedComponent } = useComponentCopy();
 const sectionCopyState = ref("idle");
 const componentCopyState = ref("idle");
@@ -104,9 +104,11 @@ function addLayout(type) {
   }
 }
 function addContainerBelow(layout) {
-  // A layout picker always creates a new top-level section/container.
-  // This prevents accidental section -> column -> section nesting.
-  addSectionAfter(props.node.id, layout);
+  // The explicit + between sections is the control for creating a new
+  // top-level section. When the user invokes "Add container" from an
+  // existing column/container, preserve that context and nest the new
+  // layout there.
+  addContainer(layout, props.node.id);
   showSectionPicker.value = false;
   showAdd.value = false;
 }
