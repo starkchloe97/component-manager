@@ -186,6 +186,31 @@ export function useComponentEditor() {
 
   const resetComponentState = (componentId) => {
     if (!componentId) return false;
+
+    const componentStyles = deepClone(overrides[componentId] || {});
+    const componentContent = deepClone(contentOverrides[componentId] || {});
+    const roots = typeof window !== "undefined"
+      ? document.querySelectorAll(`[data-editor-component-id="${CSS.escape(componentId)}"]`)
+      : [];
+
+    roots.forEach((root) => {
+      Object.entries(componentStyles).forEach(([selector, styles]) => {
+        root.querySelectorAll(toSelector(selector)).forEach((element) => {
+          Object.keys(styles || {}).forEach((property) => {
+            element.style.removeProperty(property);
+          });
+        });
+      });
+
+      Object.entries(componentContent).forEach(([selector, entry]) => {
+        const original = typeof entry === "string" ? null : entry?.originalText;
+        if (original === undefined || original === null) return;
+        root.querySelectorAll(toSelector(selector)).forEach((element) => {
+          element.textContent = original;
+        });
+      });
+    });
+
     delete overrides[componentId];
     delete contentOverrides[componentId];
     pendingStyleWrites.delete(componentId);
