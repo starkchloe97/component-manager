@@ -74,7 +74,7 @@ const isGrid=computed(()=>display.value==="grid");
 <div class="head" @click="toggle('content')">
 <b>Content</b>
 <div class="head-actions">
-<button v-if="hasContentOverride()" class="reset-btn" type="button" title="Reset content" @click.stop="resetTextContent">Reset</div>
+<button v-if="hasContentOverride()" class="reset-btn" type="button" title="Reset content" @click.stop="resetTextContent">Reset</button>
 <span>{{open.content?'⌃':'⌄'}}</span>
 </div>
 </div>
@@ -91,14 +91,14 @@ const isGrid=computed(()=>display.value==="grid");
     v-if="currentContent() !== element.textValue"
     type="button"
     @click="resetTextContent"
-  >Reset</div>
+  >Reset</button>
 </div>
 </div>
 </section>
 
 
 <section class="card">
-<div class="head" @click="toggle('layout')"><b>Layout</b><div class="head-actions"><button v-if="hasGroupOverrides('layout')" class="reset-btn" type="button" title="Reset layout" @click.stop="resetGroup('layout')">Reset</div><span>{{open.layout?'⌃':'⌄'}}</span></div></div>
+<div class="head" @click="toggle('layout')"><b>Layout</b><div class="head-actions"><button v-if="hasGroupOverrides('layout')" class="reset-btn" type="button" title="Reset layout" @click.stop="resetGroup('layout')">Reset</button><span>{{open.layout?'⌃':'⌄'}}</span></div></div>
 <div v-if="open.layout" class="content">
 <div class="row"><label>Width</label><input :value="current('width')" placeholder="Auto" @input="update('width',$event.target.value)"></div>
 <div class="row"><label>Max width</label><input :value="current('maxWidth')" placeholder="None" @input="update('maxWidth',$event.target.value)"></div>
@@ -110,7 +110,7 @@ const isGrid=computed(()=>display.value==="grid");
 </div></section>
 
 <section class="card">
-<div class="head" @click="toggle('spacing')"><b>Spacing</b><div class="head-actions"><button v-if="hasGroupOverrides('spacing')" class="reset-btn" type="button" title="Reset spacing" @click.stop="resetGroup('spacing')">Reset</div><span>{{open.spacing?'⌃':'⌄'}}</span></div></div>
+<div class="head" @click="toggle('spacing')"><b>Spacing</b><div class="head-actions"><button v-if="hasGroupOverrides('spacing')" class="reset-btn" type="button" title="Reset spacing" @click.stop="resetGroup('spacing')">Reset</button><span>{{open.spacing?'⌃':'⌄'}}</span></div></div>
 <div v-if="open.spacing" class="content">
 <div v-for="box in [['padding','Padding'],['margin','Margin']]" :key="box[0]" class="spacing">
 <div class="subhead"><b>{{box[1]}}</b><input :value="current(box[0])" placeholder="All" @input="update(box[0],$event.target.value)"></div>
@@ -119,7 +119,7 @@ const isGrid=computed(()=>display.value==="grid");
 </div></section>
 
 <section v-if="isFlex" class="card">
-<div class="head" @click="toggle('flex')"><b>Flexbox</b><div class="head-actions"><button v-if="hasGroupOverrides('flex')" class="reset-btn" type="button" title="Reset flexbox" @click.stop="resetGroup('flex')">Reset</div><span>{{open.flex?'⌃':'⌄'}}</span></div></div>
+<div class="head" @click="toggle('flex')"><b>Flexbox</b><div class="head-actions"><button v-if="hasGroupOverrides('flex')" class="reset-btn" type="button" title="Reset flexbox" @click.stop="resetGroup('flex')">Reset</button><span>{{open.flex?'⌃':'⌄'}}</span></div></div>
 <div v-if="open.flex" class="content">
 <div class="row"><label>Direction</label><select :value="current('flexDirection')" @change="update('flexDirection',$event.target.value)"><option>row</option><option>row-reverse</option><option>column</option><option>column-reverse</option></select></div>
 <div class="row"><label>Wrap</label><select :value="current('flexWrap')" @change="update('flexWrap',$event.target.value)"><option>nowrap</option><option>wrap</option><option>wrap-reverse</option></select></div>
@@ -135,7 +135,7 @@ const isGrid=computed(()=>display.value==="grid");
 </div></section>
 
 <section v-if="isGrid" class="card">
-<div class="head" @click="toggle('grid')"><b>Grid</b><div class="head-actions"><button v-if="hasGroupOverrides('grid')" class="reset-btn" type="button" title="Reset grid" @click.stop="resetGroup('grid')">Reset</div><span>{{open.grid?'⌃':'⌄'}}</span></div></div>
+<div class="head" @click="toggle('grid')"><b>Grid</b><div class="head-actions"><button v-if="hasGroupOverrides('grid')" class="reset-btn" type="button" title="Reset grid" @click.stop="resetGroup('grid')">Reset</button><span>{{open.grid?'⌃':'⌄'}}</span></div></div>
 <div v-if="open.grid" class="content">
 <div class="row"><label>Columns</label><input :value="current('gridTemplateColumns')" placeholder="1fr 1fr" @input="update('gridTemplateColumns',$event.target.value)"></div>
 <div class="row"><label>Rows</label><input :value="current('gridTemplateRows')" placeholder="auto" @input="update('gridTemplateRows',$event.target.value)"></div>
@@ -148,7 +148,7 @@ const isGrid=computed(()=>display.value==="grid");
 </div></section>
 
 <section class="card">
-<div class="head" @click="toggle('typography')"><b>Typography</b><div class="head-actions"><button v-if="hasGroupOverrides('typography')" class="reset-btn" type="button" title="Reset typography" @click.stop="resetGroup('typography')">Reset</div><span>{{open.typography?'⌃':'⌄'}}</span></div></div>
+<div class="head" @click="toggle('typography')"><b>Typography</b><div class="head-actions"><button v-if="hasGroupOverrides('typography')" class="reset-btn" type="button" title="Reset typography" @click.stop="resetGroup('typography')">Reset</button><span>{{open.typography?'⌃':'⌄'}}</span></div></div>
 <div v-if="open.typography" class="content">
 <div class="row"><label>Family</label><input :value="current('fontFamily')" placeholder="System" @input="update('fontFamily',$event.target.value)"></div>
 <div class="row"><label>Size</label><input :value="current('fontSize')" placeholder="16px" @input="update('fontSize',$event.target.value)"></div>
@@ -162,7 +162,7 @@ const isGrid=computed(()=>display.value==="grid");
 </div></section>
 
 <section class="card">
-<div class="head" @click="toggle('appearance')"><b>Appearance</b><div class="head-actions"><button v-if="hasGroupOverrides('appearance')" class="reset-btn" type="button" title="Reset appearance" @click.stop="resetGroup('appearance')">Reset</div><span>{{open.appearance?'⌃':'⌄'}}</span></div></div>
+<div class="head" @click="toggle('appearance')"><b>Appearance</b><div class="head-actions"><button v-if="hasGroupOverrides('appearance')" class="reset-btn" type="button" title="Reset appearance" @click.stop="resetGroup('appearance')">Reset</button><span>{{open.appearance?'⌃':'⌄'}}</span></div></div>
 <div v-if="open.appearance" class="content">
 <div class="color"><label>Background</label><input type="color" :value="current('backgroundColor')||'#ffffff'" @input="update('backgroundColor',$event.target.value)"><input :value="current('backgroundColor')" placeholder="transparent" @input="update('backgroundColor',$event.target.value)"></div>
 <div class="row"><label>Border width</label><input :value="current('borderWidth')" placeholder="0px" @input="update('borderWidth',$event.target.value)"></div>
