@@ -18,6 +18,7 @@ const sectionCopyState = ref("idle");
 const componentCopyState = ref("idle");
 const showAdd = ref(false);
 const showSectionPicker = ref(false);
+const showContainerPicker = ref(false);
 
 const isSelected = computed(() => selectedNodeId.value === props.node.id);
 const componentEntry = computed(() => componentRegistry[props.node.props?.componentId] || null);
@@ -76,6 +77,7 @@ function select(event) {
     selectNode(props.parentId);
     showAdd.value = false;
     showSectionPicker.value = false;
+    showContainerPicker.value = false;
     return;
   }
   selectNode(props.node.id);
@@ -87,6 +89,7 @@ function selectParent() {
   selectNode(props.parentId);
   showAdd.value = false;
   showSectionPicker.value = false;
+  showContainerPicker.value = false;
 }
 function toggleAdd() {
   showAdd.value = !showAdd.value;
@@ -98,8 +101,7 @@ function addBasic(type) {
 }
 function addLayout(type) {
   if (type === "container") {
-    // Container creation is independent from section creation.
-    showSectionPicker.value = true;
+    showContainerPicker.value = true;
     return;
   }
   addNode(type, props.node.id);
@@ -107,11 +109,12 @@ function addLayout(type) {
 }
 function addContainerBelow(layout) {
   addContainer(layout, props.node.id);
-  showSectionPicker.value = false;
+  showContainerPicker.value = false;
   showAdd.value = false;
 }
 function openSectionPicker() {
   showSectionPicker.value = true;
+  showContainerPicker.value = false;
 }
 function addSectionBelow(layout) {
   addSectionAfter(props.node.id, layout);
@@ -166,6 +169,14 @@ async function copyCurrentComponent() {
         @close="showSectionPicker = false"
       />
 
+      <SectionLayoutPicker
+        v-if="showContainerPicker"
+        title="Add container"
+        description="Choose a layout for this container."
+        @select="addContainerBelow"
+        @close="showContainerPicker = false"
+      />
+
       <div v-if="isSelected" class="node-toolbar section-toolbar" @click.stop>
         <span>{{ nodeLabel }}</span>
         <button
@@ -198,11 +209,11 @@ async function copyCurrentComponent() {
       </div>
 
       <SectionLayoutPicker
-        v-if="showSectionPicker"
+        v-if="showContainerPicker"
         title="Add container"
-        description="Choose the column layout for the new container."
+        description="Choose a layout for this container."
         @select="addContainerBelow"
-        @close="showSectionPicker = false"
+        @close="showContainerPicker = false"
       />
     </div>
 
