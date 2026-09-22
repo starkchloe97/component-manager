@@ -10,6 +10,7 @@ const props = defineProps({
   node: { type: Object, required: true },
   parentId: { type: String, default: null },
   parentType: { type: String, default: null },
+  rootSection: { type: Boolean, default: false },
 });
 const { selectedNodeId, selectNode, addNode, addComponent, addSectionAfter, addContainer, duplicateNode, deleteNode } = useEditor();
 const { copySection, copySelectedComponent } = useComponentCopy();
@@ -146,7 +147,7 @@ async function copyCurrentComponent() {
 </script>
 
 <template>
-  <div class="editor-node" :class="{ 'editor-node--selected': isSelected, 'editor-node--section': node.type === 'section' }" :style="rootStyles" @click="select">
+  <div class="editor-node" :class="{ 'editor-node--selected': isSelected, 'editor-node--section': node.type === 'section', 'editor-node--root-section': props.rootSection }" :style="rootStyles" @click="select">
     <template v-if="node.type === 'section'">
       <section class="editor-section" :style="node.styles">
         <EditorNode
@@ -352,9 +353,9 @@ async function copyCurrentComponent() {
   pointer-events:none;
   transition:opacity .12s ease;
 }
-.editor-node--section:hover > .section-insert-control,
-.editor-node--section.editor-node--selected > .section-insert-control,
-.editor-node--section > .section-insert-control:focus-within{
+ .editor-node--root-section:hover > .section-insert-control,
+.editor-node--root-section.editor-node--selected > .section-insert-control,
+.editor-node--root-section > .section-insert-control:focus-within{
   opacity:1;
   pointer-events:auto;
 }
