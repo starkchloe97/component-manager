@@ -183,7 +183,7 @@ async function copyCurrentComponent() {
 
     <div v-else-if="node.type === 'column'" class="editor-column" :style="node.styles">
       <div v-if="!node.children.length" class="column-empty">
-        <span class="column-empty-plus" aria-hidden="true">+</span>
+        <!-- <span class="column-empty-plus" aria-hidden="true">+</span> -->
         <small>Drop an element here</small>
       </div>
       <EditorNode v-for="child in node.children" :key="child.id" :node="child" :parent-id="node.id" :parent-type="node.type" />
