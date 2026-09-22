@@ -229,7 +229,7 @@ export function useEditor() {
   // A container is a first-class layout node. Creating one from the
   // container/column controls keeps it in that parent; creating one without
   // a container/column context puts it directly at the page root.
-  function addContainer(layout = "100", parentId = null) {
+  function addContainer(layout = null, parentId = null) {
     const parent = parentId ? findNodeInDocument(parentId) : null;
     if (parent?.type === "column" || parent?.type === "container") {
       const container = createContainer(layout);
