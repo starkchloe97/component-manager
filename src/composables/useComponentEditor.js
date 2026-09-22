@@ -56,8 +56,14 @@ function flushPersistence() {
   if (typeof window === "undefined") return;
   if (stylePersistTimer) window.clearTimeout(stylePersistTimer);
   if (contentPersistTimer) window.clearTimeout(contentPersistTimer);
+  if (styleFrame !== null) window.cancelAnimationFrame(styleFrame);
+  if (contentFrame !== null) window.cancelAnimationFrame(contentFrame);
   stylePersistTimer = null;
   contentPersistTimer = null;
+  styleFrame = null;
+  contentFrame = null;
+  pendingStyleWrites.clear();
+  pendingContentWrites.clear();
   persistStorage(STYLE_STORAGE_KEY, overrides);
   persistStorage(CONTENT_STORAGE_KEY, contentOverrides);
 }
@@ -132,6 +138,18 @@ function toSelector(selector) {
   return selector || "";
 }
 
+function matchingElements(root, selector) {
+  const matches = [];
+  if (!root || !selector) return matches;
+  try {
+    if (root.matches?.(toSelector(selector))) matches.push(root);
+    matches.push(...root.querySelectorAll(toSelector(selector)));
+  } catch {
+    return matches;
+  }
+  return matches;
+}
+
 function deepClone(value) {
   return value == null ? value : JSON.parse(JSON.stringify(value));
 }
@@ -195,9 +213,9 @@ export function useComponentEditor() {
 
     roots.forEach((root) => {
       Object.entries(componentStyles).forEach(([selector, styles]) => {
-        root.querySelectorAll(toSelector(selector)).forEach((element) => {
+        matchingElements(root, selector).forEach((element) => {
           Object.keys(styles || {}).forEach((property) => {
-            element.style.removeProperty(property);
+            element.style[property] = "";
           });
         });
       });
@@ -205,7 +223,7 @@ export function useComponentEditor() {
       Object.entries(componentContent).forEach(([selector, entry]) => {
         const original = typeof entry === "string" ? null : entry?.originalText;
         if (original === undefined || original === null) return;
-        root.querySelectorAll(toSelector(selector)).forEach((element) => {
+        matchingElements(root, selector).forEach((element) => {
           element.textContent = original;
         });
       });
