@@ -98,17 +98,14 @@ function addBasic(type) {
 }
 function addLayout(type) {
   if (type === "container") {
+    // Container creation is independent from section creation.
     showSectionPicker.value = true;
-  } else {
-    addNode(type, props.node.id);
-    showAdd.value = false;
+    return;
   }
+  addNode(type, props.node.id);
+  showAdd.value = false;
 }
 function addContainerBelow(layout) {
-  // The explicit + between sections is the control for creating a new
-  // top-level section. When the user invokes "Add container" from an
-  // existing column/container, preserve that context and nest the new
-  // layout there.
   addContainer(layout, props.node.id);
   showSectionPicker.value = false;
   showAdd.value = false;
@@ -165,7 +162,9 @@ async function copyCurrentComponent() {
 
       <SectionLayoutPicker
         v-if="showSectionPicker"
-        @select="addSectionBelow"
+        title="Add container"
+        description="Choose a layout for this container."
+        @select="addContainerBelow"
         @close="showSectionPicker = false"
       />
 
