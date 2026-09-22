@@ -312,7 +312,7 @@ async function copyCurrentComponent() {
     />
   </div>
 
-  <div v-else-if="node.type === 'component' class="editor-node" :class="{ 'editor-node--selected': isSelected }" @click="select">
+  <div v-else-if="node.type === 'component'" class="editor-node" :class="{ 'editor-node--selected': isSelected }" @click="select">
     <div class="component-node" :style="node.styles">
       <div class="component-node-label">{{ componentLabel }}</div>
       <component v-if="componentEntry" :is="componentEntry.component" />
