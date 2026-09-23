@@ -38,8 +38,9 @@ const toolbarIcons = {
   column: "▥",
   container: "▤",
   add: "+",
-  duplicate: "⧉",
-  delete: "×",
+  parent: "↑",
+  duplicate: "□",
+  delete: "⌫",
 };
 const parentLabel = computed(() => editorRegistry[props.parentType]?.label || props.parentType || "parent");
 const layoutStyleKeys = new Set([
@@ -224,15 +225,11 @@ async function copyCurrentComponent() {
       @close="showContainerPicker = false"
     />
 
-    <div v-if="isSelected" class="node-toolbar section-toolbar" @click.stop>
-      <span>{{ nodeLabel }}</span>
-      <button
-        type="button"
-        :disabled="sectionCopyState === 'copying'"
-        @click="copyCurrentSection"
-      >{{ sectionCopyState === "copying" ? "Copying…" : sectionCopyState === "copied" ? "Copied!" : sectionCopyState === "error" ? "Copy failed" : "Copy" }}</button>
-      <button type="button" @click="duplicateNode(node.id)">Duplicate</button>
-      <button type="button" @click="removeNode">Delete</button>
+    <div class="node-toolbar section-toolbar" @click.stop>
+      <span class="node-toolbar-label" :title="nodeLabel">{{ toolbarIcons.section }}</span>
+      <button type="button" class="toolbar-icon-button" title="Add container" aria-label="Add container" @click="openContainerPicker">{{ toolbarIcons.container }}</button>
+      <button type="button" class="toolbar-icon-button" title="Duplicate section" aria-label="Duplicate section" @click="duplicateNode(node.id)">{{ toolbarIcons.duplicate }}</button>
+      <button type="button" class="toolbar-icon-button toolbar-icon-danger" title="Delete section" aria-label="Delete section" @click="removeNode">{{ toolbarIcons.delete }}</button>
     </div>
   </div>
 
@@ -264,9 +261,9 @@ async function copyCurrentComponent() {
         @close="showContainerPicker = false"
       />
     </div>
-    <div v-if="isSelected" class="node-toolbar column-toolbar" @click.stop>
+    <div class="node-toolbar column-toolbar" @click.stop>
       <span class="node-toolbar-label" :title="nodeLabel">{{ toolbarIcons.column }}</span>
-      <button type="button" class="toolbar-icon-button" title="Select section" aria-label="Select section" @click="selectParent">{{ toolbarIcons.section }}</button>
+      <button v-if="parentId" type="button" class="toolbar-icon-button" :title="`Select ${parentLabel}`" :aria-label="`Select ${parentLabel}`" @click="selectParent">{{ toolbarIcons.parent }}</button>
       <button type="button" class="toolbar-icon-button" title="Add element" aria-label="Add element" @click="showAdd = !showAdd">{{ toolbarIcons.add }}</button>
       <button type="button" class="toolbar-icon-button" title="Duplicate column" aria-label="Duplicate column" @click="duplicateNode(node.id)">{{ toolbarIcons.duplicate }}</button>
       <button type="button" class="toolbar-icon-button toolbar-icon-danger" title="Delete column" aria-label="Delete column" @click="removeNode">{{ toolbarIcons.delete }}</button>
@@ -312,9 +309,9 @@ async function copyCurrentComponent() {
     <div class="section-insert-control container-insert-control" @click.stop>
       <button type="button" class="section-insert-button" aria-label="Add section below container" @click="openSectionPicker">+</button>
     </div>
-    <div v-if="isSelected" class="node-toolbar container-toolbar" @click.stop>
+    <div class="node-toolbar container-toolbar" @click.stop>
       <span class="node-toolbar-label" :title="nodeLabel">{{ toolbarIcons.container }}</span>
-      <button type="button" class="toolbar-icon-button" title="Add section" aria-label="Add section" @click="openSectionPicker">{{ toolbarIcons.section }}</button>
+      <button type="button" class="toolbar-icon-button" title="Add section below" aria-label="Add section below" @click="openSectionPicker">{{ toolbarIcons.add }}</button>
       <button type="button" class="toolbar-icon-button" title="Add container" aria-label="Add container" @click="openContainerPicker">{{ toolbarIcons.container }}</button>
       <button type="button" class="toolbar-icon-button" title="Duplicate container" aria-label="Duplicate container" @click="duplicateNode(node.id)">{{ toolbarIcons.duplicate }}</button>
       <button type="button" class="toolbar-icon-button toolbar-icon-danger" title="Delete container" aria-label="Delete container" @click="removeNode">{{ toolbarIcons.delete }}</button>
@@ -361,12 +358,11 @@ async function copyCurrentComponent() {
         @close="showContainerPicker = false"
       />
     </div>
-    <div v-if="isSelected" class="node-toolbar" @click.stop>
-      <span>{{ nodeLabel }}</span>
-      <button v-if="parentId" type="button" :title="`Select ${parentLabel}`" @click="selectParent">{{ parentLabel }}</button>
-      <button v-if="node.type === 'component'" type="button" :disabled="componentCopyState === 'copying'" @click="copyCurrentComponent">{{ componentCopyState === "copying" ? "Copying…" : componentCopyState === "copied" ? "Copied!" : componentCopyState === "error" ? "Copy failed" : "Copy" }}</button>
-      <button type="button" @click="duplicateNode(node.id)">Duplicate</button>
-      <button type="button" @click="removeNode">Delete</button>
+    <div class="node-toolbar component-toolbar" @click.stop>
+      <span class="node-toolbar-label" :title="nodeLabel">{{ toolbarIcons.container }}</span>
+      <button v-if="parentId" type="button" class="toolbar-icon-button" :title="`Select ${parentLabel}`" :aria-label="`Select ${parentLabel}`" @click="selectParent">{{ toolbarIcons.parent }}</button>
+      <button type="button" class="toolbar-icon-button" title="Duplicate component" aria-label="Duplicate component" @click="duplicateNode(node.id)">{{ toolbarIcons.duplicate }}</button>
+      <button type="button" class="toolbar-icon-button toolbar-icon-danger" title="Delete component" aria-label="Delete component" @click="removeNode">{{ toolbarIcons.delete }}</button>
     </div>
   </div>
 
@@ -659,50 +655,63 @@ async function copyCurrentComponent() {
 
 .node-toolbar{
   position:absolute;
-  top:-32px;
-  right:0;
+  top:3px;
+  right:4px;
   z-index:150;
   display:flex;
   align-items:center;
-  gap:2px;
-  padding:2px 3px;
-  background:rgba(15,23,42,.96);
+  gap:1px;
+  padding:2px;
+  background:rgba(15,23,42,.94);
   color:#fff;
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:5px;
-  font-size:9px;
-  box-shadow:0 3px 10px rgba(15,23,42,.18);
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:4px;
+  box-shadow:0 2px 8px rgba(15,23,42,.16);
+  opacity:0;
+  visibility:hidden;
+  transform:translateY(-2px);
+  pointer-events:none;
+  transition:opacity .12s ease,transform .12s ease,visibility .12s ease;
 }
-.section-toolbar{top:-4px;right:6px}
-.column-toolbar{top:2px;right:6px}
-.container-toolbar{top:2px;right:6px}
+.editor-node:hover > .node-toolbar,
+.editor-node--selected > .node-toolbar,
+.node-toolbar:hover{
+  opacity:1;
+  visibility:visible;
+  transform:translateY(0);
+  pointer-events:auto;
+}
+.section-toolbar{top:3px;right:4px}
+.column-toolbar{top:3px;right:4px}
+.container-toolbar{top:3px;right:4px}
+.component-toolbar{top:3px;right:4px}
 .node-toolbar-label{
-  width:22px;
-  height:22px;
+  width:16px;
+  height:16px;
   display:grid;
   place-items:center;
   padding:0 !important;
   color:#94a3b8;
-  font-size:10px;
+  font-size:9px;
   font-weight:700;
 }
 .node-toolbar button:disabled{opacity:.45;cursor:default}
 .node-toolbar .toolbar-icon-button{
-  width:19px;
-  height:19px;
+  width:18px;
+  height:18px;
   display:grid;
   place-items:center;
   border:0;
   border-radius:3px;
   background:transparent;
-  color:#fff;
+  color:#cbd5e1;
   cursor:pointer;
-  font-size:11px;
+  font-size:10px;
   line-height:1;
   padding:0;
 }
-.node-toolbar .toolbar-icon-button:hover{background:#1e293b}
-.node-toolbar .toolbar-icon-button:active{transform:scale(.94)}
+.node-toolbar .toolbar-icon-button:hover{background:#334155;color:#fff}
+.node-toolbar .toolbar-icon-button:active{transform:scale(.92)}
 .node-toolbar .toolbar-icon-button:focus-visible{outline:1px solid #60a5fa;outline-offset:1px}
 .node-toolbar .toolbar-icon-danger:hover{background:#7f1d1d;color:#fecaca}
 </style>
