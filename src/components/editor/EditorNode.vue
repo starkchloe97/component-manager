@@ -272,7 +272,7 @@ async function copyCurrentComponent() {
 
   <div v-else-if="node.type === 'container'" class="editor-node" :class="{ 'editor-node--selected': isSelected }" @click="select">
     <div class="editor-container" :style="node.styles">
-      <div v-if="!node.children.length" class="container-empty"><span>+</span><small>Empty container</small></div>
+      <div v-if="!node.children.length" class="container-empty"><small>Empty container</small></div>
       <EditorNode v-for="child in node.children" :key="child.id" :node="child" :parent-id="node.id" :parent-type="node.type" />
       <div class="container-add" @click.stop>
         <button
