@@ -287,7 +287,7 @@ onBeforeUnmount(() => {
     <div class="node-toolbar column-toolbar" @click.stop>
       <span class="node-toolbar-label" :title="nodeLabel">{{ toolbarIcons.column }}</span>
       <button v-if="parentId" type="button" class="toolbar-icon-button" :title="`Select ${parentLabel}`" :aria-label="`Select ${parentLabel}`" @click="selectParent">{{ toolbarIcons.parent }}</button>
-      <button type="button" class="toolbar-icon-button" title="Add element" aria-label="Add element" @click="showAdd = !showAdd">{{ toolbarIcons.add }}</button>
+      <button v-if="isSelected" type="button" class="toolbar-icon-button add-element-button" title="Add element" aria-label="Add element" @click="toggleAdd">{{ toolbarIcons.add }}</button>
       <button type="button" class="toolbar-icon-button" title="Duplicate column" aria-label="Duplicate column" @click="duplicateNode(node.id)">{{ toolbarIcons.duplicate }}</button>
       <button type="button" class="toolbar-icon-button toolbar-icon-danger" title="Delete column" aria-label="Delete column" @click="removeNode">{{ toolbarIcons.delete }}</button>
     </div>
