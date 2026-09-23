@@ -12,7 +12,7 @@ const props = defineProps({
   parentType: { type: String, default: null },
   rootSection: { type: Boolean, default: false },
 });
-const { selectedNodeId, selectNode, addNode, addComponent, addSectionAfter, addSectionToNode, addContainer, addContainerAfter, duplicateNode, deleteNode } = useEditor();
+const { selectedNodeId, selectNode, addNode, addComponent, addSectionAfter, addStandaloneSectionAfter, addSectionToNode, addContainer, addContainerAfter, duplicateNode, deleteNode } = useEditor();
 const { copySection, copySelectedComponent } = useComponentCopy();
 const sectionCopyState = ref("idle");
 const componentCopyState = ref("idle");
@@ -148,7 +148,7 @@ function addSectionInsideCurrent(layout) {
   showSectionPicker.value = false;
 }
 function addSectionOutsideCurrent(layout) {
-  addSectionAfter(props.node.id, layout);
+  addStandaloneSectionAfter(props.node.id, layout);
   showSectionPicker.value = false;
 }
 function addRegistered(id) {
