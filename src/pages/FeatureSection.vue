@@ -11,6 +11,8 @@
     import Feature9 from '@/components/FeaturesSection.vue/Feature9.vue';
     import Feature10 from '@/components/FeaturesSection.vue/Feature10.vue';
     import Feature11 from '@/components/FeaturesSection.vue/Feature11.vue';
+    import Feature12 from '@/components/FeaturesSection.vue/Feature12.vue';
+    import Feature13 from '@/components/FeaturesSection.vue/Feature13.vue';
 
 </script>
 
@@ -27,5 +29,7 @@
     <Feature9 />
     <Feature10 />
     <Feature11 />
+    <Feature12 />
+    <Feature13 />
 
 </template>

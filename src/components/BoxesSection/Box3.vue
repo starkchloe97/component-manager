@@ -165,6 +165,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+
 /* ─── Section ─── */
 .diff-section {
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;

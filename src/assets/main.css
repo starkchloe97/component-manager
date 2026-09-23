@@ -1,4 +1,4 @@
-:root {
+/* :root {
   --primary: #003dc7bd;
   --secondary: #081fecc1;
   --accent: #ff6d00;
@@ -110,7 +110,9 @@
   --radius-4xl: 2rem;
   --radius-pill: 9999px;
   --radius-card: 2rem;
-}
+  
+} */
+
 * {
   box-sizing: border-box;
 }
@@ -118,5 +120,4 @@
 body {
   margin: 0;
   font-family: "Instrument Sans", sans-serif !important;
-
 }

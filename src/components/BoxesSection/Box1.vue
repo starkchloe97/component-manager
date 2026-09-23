@@ -491,44 +491,6 @@ onUnmounted(() => {
   padding: 0 24px;
 }
 
-/* ── Visibility ── */
-/* .v-one .diff-label,
-.v-one .diff-heading,
-.v-one .diff-subtitle,
-.v-one .diff-card,
-.v-one .diff-vs,
-.v-one .diff-note {
-  opacity: 0;
-  transform: translateY(30px);
-  transition:
-    opacity 0.8s cubic-bezier(0.5, 0, 0, 1),
-    transform 0.8s cubic-bezier(0.5, 0, 0, 1);
-}
-.v-one .diff-section.is-visible .diff-label {
-  opacity: 1;
-  transform: translateY(0);
-}
-.v-one .diff-section.is-visible .diff-heading {
-  opacity: 1;
-  transform: translateY(0);
-}
-.v-one .diff-section.is-visible .diff-subtitle {
-  opacity: 1;
-  transform: translateY(0);
-}
-.v-one .diff-section.is-visible .diff-card {
-  opacity: 1;
-  transform: translateY(0);
-}
-.v-one .diff-section.is-visible .diff-vs {
-  opacity: 1;
-  transform: translateY(0);
-}
-.v-one .diff-section.is-visible .diff-note {
-  opacity: 1;
-  transform: translateY(0);
-} */
-
 
 /* ── Label ── */
 .v-one .diff-label {

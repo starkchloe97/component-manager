@@ -84,7 +84,8 @@ const handlePlan = (msg) => {
   </div>
 </template>
 
-<style scoped>
+<style scoped>  
+
 .v-two .section {
   padding: 80px 24px;
   max-width: 1280px;

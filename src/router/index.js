@@ -11,6 +11,13 @@ import PackgesView from '@/pages/PackgesView.vue'
 import BoxesView from '@/pages/BoxesView.vue'
 import DoAndDontView from '@/pages/DoAndDontView.vue'
 import FeatureSection from '@/pages/FeatureSection.vue'
+import ProtectWhatYoursView from '@/pages/ProtectWhatYoursView.vue'
+import MarqueeView from '@/pages/MarqueeView.vue'
+import ContentSectionView from '@/pages/ContentSectionView.vue'
+import BrandRegistrationView from '@/pages/BrandRegistrationView.vue'
+import whyFile from '@/pages/whyFile.vue'
+import ProcessSectionView from '@/pages/ProcessSectionView.vue'
+import TabSectionView from '@/pages/TabSectionView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -70,7 +77,45 @@ const router = createRouter({
       path: '/FeatureSection',
       name: 'FeatureSection',
       component:FeatureSection
+    },
+    {
+      path: '/ProtectWhatYours',
+      name: 'ProtectWhatYoursView',
+      component:ProtectWhatYoursView
+    },
+    {
+      path: '/Marquee',
+      name: 'MarqueeView',
+      component:MarqueeView   
+    },
+    {
+      path: '/ContentSection',
+      name: 'ContentSectionViewContentSectionView',
+      component:ContentSectionView   
+    },
+    {
+      path: '/BrandRegistration',
+      name: 'BrandRegistrationView',
+      component:BrandRegistrationView 
+    },
+    {
+      path: '/whyFile',
+      name: 'whyFile',
+      component:whyFile 
+    },
+    {
+      path: '/ProcessSection',
+      name: 'ProcessSectionView',
+      component:ProcessSectionView 
+    },
+    {
+      path: '/TabSection',
+      name: 'TabSectionView',
+      component:TabSectionView 
     }
+
+
+
 
   ],
 })

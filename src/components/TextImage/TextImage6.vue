@@ -12,34 +12,6 @@ import { SITE_NAME } from "@/config/siteInfo.js";
 
 <template>
   <main id="main-content">
-
-     <!-- <section class="page-header">
-  <div class="container">
-    <div class="hero-bg">
-      <div class="hero-blob-1"></div>
-      <div class="hero-blob-2"></div>
-      <div class="hero-grid-pattern"></div>
-    </div>
-    
-    <div class="header-content">
-      <div class="header-text">
-        <h1>About</h1>
-        <p>{{ SITE_NAME }} was founded by attorneys and tech experts to deliver efficient, affordable trademark services. We protect your brand, business, and ideas across the globe.
-</p>
-      </div>
-      <div class="header-image">
-        <img
-          :src="brandsHero20"
-          alt="Professional Consultation"
-          class="header-img"
-        />
-      </div>
-    </div>
-  </div>
-</section> -->
-
-   
-
     <section class="sidebar_template spad">
       <div class="container">
         <div class="row">
@@ -76,73 +48,6 @@ import { SITE_NAME } from "@/config/siteInfo.js";
         </div>
       </div>
     </section>
-
-    <!-- <TrustBar />
-    
-    <Testimonials/>
-        <CtaSection /> -->
-    <!-- <section class="our-testimonial">
-      <div class="container">
-        <div class="info-text2 text-center">
-          <h2>Satisfied Customers</h2>
-          <p>
-            Trusted by over 10,000 businesses. Protect your intellectual
-            property with confidence.
-          </p>
-        </div>
-        <SwiperCarousel />
-      </div>
-    </section> -->
-
-    <!-- <section class="get_trademark_sec has_elem gray_bg" id="call-action-ff">
-      <div class="container">
-        <div class="row" style="align-items: center">
-          <div class="col-md-6 call-to-footer">
-            <h2 style="color: #ffffff">
-              Ready to get your trademark registered?
-            </h2>
-            <p style="color: #ffffff">
-              Don't let your dreams melt away. Register your mark before someone
-              else does.
-            </p>
-            <div
-              style="justify-content: flex-start !important"
-              class="btn_group justify-content-center"
-            >
-              <PopUp
-                trigger-text="Get Started"
-                :button-style="{
-                  background: '#fff',
-                  color: '#000',
-                }"
-                confirm-button-text="Get Started"
-              />
-              <RouterLink class="fom-text" to="/trademark-registration"
-                >Find out more</RouterLink
-              >
-            </div>
-            <div class="plain-cta-text justify-content-center">
-              <p style="color: #ffffff">
-                Any questions?
-                <a :href="`tel:${SITE_PHONE_RAW}`" class="link-style-darkbg"
-                  >Call us</a
-                >
-                today!
-              </p>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="img_holder desktop">
-              <img
-                :src="brandsHero15"
-                alt="Trademark Registration"
-                class="img-fluid"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    </section> -->
   </main>
 
   <div style="display: none" class="popupform" id="popupform">
@@ -151,63 +56,6 @@ import { SITE_NAME } from "@/config/siteInfo.js";
 </template>
 
 <style scoped>
-
-/* Page Header Styles */
-/* .page-header {
-  position: relative;
-  padding: 100px 0  60px 0;
-  overflow: hidden;
-}
-
-.header-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0px;
-  position: relative;
-  z-index: 2;
-      padding: 0px 30px;
-}
-
-.header-text {
-  flex: 1;
-  max-width: 55%;
-  text-align: left;
-}
-
-.header-text h1 {
-  color: #020617;
-  font-size: 46px;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-}
-
-.header-text p {
-  color: #4a5568;
-  
-      font-size: 16px;
-      line-height: 22px;
-  max-width: 90%;
-}
-
-.header-image {
-  flex: 1;
-  max-width: 45%;
-  position: relative;
-}
-
-.header-img {
-  width: 30%;
-  height: auto;
-  border-radius: 12px;
-
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-      top: -60px;
-      position: absolute;
-} */
-
 
 
 /* Responsive adjustments */

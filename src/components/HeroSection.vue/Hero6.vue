@@ -220,6 +220,8 @@ export default {
 </script>
 
 <style scoped>
+
+
 /* ─── MAIN SECTION ─── */
 
 .trademark-page {

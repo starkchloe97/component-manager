@@ -20,24 +20,25 @@
           </div> -->
 
           <div class="ip-header-wrap">
-              <div class="ip-badge">
-                <div class="ip-badge__ring"></div>
-                <span>TM</span>
-              </div>
-              <div>
-                  <h3 class="ip-title">Trademark</h3>
-                  <p class="ip-desc">
-                    Protects the identifiers that distinguish your brand from
-                    competitors in the marketplace.
-                  </p>
-              </div>
+            <div class="ip-badge">
+              <div class="ip-badge__ring"></div>
+              <span>TM</span>
+            </div>
+            <div>
+              <h3 class="ip-title">Trademark</h3>
+              <p class="ip-desc">
+                Protects the identifiers that distinguish your brand from
+                competitors in the marketplace.
+              </p>
+            </div>
           </div>
 
           <ol class="ip-docket">
             <li class="ip-docket__item">
               <span class="ip-docket__index">01</span>
               <span class="ip-docket__icon">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                 </svg>
               </span>
@@ -50,9 +51,11 @@
             <li class="ip-docket__item">
               <span class="ip-docket__index">02</span>
               <span class="ip-docket__icon">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" />
-                  <path d="M14 2v6h6" /><path d="m9 15 2 2 4-4" />
+                  <path d="M14 2v6h6" />
+                  <path d="m9 15 2 2 4-4" />
                 </svg>
               </span>
               <span class="ip-docket__body">
@@ -64,9 +67,12 @@
             <li class="ip-docket__item">
               <span class="ip-docket__index">03</span>
               <span class="ip-docket__icon">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
                   <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-                  <path d="M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" /><path d="M8 16H3v5" />
+                  <path d="M21 3v5h-5" />
+                  <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                  <path d="M8 16H3v5" />
                 </svg>
               </span>
               <span class="ip-docket__body">
@@ -94,15 +100,15 @@
 
           <div class="ip-header-wrap">
             <div class="ip-badge">
-                <div class="ip-badge__ring"></div>
-                <span>©</span>
+              <div class="ip-badge__ring"></div>
+              <span>©</span>
             </div>
             <div>
-                <h3 class="ip-title">Copyright</h3>
-                <p class="ip-desc">
-                    Protects original works of authorship from being copied or
-                    distributed without permission.
-                </p>
+              <h3 class="ip-title">Copyright</h3>
+              <p class="ip-desc">
+                Protects original works of authorship from being copied or
+                distributed without permission.
+              </p>
             </div>
           </div>
 
@@ -111,10 +117,14 @@
             <li class="ip-docket__item">
               <span class="ip-docket__index">01</span>
               <span class="ip-docket__icon">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" /><circle cx="17.5" cy="10.5" r=".5" fill="currentColor" />
-                  <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" /><circle cx="6.5" cy="12.5" r=".5" fill="currentColor" />
-                  <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" />
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" />
+                  <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" />
+                  <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />
+                  <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" />
+                  <path
+                    d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" />
                 </svg>
               </span>
               <span class="ip-docket__body">
@@ -126,8 +136,10 @@
             <li class="ip-docket__item">
               <span class="ip-docket__index">02</span>
               <span class="ip-docket__icon">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" />
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path
+                    d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" />
                 </svg>
               </span>
               <span class="ip-docket__body">
@@ -139,8 +151,10 @@
             <li class="ip-docket__item">
               <span class="ip-docket__index">03</span>
               <span class="ip-docket__icon">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
                 </svg>
               </span>
               <span class="ip-docket__body">
@@ -156,7 +170,8 @@
 
     <div class="ip-ticket">
       <span class="ip-ticket__hole ip-ticket__hole--left"></span>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
       </svg>
       <span>
@@ -191,6 +206,123 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+
+.ip-split {
+  
+  --primary: #003dc7bd;
+  --secondary: #081fecc1;
+  --accent: #ff6d00;
+
+  --font-size: 16px;
+  --font-weight: 400;
+  --line-height: 1.5;
+
+  --brand-50: #fff7ed;
+  --brand-100: #ffedd5;
+  --brand-200: #fed7aa;
+  --brand-300: #fdba74;
+  --brand-400: #fb923c;
+  --brand-500: #f97316;
+  --brand-600: #ea580c;
+  --brand-700: #c2410c;
+
+  --navy-800: #1e293b;
+  --navy-900: #0f172a;
+  --navy-950: #020617;
+
+  --neutral-50: #fafafa;
+  --neutral-100: #f5f5f5;
+  --neutral-200: #e5e5e5;
+  --neutral-300: #d4d4d4;
+  --neutral-400: #a3a3a3;
+  --neutral-500: #737373;
+  --neutral-600: #525252;
+  --neutral-700: #404040;
+  --neutral-800: #262626;
+  --neutral-900: #171717;
+  --neutral-950: #0a0a0a;
+
+  --green-400: #4ade80;
+  --green-500: #22c55e;
+  --green-600: #16a34a;
+
+  --blue-400: #60a5fa;
+  --blue-500: #3b82f6;
+
+  --emerald-400: #34d399;
+  --emerald-500: #10b981;
+
+  --violet-400: #a78bfa;
+  --violet-500: #8b5cf6;
+
+  --amber-400: #fbbf24;
+  --rose-400: #fb7185;
+
+  --brand: #0b55b6;
+  --brand-light: #e8f0fb;
+  --brand-dark: #083d82;
+  --brand-mid: #1a6fd4;
+
+  --surface: #ffffff;
+  --ink: #0f1d33;
+  --muted: #5a6d85;
+  --border: #d4e0f0;
+
+  --font-display: "Inter Tight", sans-serif;
+  --font-body: "Inter", sans-serif;
+
+  --primary-light: #3949ab;
+  --primary-lighter: #7986cb;
+
+  --accent-light: #ff9e40;
+  --accent-glow: rgba(255, 109, 0, 0.15);
+
+  --teal: #00897b;
+  --teal-light: #4db6ac;
+
+  --bg: #fafbff;
+  --bg-card: #ffffff;
+  --bg-alt: #f0f2ff;
+
+  --bg-gradient: linear-gradient(
+    135deg,
+    #fafbff 0%,
+    #f0f2ff 50%,
+    #fff8f0 100%
+  );
+
+  --text: #1a1a2e;
+  --text-secondary: #5c6283;
+  --text-muted: #8b90a8;
+
+  --border-light: #eef0f8;
+
+  --shadow-sm: 0 1px 3px rgba(26, 35, 126, 0.06);
+  --shadow-md: 0 4px 16px rgba(26, 35, 126, 0.08);
+  --shadow-lg: 0 8px 40px rgba(26, 35, 126, 0.1);
+  --shadow-xl: 0 16px 60px rgba(26, 35, 126, 0.12);
+
+  --radius: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+
+  --on-surface: #131b2e;
+  --on-surface-variant: #44474f;
+  --background: #faf8ff;
+
+  --surface-container-high: #e2e7ff;
+  --surface-container-low: #f2f3ff;
+  --outline-variant: #c3c5d9;
+  --white: #ffffff;
+
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+  --radius-4xl: 2rem;
+  --radius-pill: 9999px;
+  --radius-card: 2rem;
+  
+}
+
 .ip-split {
   font-family: "Inter", sans-serif;
   position: relative;
@@ -207,12 +339,35 @@ onUnmounted(() => {
   transform: translateY(28px);
   transition: opacity 0.7s cubic-bezier(0.5, 0, 0, 1), transform 0.7s cubic-bezier(0.5, 0, 0, 1);
 /* } */
-.v-five .ip-split.is-visible .ip-panel--tm { opacity: 1; transform: translateY(0); transition-delay: 80ms; }
-.v-five .ip-split.is-visible .ip-seam { opacity: 1; transform: translateY(0); transition-delay: 150ms; }
-.v-five .ip-split.is-visible .ip-panel--cr { opacity: 1; transform: translateY(0); transition-delay: 220ms; }
-.v-five .ip-split.is-visible .ip-ticket { opacity: 1; transform: translateY(0); transition-delay: 320ms; } 
+.v-five .ip-split.is-visible .ip-panel--tm {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 80ms;
+}
 
-.v-five .ip-split.is-visible .ip-head { opacity: 1; transform: translateY(0); text-align: center; }
+.v-five .ip-split.is-visible .ip-seam {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 150ms;
+}
+
+.v-five .ip-split.is-visible .ip-panel--cr {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 220ms;
+}
+
+.v-five .ip-split.is-visible .ip-ticket {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 320ms;
+}
+
+.v-five .ip-split.is-visible .ip-head {
+  opacity: 1;
+  transform: translateY(0);
+  text-align: center;
+}
 
 .ip-eyebrow {
   display: inline-flex;
@@ -252,6 +407,7 @@ onUnmounted(() => {
   grid-template-columns: 1fr;
   position: relative;
 }
+
 @media (min-width: 920px) {
   .v-five .ip-stage {
     grid-template-columns: 1fr 88px 1fr;
@@ -279,6 +435,7 @@ onUnmounted(() => {
     margin-right: -44px;
     padding-right: 44px;
   }
+
   .v-five .ip-panel--cr {
     clip-path: polygon(10% 0, 100% 0, 100% 100%, 0 100%);
     margin-left: -44px;
@@ -292,9 +449,15 @@ onUnmounted(() => {
   flex-direction: column;
   height: 100%;
 }
+
 @media (min-width: 920px) {
-  .v-five .ip-panel--tm .ip-panel__inner { padding-right: 56px; }
-  .v-five .ip-panel--cr .ip-panel__inner { padding-left: 56px; }
+  .v-five .ip-panel--tm .ip-panel__inner {
+    padding-right: 56px;
+  }
+
+  .v-five .ip-panel--cr .ip-panel__inner {
+    padding-left: 56px;
+  }
 }
 
 .v-five .ip-panel__top {
@@ -312,11 +475,13 @@ onUnmounted(() => {
   padding: 4px 10px;
   border-radius: 9999px;
 }
+
 .v-five .ip-panel--tm .ip-file-tag {
   color: var(--brand-300);
   border: 1px solid rgba(251, 146, 60, 0.3);
   background: rgba(251, 146, 60, 0.08);
 }
+
 .v-five .ip-panel--cr .ip-file-tag {
   color: var(--navy-800);
   border: 1px solid var(--neutral-200);
@@ -329,8 +494,14 @@ onUnmounted(() => {
   font-weight: 700;
   letter-spacing: 0.05em;
 }
-.v-five .ip-panel--tm .ip-mark { color: rgba(255, 255, 255, 0.18); }
-.v-five .ip-panel--cr .ip-mark { color: var(--neutral-300); }
+
+.v-five .ip-panel--tm .ip-mark {
+  color: rgba(255, 255, 255, 0.18);
+}
+
+.v-five .ip-panel--cr .ip-mark {
+  color: var(--neutral-300);
+}
 
 .v-five .ip-header-wrap {
   display: flex;
@@ -351,11 +522,13 @@ onUnmounted(() => {
   font-weight: 700;
   margin-bottom: 26px;
 }
+
 .v-five .ip-panel--tm .ip-badge {
   background: rgba(251, 146, 60, 0.12);
   color: var(--brand-400);
   border: 1px solid rgba(251, 146, 60, 0.3);
 }
+
 .v-five .ip-panel--cr .ip-badge {
   background: linear-gradient(135deg, var(--navy-900) 0%, var(--navy-800) 100%);
   color: var(--brand-400);
@@ -374,8 +547,14 @@ onUnmounted(() => {
   letter-spacing: -0.02em;
   margin: 0 0 10px;
 }
-.v-five .ip-panel--tm .ip-title { color: #fff; }
-.v-five .ip-panel--cr .ip-title { color: var(--navy-950); }
+
+.v-five .ip-panel--tm .ip-title {
+  color: #fff;
+}
+
+.v-five .ip-panel--cr .ip-title {
+  color: var(--navy-950);
+}
 
 .v-five .ip-desc {
   font-size: 0.8438rem;
@@ -383,8 +562,14 @@ onUnmounted(() => {
   margin: 0 0 32px;
   max-width: 320px;
 }
-.v-five .ip-panel--tm .ip-desc { color: rgba(255, 255, 255, 0.55); }
-.v-five .ip-panel--cr .ip-desc { color: var(--neutral-500); }
+
+.v-five .ip-panel--tm .ip-desc {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.v-five .ip-panel--cr .ip-desc {
+  color: var(--neutral-500);
+}
 
 .v-five .ip-docket {
   list-style: none;
@@ -408,8 +593,14 @@ onUnmounted(() => {
   font-weight: 700;
   padding-top: 5px;
 }
-.v-five .ip-panel--tm .ip-docket__index { color: rgba(251, 146, 60, 0.55); }
-.v-five .ip-panel--cr .ip-docket__index { color: var(--brand-500); }
+
+.v-five .ip-panel--tm .ip-docket__index {
+  color: rgba(251, 146, 60, 0.55);
+}
+
+.v-five .ip-panel--cr .ip-docket__index {
+  color: var(--brand-500);
+}
 
 .v-five .ip-docket__icon {
   width: 30px;
@@ -420,11 +611,13 @@ onUnmounted(() => {
   justify-content: center;
   flex-shrink: 0;
 }
+
 .v-five .ip-panel--tm .ip-docket__icon {
   background: rgba(255, 255, 255, 0.06);
   color: var(--brand-400);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
+
 .v-five .ip-panel--cr .ip-docket__icon {
   background: linear-gradient(135deg, var(--navy-900) 0%, var(--navy-800) 100%);
   color: var(--brand-400);
@@ -438,14 +631,27 @@ onUnmounted(() => {
   line-height: 1.6;
   padding-top: 3px;
 }
+
 .v-five .ip-docket__body strong {
   font-size: 13.5px;
   font-weight: 600;
 }
-.v-five .ip-panel--tm .ip-docket__body strong { color: #fff; }
-.v-five .ip-panel--tm .ip-docket__body { color: rgba(255, 255, 255, 0.45); }
-.v-five .ip-panel--cr .ip-docket__body strong { color: var(--navy-950); }
-.v-five .ip-panel--cr .ip-docket__body { color: var(--neutral-500); }
+
+.v-five .ip-panel--tm .ip-docket__body strong {
+  color: #fff;
+}
+
+.v-five .ip-panel--tm .ip-docket__body {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.v-five .ip-panel--cr .ip-docket__body strong {
+  color: var(--navy-950);
+}
+
+.v-five .ip-panel--cr .ip-docket__body {
+  color: var(--neutral-500);
+}
 
 .v-five .ip-seam {
   display: none;
@@ -456,8 +662,11 @@ onUnmounted(() => {
   position: relative;
   z-index: 2;
 }
+
 @media (min-width: 920px) {
-  .v-five .ip-seam { display: flex; }
+  .v-five .ip-seam {
+    display: flex;
+  }
 }
 
 .v-five .ip-seam__line {
@@ -517,6 +726,12 @@ onUnmounted(() => {
   border-radius: 50%;
   background: var(--neutral-50);
 }
-.v-five .ip-ticket__hole--left { left: -9px; }
-.v-five .ip-ticket__hole--right { right: -9px; }
+
+.v-five .ip-ticket__hole--left {
+  left: -9px;
+}
+
+.v-five .ip-ticket__hole--right {
+  right: -9px;
+}
 </style>
