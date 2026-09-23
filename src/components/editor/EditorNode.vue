@@ -229,7 +229,7 @@ onBeforeUnmount(() => {
       />
     </section>
 
-    <div class="section-insert-control" @click.stop>
+    <div v-if="props.rootSection" class="section-insert-control" @click.stop>
       <button type="button" class="section-insert-button" aria-label="Add section below" @click="openSectionPicker">+</button>
     </div>
 
@@ -329,7 +329,7 @@ onBeforeUnmount(() => {
         @close="showContainerPicker = false"
       />
     </div>
-    <div class="section-insert-control container-insert-control" @click.stop>
+    <div v-if="props.rootSection" class="section-insert-control container-insert-control" @click.stop>
       <button type="button" class="section-insert-button" aria-label="Add section below container" @click="openSectionPicker">+</button>
     </div>
     <div class="node-toolbar container-toolbar" @click.stop>
