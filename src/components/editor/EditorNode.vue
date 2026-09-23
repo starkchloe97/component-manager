@@ -263,7 +263,7 @@ onBeforeUnmount(() => {
       </div>
       <EditorNode v-for="child in node.children" :key="child.id" :node="child" :parent-id="node.id" :parent-type="node.type" />
 
-      <div class="column-add" @click.stop>
+      <div v-if="isSelected" class="column-add" @click.stop>
         <button type="button" class="add-element-button" :class="{ 'is-open': showAdd }" @click="toggleAdd" aria-label="Add element">+</button>
         <div v-if="showAdd" class="element-menu">
           <div class="menu-title">Basic elements</div>
@@ -297,7 +297,7 @@ onBeforeUnmount(() => {
     <div class="editor-container" :style="node.styles">
       <div v-if="!node.children.length" class="container-empty"><small>Empty container</small></div>
       <EditorNode v-for="child in node.children" :key="child.id" :node="child" :parent-id="node.id" :parent-type="node.type" />
-      <div class="container-add" @click.stop>
+      <div v-if="isSelected" class="container-add" @click.stop>
         <button
           type="button"
           class="container-add-trigger"
@@ -362,7 +362,7 @@ onBeforeUnmount(() => {
 
       <EditorNode v-for="child in node.children" :key="child.id" :node="child" :parent-id="node.id" :parent-type="node.type" />
 
-      <div class="component-add" @click.stop>
+      <div v-if="isSelected" class="component-add" @click.stop>
         <button type="button" class="add-element-button" :class="{ 'is-open': showAdd }" @click="toggleAdd" aria-label="Add element">+</button>
         <div v-if="showAdd" class="element-menu">
           <div class="menu-title">Basic elements</div>
