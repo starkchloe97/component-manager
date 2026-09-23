@@ -126,7 +126,11 @@ function toggleAdd() {
 function handleOutsideAdd(event) {
   const menu = event.target?.closest?.(".element-menu");
   const trigger = event.target?.closest?.(".add-element-button");
-  if (!menu && !trigger) {
+  if (trigger) {
+    // Let the button's click handler toggle the menu itself.
+    return;
+  }
+  if (!menu) {
     showAdd.value = false;
     removeOutsideAddListener();
   }
