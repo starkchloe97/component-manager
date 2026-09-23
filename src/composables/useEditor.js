@@ -208,6 +208,17 @@ export function useEditor() {
     return addSection(layout, index, list);
   }
 
+  // Adds a new section as a top-level sibling of the selected layout.
+  // Unlike addSectionAfter(), this never nests into or under an ancestor
+  // section/container; it inserts into the document's root layout list.
+  function addStandaloneSectionAfter(nodeId, layout = "100") {
+    const rootNode = findTopLevelDocumentNode(nodeId);
+    const index = rootNode
+      ? document.children.findIndex((node) => node.id === rootNode.id) + 1
+      : document.children.length;
+    return addSection(layout, index, document.children);
+  }
+
   function addSectionToNode(parentId, layout = "100") {
     const parent = findNodeInDocument(parentId);
     if (!parent || !["container", "column"].includes(parent.type)) return null;
@@ -347,6 +358,17 @@ export function useEditor() {
   };
 }
 
+function findTopLevelDocumentNode(id) {
+  function walk(nodes) {
+    for (const node of nodes || []) {
+      if (node.id === id) return node;
+      const found = walk(node.children || []);
+      if (found) return node;
+    }
+    return null;
+  }
+  return walk(document.children) || walk(document.componentChildren);
+}
 function findNode(nodes, id) {
   for (const node of nodes || []) {
     if (node.id === id) return node;
