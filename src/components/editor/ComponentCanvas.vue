@@ -289,7 +289,7 @@ onUnmounted(() => {
   min-height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  background: #eef1f5;
+  background: #fff;
 }
 
 .canvas-header {
@@ -299,24 +299,24 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 38px;
-  padding: 0 14px;
+  height: 46px;
+  padding: 0 24px;
   box-sizing: border-box;
-  background: rgba(255,255,255,.96);
+  background: #fff;
   border-bottom: 1px solid #e5e7eb;
-  font-size: 11px;
-  font-weight: 600;
-  color: #374151;
+  font-size: 12px;
+  font-weight: 700;
+  color: #30343a;
 }
 
-.selection-info { color: #2563eb; }
+.selection-info { color: #93003f; }
 
 .component-stage {
   position: relative;
-  width: min(100%, 1440px);
-  margin: 18px auto 48px;
+  width: min(100%, 1600px);
+  margin: 0 auto 48px;
   background: #fff;
-  box-shadow: 0 10px 35px rgba(15,23,42,.07);
+  box-shadow: none;
 }
 
 .component-hit-layer { position: relative; width: 100%; }
@@ -324,15 +324,15 @@ onUnmounted(() => {
 
 /* Highlight the actual element only. No full-canvas overlay is used, so the drawer can never be covered by a selection frame. */
 .component-hit-layer :deep([data-editor-hovered="true"]) {
-  outline: 1px dashed rgba(37,99,235,.72) !important;
+  outline: 1px dashed rgba(192,40,179,.7) !important;
   outline-offset: 2px;
   cursor: pointer;
 }
 
 .component-hit-layer :deep([data-editor-selected="true"]) {
-  outline: 2px solid #2563eb !important;
+  outline: 1px solid #c028b3 !important;
   outline-offset: 2px;
-  box-shadow: 0 0 0 2px rgba(37,99,235,.08);
+  box-shadow: 0 0 0 2px rgba(232,175,244,.35);
   cursor: pointer;
 }
 
@@ -340,7 +340,7 @@ onUnmounted(() => {
 .component-hit-layer :deep(button[data-editor-hovered="true"]) { cursor: pointer; }
 
 .component-hit-layer :deep(*:focus-visible) {
-  outline: 2px solid #2563eb;
+  outline: 2px solid #93003f;
   outline-offset: 2px;
 }
 
@@ -353,9 +353,9 @@ onUnmounted(() => {
 .component-builder-extension{position:relative;background:#fff}
 .page-section-list{width:100%}
 .page-section-node{position:relative;width:100%;margin:0}
-.empty-page-state{position:relative;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:1px dashed #d7dee8;background:#fafbfc;color:#94a3b8;font-size:10px}
-.empty-page-title{font-size:11px;font-weight:700;color:#64748b}
+.empty-page-state{position:relative;min-height:188px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;border:1px dashed #cbd0d7;background:#fff;color:#6b7280;font-size:12px}
+.empty-page-title{font-size:14px;font-weight:700;color:#30343a}
 .empty-page-actions{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px}
-.empty-section-button,.empty-container-button{opacity:1;pointer-events:auto;position:relative;bottom:auto;left:auto;right:auto;display:inline-flex;align-items:center;justify-content:center;height:30px;padding:0 11px;border:1px solid #bfdbfe;border-radius:7px;background:#fff;color:#2563eb;font-size:11px;font-weight:600;line-height:1;cursor:pointer;box-shadow:0 2px 7px rgba(15,23,42,.1)}
-.empty-container-button{border-color:#cbd5e1;color:#475569}
+.empty-section-button,.empty-container-button{opacity:1;pointer-events:auto;position:relative;bottom:auto;left:auto;right:auto;display:inline-flex;align-items:center;justify-content:center;height:34px;padding:0 13px;border:1px solid #df97ef;border-radius:50px;background:#fff;color:#8f0070;font-size:11px;font-weight:700;line-height:1;cursor:pointer;box-shadow:none}
+.empty-container-button{border-color:#d8dbe0;color:#4d5560}
 </style>

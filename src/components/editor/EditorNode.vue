@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { ArrowUp, Box, Copy, GripVertical, Plus, Trash2 } from "@lucide/vue";
 import { useEditor } from "@/composables/useEditor";
 import { componentRegistry } from "@/config/componentRegistry";
 import SectionLayoutPicker from "./SectionLayoutPicker.vue";
@@ -33,15 +34,6 @@ const layoutElements = computed(() => Object.entries(editorRegistry)
   .map(([type, definition]) => ({ type, ...definition })));
 const registeredComponents = computed(() => Object.values(componentRegistry));
 const nodeLabel = computed(() => props.node.type === "component" ? componentLabel.value : (editorRegistry[props.node.type]?.label || props.node.type));
-const toolbarIcons = {
-  section: "▦",
-  column: "▥",
-  container: "▤",
-  add: "+",
-  parent: "↑",
-  duplicate: "□",
-  delete: "⌫",
-};
 const parentLabel = computed(() => editorRegistry[props.parentType]?.label || props.parentType || "parent");
 const layoutStyleKeys = new Set([
   "display", "flexDirection", "flexWrap", "justifyContent", "alignItems", "alignContent",
@@ -249,10 +241,10 @@ onBeforeUnmount(() => {
     />
 
     <div class="node-toolbar section-toolbar" @click.stop>
-      <span class="node-toolbar-label" :title="nodeLabel">{{ toolbarIcons.section }}</span>
-      <button type="button" class="toolbar-icon-button" title="Add container" aria-label="Add container" @click="openContainerPicker">{{ toolbarIcons.container }}</button>
-      <button type="button" class="toolbar-icon-button" title="Duplicate section" aria-label="Duplicate section" @click="duplicateNode(node.id)">{{ toolbarIcons.duplicate }}</button>
-      <button type="button" class="toolbar-icon-button toolbar-icon-danger" title="Delete section" aria-label="Delete section" @click="removeNode">{{ toolbarIcons.delete }}</button>
+      <span class="node-toolbar-label" :title="nodeLabel">{{ nodeLabel }}</span><GripVertical :size="16" class="drag-grip" aria-label="Drag handle" />
+      <button type="button" class="toolbar-icon-button" title="Add container" aria-label="Add container" @click="openContainerPicker"><Box :size="15" /></button>
+      <button type="button" class="toolbar-icon-button" title="Duplicate section" aria-label="Duplicate section" @click="duplicateNode(node.id)"><Copy :size="15" /></button>
+      <button type="button" class="toolbar-icon-button toolbar-icon-danger" title="Delete section" aria-label="Delete section" @click="removeNode"><Trash2 :size="15" /></button>
     </div>
   </div>
 
@@ -285,11 +277,11 @@ onBeforeUnmount(() => {
       />
     </div>
     <div class="node-toolbar column-toolbar" @click.stop>
-      <span class="node-toolbar-label" :title="nodeLabel">{{ toolbarIcons.column }}</span>
-      <button v-if="parentId" type="button" class="toolbar-icon-button" :title="`Select ${parentLabel}`" :aria-label="`Select ${parentLabel}`" @click="selectParent">{{ toolbarIcons.parent }}</button>
-      <button v-if="isSelected" type="button" class="toolbar-icon-button add-element-button" title="Add element" aria-label="Add element" @click="toggleAdd">{{ toolbarIcons.add }}</button>
-      <button type="button" class="toolbar-icon-button" title="Duplicate column" aria-label="Duplicate column" @click="duplicateNode(node.id)">{{ toolbarIcons.duplicate }}</button>
-      <button type="button" class="toolbar-icon-button toolbar-icon-danger" title="Delete column" aria-label="Delete column" @click="removeNode">{{ toolbarIcons.delete }}</button>
+      <span class="node-toolbar-label" :title="nodeLabel">{{ nodeLabel }}</span><GripVertical :size="16" class="drag-grip" aria-label="Drag handle" />
+      <button v-if="parentId" type="button" class="toolbar-icon-button" :title="`Select ${parentLabel}`" :aria-label="`Select ${parentLabel}`" @click="selectParent"><ArrowUp :size="15" /></button>
+      <button v-if="isSelected" type="button" class="toolbar-icon-button add-element-button" title="Add element" aria-label="Add element" @click="toggleAdd"><Plus :size="15" /></button>
+      <button type="button" class="toolbar-icon-button" title="Duplicate column" aria-label="Duplicate column" @click="duplicateNode(node.id)"><Copy :size="15" /></button>
+      <button type="button" class="toolbar-icon-button toolbar-icon-danger" title="Delete column" aria-label="Delete column" @click="removeNode"><Trash2 :size="15" /></button>
     </div>
   </div>
 
@@ -333,11 +325,11 @@ onBeforeUnmount(() => {
       <button type="button" class="section-insert-button" aria-label="Add section below container" @click="openSectionPicker">+</button>
     </div>
     <div class="node-toolbar container-toolbar" @click.stop>
-      <span class="node-toolbar-label" :title="nodeLabel">{{ toolbarIcons.container }}</span>
-      <button type="button" class="toolbar-icon-button" title="Add section below" aria-label="Add section below" @click="openSectionPicker">{{ toolbarIcons.add }}</button>
-      <button type="button" class="toolbar-icon-button" title="Add container" aria-label="Add container" @click="openContainerPicker">{{ toolbarIcons.container }}</button>
-      <button type="button" class="toolbar-icon-button" title="Duplicate container" aria-label="Duplicate container" @click="duplicateNode(node.id)">{{ toolbarIcons.duplicate }}</button>
-      <button type="button" class="toolbar-icon-button toolbar-icon-danger" title="Delete container" aria-label="Delete container" @click="removeNode">{{ toolbarIcons.delete }}</button>
+      <span class="node-toolbar-label" :title="nodeLabel">{{ nodeLabel }}</span><GripVertical :size="16" class="drag-grip" aria-label="Drag handle" />
+      <button type="button" class="toolbar-icon-button" title="Add section below" aria-label="Add section below" @click="openSectionPicker"><Plus :size="15" /></button>
+      <button type="button" class="toolbar-icon-button" title="Add container" aria-label="Add container" @click="openContainerPicker"><Box :size="15" /></button>
+      <button type="button" class="toolbar-icon-button" title="Duplicate container" aria-label="Duplicate container" @click="duplicateNode(node.id)"><Copy :size="15" /></button>
+      <button type="button" class="toolbar-icon-button toolbar-icon-danger" title="Delete container" aria-label="Delete container" @click="removeNode"><Trash2 :size="15" /></button>
     </div>
     <SectionLayoutPicker
       v-if="showSectionPicker"
@@ -382,10 +374,10 @@ onBeforeUnmount(() => {
       />
     </div>
     <div class="node-toolbar component-toolbar" @click.stop>
-      <span class="node-toolbar-label" :title="nodeLabel">{{ toolbarIcons.container }}</span>
-      <button v-if="parentId" type="button" class="toolbar-icon-button" :title="`Select ${parentLabel}`" :aria-label="`Select ${parentLabel}`" @click="selectParent">{{ toolbarIcons.parent }}</button>
-      <button type="button" class="toolbar-icon-button" title="Duplicate component" aria-label="Duplicate component" @click="duplicateNode(node.id)">{{ toolbarIcons.duplicate }}</button>
-      <button type="button" class="toolbar-icon-button toolbar-icon-danger" title="Delete component" aria-label="Delete component" @click="removeNode">{{ toolbarIcons.delete }}</button>
+      <span class="node-toolbar-label" :title="nodeLabel">{{ nodeLabel }}</span><GripVertical :size="16" class="drag-grip" aria-label="Drag handle" />
+      <button v-if="parentId" type="button" class="toolbar-icon-button" :title="`Select ${parentLabel}`" :aria-label="`Select ${parentLabel}`" @click="selectParent"><ArrowUp :size="15" /></button>
+      <button type="button" class="toolbar-icon-button" title="Duplicate component" aria-label="Duplicate component" @click="duplicateNode(node.id)"><Copy :size="15" /></button>
+      <button type="button" class="toolbar-icon-button toolbar-icon-danger" title="Delete component" aria-label="Delete component" @click="removeNode"><Trash2 :size="15" /></button>
     </div>
   </div>
 
@@ -447,17 +439,17 @@ onBeforeUnmount(() => {
     :style="leafToolbarStyle"
     @click.stop
   >
-    <span>{{ nodeLabel }}</span>
-    <button v-if="parentId" type="button" :title="`Select ${parentLabel}`" @click="selectParent">{{ parentLabel }}</button>
-    <button type="button" @click="duplicateNode(node.id)">Duplicate</button>
-    <button type="button" @click="removeNode">Delete</button>
+    <span>{{ nodeLabel }}</span><GripVertical :size="16" class="drag-grip" aria-label="Drag handle" />
+    <button v-if="parentId" type="button" class="toolbar-icon-button" title="Select parent" aria-label="Select parent" @click="selectParent"><ArrowUp :size="15" /></button>
+    <button type="button" class="toolbar-icon-button" title="Duplicate" aria-label="Duplicate" @click="duplicateNode(node.id)"><Copy :size="15" /></button>
+    <button type="button" class="toolbar-icon-button toolbar-icon-danger" title="Delete" aria-label="Delete" @click="removeNode"><Trash2 :size="15" /></button>
   </div>
 </template>
 
 <style scoped>
 .editor-node{position:relative;min-width:0}
 .editor-node--section{margin-bottom:34px}
-.editor-node--selected{outline:2px solid #2563eb;outline-offset:-2px}
+.editor-node--selected{outline:1px solid #e6a4f4;outline-offset:-2px}
 .editor-node--selected > .editor-section,
 .editor-node--selected > .editor-column,
 .editor-node--selected > .editor-container,
@@ -469,12 +461,12 @@ onBeforeUnmount(() => {
   min-width:0;
   display:grid;
   box-sizing:border-box;
-  background:rgba(239,246,255,.28);
-  border:1px solid rgba(147,197,253,.38);
-  border-radius:3px;
+  background:rgba(255,255,255,.22);
+  border:1px solid transparent;
+  border-radius:0;
   transition:background .12s ease,border-color .12s ease;
 }
-.editor-section:hover{background:rgba(239,246,255,.4);border-color:rgba(96,165,250,.52)}
+.editor-section:hover{background:rgba(252,241,255,.2);border-color:rgba(230,164,244,.72)}
 .editor-section > .editor-node{min-width:0;width:100%}
 
 .section-insert-control{
@@ -512,10 +504,10 @@ onBeforeUnmount(() => {
   width:24px;
   height:24px;
   padding:0;
-  border:1px solid #bfdbfe;
+  border:1px solid #df97ef;
   border-radius:50%;
   background:#fff;
-  color:#2563eb;
+  color:#8f0070;
   font-size:16px;
   font-weight:600;
   line-height:21px;
@@ -524,8 +516,8 @@ onBeforeUnmount(() => {
   transition:transform .12s ease,background .12s ease,border-color .12s ease,box-shadow .12s ease;
 }
 .section-insert-button:hover{
-  background:#eff6ff;
-  border-color:#60a5fa;
+  background:#fff0ff;
+  border-color:#b9159d;
   transform:scale(1.08);
   box-shadow:0 3px 10px rgba(37,99,235,.14);
 }
@@ -537,14 +529,14 @@ onBeforeUnmount(() => {
   min-height:72px;
   padding:6px;
   box-sizing:border-box;
-  border:1px solid rgba(148,163,184,.3);
-  border-radius:3px;
-  background:rgba(248,250,252,.58);
+  border:1px solid transparent;
+  border-radius:0;
+  background:rgba(255,255,255,.45);
   overflow:visible;
   transition:background .12s ease,border-color .12s ease;
 }
 .editor-column > .editor-node{min-width:0}
-.editor-column:hover{border-color:rgba(96,165,250,.55);background:rgba(239,246,255,.48)}
+.editor-column:hover{border-color:rgba(230,164,244,.75);background:rgba(255,246,255,.42)}
 
 .editor-container{
   position:relative;
@@ -553,22 +545,22 @@ onBeforeUnmount(() => {
   min-height:0;
   box-sizing:border-box;
   margin:0;
-  padding:6px;
-  border:1px solid rgba(167,139,250,.24);
-  border-radius:3px;
-  background:rgba(245,243,255,.24);
+  padding:10px;
+  border:1px solid transparent;
+  border-radius:0;
+  background:rgba(255,255,255,.24);
   overflow:visible;
 }
-.editor-container:hover{border-color:rgba(139,92,246,.42);background:rgba(245,243,255,.4)}
+.editor-container:hover{border-color:rgba(230,164,244,.75);background:rgba(255,246,255,.4)}
 
 .container-empty,.column-empty{
-  min-height:72px;
+  min-height:120px;
   display:flex;
   flex-direction:column;
   align-items:center;
   justify-content:center;
   gap:4px;
-  color:#94a3b8;
+  color:#59616d;
   font-size:11px;
   pointer-events:none;
   text-align:center;
@@ -584,7 +576,7 @@ onBeforeUnmount(() => {
   line-height:1;
   color:#64748b;
 }
-.container-empty small,.column-empty small{font-size:10px;color:#94a3b8}
+.container-empty small,.column-empty small{font-size:12px;color:#59616d;font-style:italic}
 
 .column-add,.container-add,.component-add{
   position:relative;
@@ -601,19 +593,19 @@ onBeforeUnmount(() => {
   min-width:92px;
   height:28px;
   padding:0 10px;
-  border:1px dashed #cbd5e1;
-  border-radius:6px;
+  border:1px dashed #d6d9de;
+  border-radius:0;
   background:#fff;
-  color:#64748b;
+  color:#59616d;
   font-size:10px;
   font-weight:600;
   cursor:pointer;
   box-shadow:0 1px 4px rgba(15,23,42,.06);
 }
 .container-add-trigger:hover,.container-add-trigger.is-open{
-  border-color:#2563eb;
-  color:#2563eb;
-  background:#eff6ff;
+  border-color:#b9159d;
+  color:#8f0070;
+  background:#fff0ff;
 }
 .container-add-icon{
   font-size:15px;
@@ -667,32 +659,33 @@ onBeforeUnmount(() => {
 .menu-title{padding:7px;color:#94a3b8;font-size:8px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
 
 .builder-element{box-sizing:border-box;min-width:0}
-.builder-element--selected{outline:2px solid #2563eb!important;outline-offset:2px}
+.builder-element--selected{outline:1px solid #c028b3!important;outline-offset:2px}
 .builder-image{max-width:100%}
 
 .component-node{position:relative;width:100%;min-width:0;box-sizing:border-box;overflow:visible}
 .component-node-label{position:absolute;top:6px;right:6px;z-index:5;padding:3px 6px;border-radius:4px;background:rgba(15,23,42,.78);color:#fff;font-size:8px;pointer-events:none}
 .component-missing{min-height:100px;display:grid;place-items:center;color:#94a3b8;background:#f8fafc}
 
-.node-toolbar--leaf{position:fixed;z-index:1000}
+.node-toolbar--leaf{position:fixed;z-index:1000;transform:none!important}
 
 .node-toolbar{
   position:absolute;
-  top:3px;
-  right:4px;
+  top:-30px;
+  left:50%;
+  right:auto;
   z-index:150;
   display:flex;
   align-items:center;
-  gap:1px;
-  padding:2px;
-  background:rgba(15,23,42,.94);
+  gap:3px;
+  padding:3px 7px;
+  background:#e8aff4;
   color:#fff;
-  border:1px solid rgba(255,255,255,.09);
-  border-radius:4px;
-  box-shadow:0 2px 8px rgba(15,23,42,.16);
+  border:0;
+  border-radius:0;
+  box-shadow:none;
   opacity:0;
   visibility:hidden;
-  transform:translateY(-2px);
+  transform:translate(-50%,-4px);
   pointer-events:none;
   transition:opacity .12s ease,transform .12s ease,visibility .12s ease;
 }
@@ -700,40 +693,36 @@ onBeforeUnmount(() => {
 .node-toolbar:hover{
   opacity:1;
   visibility:visible;
-  transform:translateY(0);
+  transform:translate(-50%,0);
   pointer-events:auto;
 }
-.section-toolbar{top:3px;right:4px}
-.column-toolbar{top:3px;right:4px}
-.container-toolbar{top:3px;right:4px}
-.component-toolbar{top:3px;right:4px}
+.section-toolbar,.column-toolbar,.container-toolbar,.component-toolbar{top:-30px}
 .node-toolbar-label{
-  width:16px;
-  height:16px;
+  max-width:80px;
   display:grid;
   place-items:center;
   padding:0 !important;
-  color:#94a3b8;
-  font-size:9px;
+  color:#2a1830;
+  font-size:10px;
   font-weight:700;
 }
 .node-toolbar button:disabled{opacity:.45;cursor:default}
-.node-toolbar .toolbar-icon-button{
-  width:18px;
-  height:18px;
+.drag-grip{color:#2a1830;cursor:grab}.node-toolbar .toolbar-icon-button{
+  width:22px;
+  height:22px;
   display:grid;
   place-items:center;
   border:0;
-  border-radius:3px;
+  border-radius:0;
   background:transparent;
-  color:#cbd5e1;
+  color:#2a1830;
   cursor:pointer;
   font-size:10px;
   line-height:1;
   padding:0;
 }
-.node-toolbar .toolbar-icon-button:hover{background:#334155;color:#fff}
+.node-toolbar .toolbar-icon-button:hover{background:rgba(255,255,255,.45);color:#2a1830}
 .node-toolbar .toolbar-icon-button:active{transform:scale(.92)}
 .node-toolbar .toolbar-icon-button:focus-visible{outline:1px solid #60a5fa;outline-offset:1px}
-.node-toolbar .toolbar-icon-danger:hover{background:#7f1d1d;color:#fecaca}
+.node-toolbar .toolbar-icon-danger:hover{background:#b9159d;color:#fff}
 </style>
