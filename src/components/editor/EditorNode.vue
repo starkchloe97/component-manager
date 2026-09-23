@@ -309,15 +309,15 @@ async function copyCurrentComponent() {
     </div>
     <SectionLayoutPicker
       v-if="showSectionPicker"
-      @select="addSectionBelow"
+      @select="addSectionInsideCurrent"
       @close="showSectionPicker = false"
     />
     <SectionLayoutPicker
       v-if="showContainerPicker"
       title="Add container"
-      description="Choose a layout for the new container."
+      description="Choose the layout for the new container inside this container."
       :allow-empty-container="true"
-      @select="addContainerAfterCurrent"
+      @select="addContainerBelow"
       @close="showContainerPicker = false"
     />
   </div>
