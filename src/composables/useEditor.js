@@ -208,6 +208,15 @@ export function useEditor() {
     return addSection(layout, index, list);
   }
 
+  function addSectionToNode(parentId, layout = "100") {
+    const parent = findNodeInDocument(parentId);
+    if (!parent || !["container", "column"].includes(parent.type)) return null;
+    const section = createSection(layout);
+    parent.children.push(section);
+    selectNode(section.id);
+    return section;
+  }
+
   function createLayoutChildren(layout) {
     return layout.split("-").map(Number).map((width) => {
       const column = createEditorNode("column");
