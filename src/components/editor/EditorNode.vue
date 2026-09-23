@@ -555,8 +555,8 @@ async function copyCurrentComponent() {
   text-align:center;
 }
 .container-empty span,.column-empty-plus{
-  width:22px;
-  height:22px;
+  width:17px;
+  height:17px;
   border:1px dashed #94a3b8;
   border-radius:50%;
   display:grid;
@@ -664,12 +664,14 @@ async function copyCurrentComponent() {
   z-index:150;
   display:flex;
   align-items:center;
-  gap:4px;
-  padding:4px;
-  background:#111827;
+  gap:2px;
+  padding:2px 3px;
+  background:rgba(15,23,42,.96);
   color:#fff;
-  border-radius:6px;
-  font-size:10px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:5px;
+  font-size:9px;
+  box-shadow:0 3px 10px rgba(15,23,42,.18);
 }
 .section-toolbar{top:-4px;right:6px}
 .column-toolbar{top:2px;right:6px}
@@ -680,25 +682,27 @@ async function copyCurrentComponent() {
   display:grid;
   place-items:center;
   padding:0 !important;
-  color:#cbd5e1;
-  font-size:13px;
+  color:#94a3b8;
+  font-size:10px;
   font-weight:700;
 }
 .node-toolbar button:disabled{opacity:.45;cursor:default}
 .node-toolbar .toolbar-icon-button{
-  width:24px;
-  height:24px;
+  width:19px;
+  height:19px;
   display:grid;
   place-items:center;
   border:0;
-  border-radius:4px;
+  border-radius:3px;
   background:transparent;
   color:#fff;
   cursor:pointer;
-  font-size:14px;
+  font-size:11px;
   line-height:1;
   padding:0;
 }
-.node-toolbar .toolbar-icon-button:hover{background:#273244}
+.node-toolbar .toolbar-icon-button:hover{background:#1e293b}
+.node-toolbar .toolbar-icon-button:active{transform:scale(.94)}
+.node-toolbar .toolbar-icon-button:focus-visible{outline:1px solid #60a5fa;outline-offset:1px}
 .node-toolbar .toolbar-icon-danger:hover{background:#7f1d1d;color:#fecaca}
 </style>
