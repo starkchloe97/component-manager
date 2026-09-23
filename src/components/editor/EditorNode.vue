@@ -33,6 +33,14 @@ const layoutElements = computed(() => Object.entries(editorRegistry)
   .map(([type, definition]) => ({ type, ...definition })));
 const registeredComponents = computed(() => Object.values(componentRegistry));
 const nodeLabel = computed(() => props.node.type === "component" ? componentLabel.value : (editorRegistry[props.node.type]?.label || props.node.type));
+const toolbarIcons = {
+  section: "▦",
+  column: "▥",
+  container: "▤",
+  add: "+",
+  duplicate: "⧉",
+  delete: "×",
+};
 const parentLabel = computed(() => editorRegistry[props.parentType]?.label || props.parentType || "parent");
 const layoutStyleKeys = new Set([
   "display", "flexDirection", "flexWrap", "justifyContent", "alignItems", "alignContent",
@@ -257,11 +265,11 @@ async function copyCurrentComponent() {
       />
     </div>
     <div v-if="isSelected" class="node-toolbar column-toolbar" @click.stop>
-      <span>{{ nodeLabel }}</span>
-      <button type="button" @click="selectParent">Section</button>
-      <button type="button" @click="showAdd = !showAdd">Add element</button>
-      <button type="button" @click="duplicateNode(node.id)">Duplicate</button>
-      <button type="button" @click="removeNode">Delete</button>
+      <span class="node-toolbar-label" :title="nodeLabel">{{ toolbarIcons.column }}</span>
+      <button type="button" class="toolbar-icon-button" title="Select section" aria-label="Select section" @click="selectParent">{{ toolbarIcons.section }}</button>
+      <button type="button" class="toolbar-icon-button" title="Add element" aria-label="Add element" @click="showAdd = !showAdd">{{ toolbarIcons.add }}</button>
+      <button type="button" class="toolbar-icon-button" title="Duplicate column" aria-label="Duplicate column" @click="duplicateNode(node.id)">{{ toolbarIcons.duplicate }}</button>
+      <button type="button" class="toolbar-icon-button toolbar-icon-danger" title="Delete column" aria-label="Delete column" @click="removeNode">{{ toolbarIcons.delete }}</button>
     </div>
   </div>
 
@@ -305,11 +313,11 @@ async function copyCurrentComponent() {
       <button type="button" class="section-insert-button" aria-label="Add section below container" @click="openSectionPicker">+</button>
     </div>
     <div v-if="isSelected" class="node-toolbar container-toolbar" @click.stop>
-      <span>{{ nodeLabel }}</span>
-      <button type="button" @click="openSectionPicker">Add section</button>
-      <button type="button" @click="openContainerPicker">Add container</button>
-      <button type="button" @click="duplicateNode(node.id)">Duplicate</button>
-      <button type="button" @click="removeNode">Delete</button>
+      <span class="node-toolbar-label" :title="nodeLabel">{{ toolbarIcons.container }}</span>
+      <button type="button" class="toolbar-icon-button" title="Add section" aria-label="Add section" @click="openSectionPicker">{{ toolbarIcons.section }}</button>
+      <button type="button" class="toolbar-icon-button" title="Add container" aria-label="Add container" @click="openContainerPicker">{{ toolbarIcons.container }}</button>
+      <button type="button" class="toolbar-icon-button" title="Duplicate container" aria-label="Duplicate container" @click="duplicateNode(node.id)">{{ toolbarIcons.duplicate }}</button>
+      <button type="button" class="toolbar-icon-button toolbar-icon-danger" title="Delete container" aria-label="Delete container" @click="removeNode">{{ toolbarIcons.delete }}</button>
     </div>
     <SectionLayoutPicker
       v-if="showSectionPicker"
@@ -664,9 +672,33 @@ async function copyCurrentComponent() {
   font-size:10px;
 }
 .section-toolbar{top:-4px;right:6px}
-.column-toolbar{top:2px;right:6px}\n.container-toolbar{top:2px;right:6px}
-.node-toolbar span{padding:0 4px;font-weight:700}
+.column-toolbar{top:2px;right:6px}
+.container-toolbar{top:2px;right:6px}
+.node-toolbar-label{
+  width:22px;
+  height:22px;
+  display:grid;
+  place-items:center;
+  padding:0 !important;
+  color:#cbd5e1;
+  font-size:13px;
+  font-weight:700;
+}
 .node-toolbar button:disabled{opacity:.45;cursor:default}
-.node-toolbar button{border:0;background:transparent;color:#fff;cursor:pointer;font-size:10px;padding:3px 5px}
-.node-toolbar button:hover{background:#273244;border-radius:4px}
+.node-toolbar .toolbar-icon-button{
+  width:24px;
+  height:24px;
+  display:grid;
+  place-items:center;
+  border:0;
+  border-radius:4px;
+  background:transparent;
+  color:#fff;
+  cursor:pointer;
+  font-size:14px;
+  line-height:1;
+  padding:0;
+}
+.node-toolbar .toolbar-icon-button:hover{background:#273244}
+.node-toolbar .toolbar-icon-danger:hover{background:#7f1d1d;color:#fecaca}
 </style>
