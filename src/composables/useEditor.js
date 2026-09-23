@@ -341,6 +341,7 @@ export function useEditor() {
     selectNode,
     addSection,
     addSectionAfter,
+    addStandaloneSectionAfter,
     addSectionToNode,
     addSectionToParent,
     addContainer,
