@@ -116,7 +116,23 @@ function selectParent() {
 }
 function toggleAdd() {
   showAdd.value = !showAdd.value;
-  if (showAdd.value) selectNode(props.node.id);
+  if (showAdd.value) {
+    selectNode(props.node.id);
+    window.addEventListener("pointerdown", handleOutsideAdd, true);
+  } else {
+    removeOutsideAddListener();
+  }
+}
+function handleOutsideAdd(event) {
+  const menu = event.target?.closest?.(".element-menu");
+  const trigger = event.target?.closest?.(".add-element-button");
+  if (!menu && !trigger) {
+    showAdd.value = false;
+    removeOutsideAddListener();
+  }
+}
+function removeOutsideAddListener() {
+  window.removeEventListener("pointerdown", handleOutsideAdd, true);
 }
 function addBasic(type) {
   addNode(type, props.node.id);
@@ -185,6 +201,9 @@ async function copyCurrentComponent() {
   if (!result.ok) console.error(result.error);
   window.setTimeout(() => { componentCopyState.value = "idle"; }, 1800);
 }
+onBeforeUnmount(() => {
+  removeOutsideAddListener();
+});
 </script>
 
 <template>
