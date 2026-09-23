@@ -12,7 +12,7 @@ const props = defineProps({
   parentType: { type: String, default: null },
   rootSection: { type: Boolean, default: false },
 });
-const { selectedNodeId, selectNode, addNode, addComponent, addSectionAfter, addContainer, addContainerAfter, duplicateNode, deleteNode } = useEditor();
+const { selectedNodeId, selectNode, addNode, addComponent, addSectionAfter, addSectionToNode, addContainer, addContainerAfter, duplicateNode, deleteNode } = useEditor();
 const { copySection, copySelectedComponent } = useComponentCopy();
 const sectionCopyState = ref("idle");
 const componentCopyState = ref("idle");
@@ -141,6 +141,10 @@ function openSectionPicker() {
 }
 function addSectionBelow(layout) {
   addSectionAfter(props.node.id, layout);
+  showSectionPicker.value = false;
+}
+function addSectionInsideCurrent(layout) {
+  addSectionToNode(props.node.id, layout);
   showSectionPicker.value = false;
 }
 function addRegistered(id) {
@@ -279,6 +283,9 @@ async function copyCurrentComponent() {
           <button v-for="item in layoutElements" :key="item.type" type="button" @click="addLayout(item.type)">{{ item.label }}</button>
           <div class="menu-title">Registered components</div>
           <button v-for="item in registeredComponents" :key="item.id" type="button" @click="addRegistered(item.id)">{{ item.name }}</button>
+          <div class="menu-title">Layout</div>
+          <button type="button" @click="openSectionPicker">Add section</button>
+          <button type="button" @click="openContainerPicker">Add container</button>
         </div>
       </div>
       <SectionLayoutPicker
