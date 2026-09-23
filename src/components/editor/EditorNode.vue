@@ -147,6 +147,10 @@ function addSectionInsideCurrent(layout) {
   addSectionToNode(props.node.id, layout);
   showSectionPicker.value = false;
 }
+function addSectionOutsideCurrent(layout) {
+  addSectionAfter(props.node.id, layout);
+  showSectionPicker.value = false;
+}
 function addRegistered(id) {
   addComponent(id, props.node.id);
   showAdd.value = false;
@@ -309,7 +313,7 @@ async function copyCurrentComponent() {
     </div>
     <SectionLayoutPicker
       v-if="showSectionPicker"
-      @select="addSectionInsideCurrent"
+      @select="addSectionOutsideCurrent"
       @close="showSectionPicker = false"
     />
     <SectionLayoutPicker
