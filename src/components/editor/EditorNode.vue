@@ -673,7 +673,6 @@ async function copyCurrentComponent() {
   pointer-events:none;
   transition:opacity .12s ease,transform .12s ease,visibility .12s ease;
 }
-.editor-node:hover > .node-toolbar,
 .editor-node--selected > .node-toolbar,
 .node-toolbar:hover{
   opacity:1;
