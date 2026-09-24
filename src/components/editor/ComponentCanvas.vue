@@ -224,6 +224,7 @@ function setInlineContent(descriptor, value, existing) {
     occurrence: descriptor.textOccurrence,
     tag: descriptor.tag,
     className: descriptor.className,
+    preserveElement: editingElement.value,
   };
   setContent(descriptor.componentId, descriptor.contentSelector, value, metadata);
 }
