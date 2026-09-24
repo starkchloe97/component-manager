@@ -5,9 +5,12 @@ const STYLE_STORAGE_KEY = "component-manager:element-overrides";
 const CONTENT_STORAGE_KEY = "component-manager:content-overrides";
 const overrides = reactive(loadStorage(STYLE_STORAGE_KEY));
 const contentOverrides = reactive(loadStorage(CONTENT_STORAGE_KEY));
+const IMAGE_STORAGE_KEY = "component-manager:image-overrides";
+const imageOverrides = reactive(loadStorage(IMAGE_STORAGE_KEY));
 const PERSIST_DELAY = 250;
 let stylePersistTimer = null;
 let contentPersistTimer = null;
+let imagePersistTimer = null;
 let styleFrame = null;
 let contentFrame = null;
 const pendingStyleWrites = new Map();
@@ -37,11 +40,22 @@ function schedulePersistence(kind) {
   if (typeof window === "undefined") return;
   const timerKey = kind === "content" ? "contentPersistTimer" : "stylePersistTimer";
   const delay = PERSIST_DELAY;
+  if (kind === "image") {
+    if (imagePersistTimer) window.clearTimeout(imagePersistTimer);
+    imagePersistTimer = window.setTimeout(() => {
+      imagePersistTimer = null;
+      persistStorage(IMAGE_STORAGE_KEY, imageOverrides);
+    }, delay);
+    return;
+  }
   if (kind === "content") {
     if (contentPersistTimer) window.clearTimeout(contentPersistTimer);
+  if (imagePersistTimer) window.clearTimeout(imagePersistTimer);
     contentPersistTimer = window.setTimeout(() => {
       contentPersistTimer = null;
+  imagePersistTimer = null;
       persistStorage(CONTENT_STORAGE_KEY, contentOverrides);
+  persistStorage(IMAGE_STORAGE_KEY, imageOverrides);
     }, delay);
     return;
   }
@@ -193,6 +207,19 @@ export function useComponentEditor() {
 
   const getContentEntry = (componentId, selector) => contentOverrides[componentId]?.[selector] || null;
 
+  const setImage = (componentId, selector, value) => {
+    if (!componentId || !selector) return;
+    ensurePath(imageOverrides, componentId, selector).src = String(value ?? "");
+    const roots = typeof window !== "undefined"
+      ? document.querySelectorAll(`[data-editor-component-id="${CSS.escape(componentId)}"]`)
+      : [];
+    roots.forEach((root) => root.querySelectorAll(toSelector(selector)).forEach((element) => {
+      element.setAttribute("src", String(value ?? ""));
+    }));
+    schedulePersistence("image");
+  };
+  const getImage = (componentId, selector) => imageOverrides[componentId]?.[selector]?.src ?? null;
+
   const resetContent = (componentId, selector) => {
     if (!componentId || !selector) return;
     const original = contentOverrides[componentId]?.[selector]?.originalText ?? null;
@@ -208,6 +235,7 @@ export function useComponentEditor() {
 
     const componentStyles = deepClone(overrides[componentId] || {});
     const componentContent = deepClone(contentOverrides[componentId] || {});
+    const componentImages = deepClone(imageOverrides[componentId] || {});
     const roots = typeof window !== "undefined"
       ? document.querySelectorAll(`[data-editor-component-id="${CSS.escape(componentId)}"]`)
       : [];
@@ -221,6 +249,11 @@ export function useComponentEditor() {
         });
       });
 
+      Object.entries(componentImages).forEach(([selector, entry]) => {
+        if (entry?.src === undefined) return;
+        matchingElements(root, selector).forEach((element) => element.setAttribute("src", entry.src));
+      });
+
       Object.entries(componentContent).forEach(([selector, entry]) => {
         const original = typeof entry === "string" ? null : entry?.originalText;
         if (original === undefined || original === null) return;
@@ -232,6 +265,7 @@ export function useComponentEditor() {
 
     delete overrides[componentId];
     delete contentOverrides[componentId];
+    delete imageOverrides[componentId];
     pendingStyleWrites.delete(componentId);
     pendingContentWrites.delete(componentId);
     flushPersistence();
@@ -240,6 +274,7 @@ export function useComponentEditor() {
   const getComponentState = (componentId) => ({
     styles: deepClone(overrides[componentId] || {}),
     content: deepClone(contentOverrides[componentId] || {}),
+    images: deepClone(imageOverrides[componentId] || {}),
   });
 
   const restoreComponentState = (componentId, state = {}) => {
@@ -247,6 +282,7 @@ export function useComponentEditor() {
 
     const oldStyles = deepClone(overrides[componentId] || {});
     const oldContent = deepClone(contentOverrides[componentId] || {});
+    const oldImages = deepClone(imageOverrides[componentId] || {});
     const roots = typeof window !== "undefined"
       ? document.querySelectorAll(`[data-editor-component-id="${CSS.escape(componentId)}"]`)
       : [];
@@ -256,6 +292,10 @@ export function useComponentEditor() {
         root.querySelectorAll(toSelector(selector)).forEach((element) => {
           Object.keys(styles || {}).forEach((property) => element.style.removeProperty(property));
         });
+      });
+      Object.entries(oldImages).forEach(([selector, entry]) => {
+        if (entry?.src === undefined) return;
+        root.querySelectorAll(toSelector(selector)).forEach((element) => element.setAttribute("src", entry.src));
       });
       Object.entries(oldContent).forEach(([selector, entry]) => {
         const original = typeof entry === "string" ? null : entry?.originalText;
@@ -268,11 +308,14 @@ export function useComponentEditor() {
 
     if (overrides[componentId]) delete overrides[componentId];
     if (contentOverrides[componentId]) delete contentOverrides[componentId];
+    if (imageOverrides[componentId]) delete imageOverrides[componentId];
 
     const nextStyles = deepClone(state.styles || {});
     const nextContent = deepClone(state.content || {});
+    const nextImages = deepClone(state.images || {});
     if (Object.keys(nextStyles).length) overrides[componentId] = nextStyles;
     if (Object.keys(nextContent).length) contentOverrides[componentId] = nextContent;
+    if (Object.keys(nextImages).length) imageOverrides[componentId] = nextImages;
 
     roots.forEach((root) => applyOverrides(root, componentId));
   };
@@ -288,6 +331,14 @@ export function useComponentEditor() {
             else element.style[property] = value;
           });
         });
+      });
+    }
+
+    const componentImages = imageOverrides[componentId];
+    if (componentImages) {
+      Object.entries(componentImages).forEach(([selector, entry]) => {
+        if (entry?.src === undefined) return;
+        root.querySelectorAll(toSelector(selector)).forEach((element) => element.setAttribute("src", entry.src));
       });
     }
 
@@ -307,6 +358,7 @@ export function useComponentEditor() {
     selectedElement,
     overrides,
     contentOverrides,
+    imageOverrides,
     selectElement,
     clearElement,
     setStyle,
@@ -314,6 +366,8 @@ export function useComponentEditor() {
     setContent,
     getContent,
     getContentEntry,
+    setImage,
+    getImage,
     resetContent,
     getComponentState,
     restoreComponentState,
