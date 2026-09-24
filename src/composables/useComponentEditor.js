@@ -209,7 +209,15 @@ export function useComponentEditor() {
 
   const setImage = (componentId, selector, value) => {
     if (!componentId || !selector) return;
-    ensurePath(imageOverrides, componentId, selector).src = String(value ?? "");
+    const entry = ensurePath(imageOverrides, componentId, selector);
+    if (entry.originalSrc === undefined) {
+      const roots = typeof window !== "undefined"
+        ? document.querySelectorAll(`[data-editor-component-id="${CSS.escape(componentId)}"]`)
+        : [];
+      const source = roots[0]?.querySelector(toSelector(selector))?.getAttribute("src") ?? "";
+      entry.originalSrc = source;
+    }
+    entry.src = String(value ?? "");
     const roots = typeof window !== "undefined"
       ? document.querySelectorAll(`[data-editor-component-id="${CSS.escape(componentId)}"]`)
       : [];
@@ -250,8 +258,8 @@ export function useComponentEditor() {
       });
 
       Object.entries(componentImages).forEach(([selector, entry]) => {
-        if (entry?.src === undefined) return;
-        matchingElements(root, selector).forEach((element) => element.setAttribute("src", entry.src));
+        if (entry?.originalSrc === undefined) return;
+        matchingElements(root, selector).forEach((element) => element.setAttribute("src", entry.originalSrc));
       });
 
       Object.entries(componentContent).forEach(([selector, entry]) => {
