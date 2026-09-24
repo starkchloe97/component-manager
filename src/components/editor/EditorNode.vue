@@ -13,7 +13,7 @@ const props = defineProps({
   parentType: { type: String, default: null },
   rootSection: { type: Boolean, default: false },
 });
-const { selectedNodeId, selectNode, addNode, addComponent, addSectionAfter, addStandaloneSectionAfter, addSectionToNode, addContainer, addContainerAfter, duplicateNode, deleteNode } = useEditor();
+const { selectedNodeId, selectNode, addNode, addComponent, addSectionAfter, addSectionToNode, addContainer, duplicateNode, deleteNode } = useEditor();
 const { copySection, copySelectedComponent } = useComponentCopy();
 const sectionCopyState = ref("idle");
 const componentCopyState = ref("idle");
@@ -147,11 +147,6 @@ function addContainerBelow(layout) {
   showContainerPicker.value = false;
   showAdd.value = false;
 }
-function addContainerAfterCurrent(layout) {
-  addContainerAfter(props.node.id, layout);
-  showContainerPicker.value = false;
-  showAdd.value = false;
-}
 function openContainerPicker() {
   showContainerPicker.value = true;
   showSectionPicker.value = false;
@@ -166,10 +161,6 @@ function addSectionBelow(layout) {
 }
 function addSectionInsideCurrent(layout) {
   addSectionToNode(props.node.id, layout);
-  showSectionPicker.value = false;
-}
-function addSectionOutsideCurrent(layout) {
-  addStandaloneSectionAfter(props.node.id, layout);
   showSectionPicker.value = false;
 }
 function addRegistered(id) {
@@ -312,28 +303,20 @@ onBeforeUnmount(() => {
           <button type="button" @click="openContainerPicker">Add container</button>
         </div>
       </div>
-      <SectionLayoutPicker
-        v-if="showContainerPicker"
-        title="Add container"
-        description="Choose the column layout for the new container."
-        :allow-empty-container="true"
-        @select="addContainerBelow"
-        @close="showContainerPicker = false"
-      />
     </div>
     <div v-if="props.rootSection" class="section-insert-control container-insert-control" @click.stop>
       <button type="button" class="section-insert-button" aria-label="Add section below container" @click="openSectionPicker">+</button>
     </div>
     <div class="node-toolbar container-toolbar" @click.stop>
       <span class="node-toolbar-label" :title="nodeLabel">{{ nodeLabel }}</span><GripVertical :size="16" class="drag-grip" aria-label="Drag handle" />
-      <button type="button" class="toolbar-icon-button" title="Add section below" aria-label="Add section below" @click="openSectionPicker"><Plus :size="15" /></button>
+      <button type="button" class="toolbar-icon-button" title="Add section inside container" aria-label="Add section inside container" @click="openSectionPicker"><Plus :size="15" /></button>
       <button type="button" class="toolbar-icon-button" title="Add container" aria-label="Add container" @click="openContainerPicker"><Box :size="15" /></button>
       <button type="button" class="toolbar-icon-button" title="Duplicate container" aria-label="Duplicate container" @click="duplicateNode(node.id)"><Copy :size="15" /></button>
       <button type="button" class="toolbar-icon-button toolbar-icon-danger" title="Delete container" aria-label="Delete container" @click="removeNode"><Trash2 :size="15" /></button>
     </div>
     <SectionLayoutPicker
       v-if="showSectionPicker"
-      @select="addSectionOutsideCurrent"
+      @select="addSectionInsideCurrent"
       @close="showSectionPicker = false"
     />
     <SectionLayoutPicker
