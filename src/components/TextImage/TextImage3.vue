@@ -46,15 +46,6 @@ html { scroll-behavior: smooth; }
   --on-surface: #131b2e;
   --on-surface-variant: #44474f;
   --background: #faf8ff;
-  --surface: #faf8ff;
-  --surface-container-high: #e2e7ff;
-  --surface-container-low: #f2f3ff;
-  --outline-variant: #c3c5d9;
-  --white: #ffffff;
-  --radius-2xl: 1rem;
-  --radius-3xl: 1.5rem;
-  --radius-4xl: 2rem;
-  --radius-pill: 9999px;
   --radius-card: 2rem;
 }
 

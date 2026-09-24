@@ -279,15 +279,12 @@ onBeforeUnmount(() => ro?.disconnect())
   --surface: #f0f2ff;
   --surface-hover: #e6e9fc;
   --border: #e2e5f1;
-  --border-light: #eef0f8;
   --accent: #ff6d00;
   --accent-light: #ff9e40;
-  --accent-dim: rgba(255, 109, 0, 0.12);
   --accent-glow: rgba(255, 109, 0, 0.15);
   --text-primary: #1a1a2e;
   --text-secondary: #5c6283;
   --text-muted: #8b90a8;
-  --shadow-sm: 0 1px 3px rgba(26,35,126,0.06);
   --shadow-md: 0 4px 16px rgba(26,35,126,0.08);
   --shadow-lg: 0 8px 40px rgba(26,35,126,0.1);
 

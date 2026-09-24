@@ -110,6 +110,8 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+
+
 .icons-1 {
   padding: 40px 0 0px;
 }

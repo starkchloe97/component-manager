@@ -138,6 +138,26 @@ function handleContact() {
 </script>
 
 <style scoped>
+
+.pricing {
+  --brand-50: #fff7ed;
+  --brand-100: #ffedd5;
+  --brand-200: #fed7aa;
+  --brand-300: #fdba74;
+  --brand-400: #fb923c;
+  --brand-500: #f97316;
+  --brand-600: #ea580c;
+
+  --navy-800: #1e293b;
+  --navy-900: #0f172a;
+
+    --neutral-50: #fafafa;
+    --neutral-200: #e5e5e5;
+    --neutral-400: #a3a3a3;
+    --neutral-500: #737373;
+    --neutral-900: #171717;
+  --green-500: #22c55e;
+}
 .pricing {
     padding: 96px 0;
     background: var(--neutral-50);

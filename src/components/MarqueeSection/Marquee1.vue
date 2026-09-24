@@ -56,7 +56,14 @@
 <script setup></script>
 
 <style scoped>
- .trust-bar {
+.trust-bar {
+  --brand-300: #fdba74;
+  --brand-500: #f97316;
+  --navy-800: #1e293b;
+  --neutral-100: #f5f5f5;
+  --neutral-200: #e5e5e5;
+  --neutral-300: #d4d4d4;
+  --border-light: #eef0f8;
   position: relative;
   z-index: 10;
   margin-top: -2rem;
@@ -64,13 +71,13 @@
   background: white;
 }
 
- .container {
+.container {
   max-width: 80rem;
   margin: 0 auto;
   padding: 0 24px;
 }
 
- .trust-label-row {
+.trust-label-row {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -78,17 +85,17 @@
   margin-bottom: 32px;
 }
 
- .trust-dash {
+.trust-dash {
   width: 28px;
   height: 1px;
   background: linear-gradient(to right, transparent, var(--brand-300));
 }
 
- .trust-label-row .trust-dash:last-child {
+.trust-label-row .trust-dash:last-child {
   background: linear-gradient(to left, transparent, var(--brand-300));
 }
 
- .trust-label {
+.trust-label {
   text-align: center;
   font-size: 0.75rem;
   font-weight: 600;
@@ -98,7 +105,7 @@
   margin: 0;
 }
 
- .marquee-wrapper {
+.marquee-wrapper {
   position: relative;
   overflow: hidden;
   border-top: 1px solid var(--neutral-100);
@@ -106,7 +113,7 @@
   padding: 20px 0;
 }
 
- .fade-left {
+.fade-left {
   position: absolute;
   left: 0;
   top: 0;
@@ -116,7 +123,7 @@
   z-index: 10;
 }
 
- .fade-right {
+.fade-right {
   position: absolute;
   right: 0;
   top: 0;
@@ -126,24 +133,24 @@
   z-index: 10;
 }
 
- .marquee-track {
+.marquee-track {
   display: flex;
   animation: marquee 40s linear infinite;
   width: max-content;
 }
 
- .marquee-wrapper:hover .marquee-track {
+.marquee-wrapper:hover .marquee-track {
   animation-play-state: paused;
 }
 
- .marquee-content {
+.marquee-content {
   display: flex;
   align-items: center;
   gap: 28px;
   padding: 0 14px;
 }
 
- .logo-item {
+.logo-item {
   font-size: 1.25rem;
   font-weight: 700;
   color: var(--neutral-300);
@@ -153,11 +160,11 @@
   cursor: default;
 }
 
- .logo-item:hover {
+.logo-item:hover {
   color: var(--brand-500);
 }
 
- .logo-dot {
+.logo-dot {
   width: 4px;
   height: 4px;
   border-radius: 50%;
@@ -166,7 +173,7 @@
 }
 
 @media (min-width: 768px) {
-   .logo-item {
+  .logo-item {
     font-size: 1.5rem;
   }
 }

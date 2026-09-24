@@ -146,6 +146,17 @@ const tiers = [
 </script>
 
 <style scoped>
+
+.pricing{
+  --brand: #0b55b6;
+  --brand-dark: #083d82;
+  --surface: #ffffff;
+  --ink: #0f1d33;
+  --muted: #5a6d85;
+  --border: #d4e0f0;
+  --font-display: "Inter Tight", sans-serif;
+}
+
 .pricing {
   padding: 96px 0;
   background: var(--surface);

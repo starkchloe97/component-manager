@@ -75,11 +75,7 @@ const features = ref([
 
 <style scoped>
 .pricing-section {
-  --brand-50: #fff7ed;
   --brand-100: #ffedd5;
-  --brand-200: #fed7aa;
-  --brand-300: #fdba74;
-  --brand-400: #fb923c;
   --brand-500: #f97316;
   --neutral-50: #fafafa;
   --neutral-100: #f5f5f5;
@@ -87,11 +83,9 @@ const features = ref([
   --neutral-300: #d4d4d4;
   --neutral-400: #a3a3a3;
   --neutral-500: #737373;
-  --neutral-600: #525252;
   --neutral-700: #404040;
   --blue-400: #60a5fa;
   --blue-500: #3b82f6;
-
   padding-top: 96px;
   padding-bottom: 96px;
   border-top: 1px solid var(--neutral-200);

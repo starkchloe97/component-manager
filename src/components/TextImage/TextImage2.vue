@@ -60,28 +60,17 @@ const features = [
 
 .section {
     --primary: #1a237e;
-    --primary-light: #3949ab;
-    --primary-lighter: #7986cb;
     --accent: #ff6d00;
-    --accent-light: #ff9e40;
     --accent-glow: rgba(255, 109, 0, 0.15);
     --teal: #00897b;
-    --teal-light: #4db6ac;
-    --bg: #fafbff;
     --bg-card: #ffffff;
-    --bg-alt: #f0f2ff;
-    --bg-gradient: linear-gradient(135deg, #fafbff 0%, #f0f2ff 50%, #fff8f0 100%);
     --text: #1a1a2e;
     --text-secondary: #5c6283;
     --text-muted: #8b90a8;
-    --border: #e2e5f1;
     --border-light: #eef0f8;
     --shadow-sm: 0 1px 3px rgba(26, 35, 126, 0.06);
-    --shadow-md: 0 4px 16px rgba(26, 35, 126, 0.08);
     --shadow-lg: 0 8px 40px rgba(26, 35, 126, 0.1);
-    --shadow-xl: 0 16px 60px rgba(26, 35, 126, 0.12);
     --radius: 12px;
-    --radius-lg: 20px;
     --radius-xl: 28px;
 }
 
