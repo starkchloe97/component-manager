@@ -20,6 +20,8 @@ const { selectedElement, selectElement, clearElement, applyOverrides, getContent
 const { selectNode, document, addSection, addContainer } = useEditor();
 const showEmptySectionPicker = ref(false);
 const showEmptyContainerPicker = ref(false);
+const showBottomSectionPicker = ref(false);
+const showBottomContainerPicker = ref(false);
 const componentName = computed(() => props.component?.name || props.component?.id || "Component");
 const selectableTags = "section, div, h1, h2, h3, h4, h5, h6, p, span, strong, em, small, blockquote, figcaption, a, button, img, ul, ol, li, form, input, textarea, label";
 
@@ -174,6 +176,14 @@ function addFirstContainer(layout) {
   addContainer(layout);
   showEmptyContainerPicker.value = false;
 }
+function addBottomSection(layout) {
+  addSection(layout, document.children.length, document.children);
+  showBottomSectionPicker.value = false;
+}
+function addBottomContainer(layout) {
+  addContainer(layout);
+  showBottomContainerPicker.value = false;
+}
 
 function startInlineEdit(event) {
   if (props.preview || !(event.target instanceof Element)) return;
@@ -306,6 +316,26 @@ onUnmounted(() => {
           <div v-for="node in document.children" :key="node.id" class="page-section-node">
             <EditorNode :node="node" :root-section="true" />
           </div>
+          <div v-if="document.children.length" class="bottom-insert-area" @click.stop>
+            <div class="bottom-insert-divider" aria-hidden="true"></div>
+            <div class="bottom-insert-actions">
+              <button type="button" class="bottom-insert-button" @click="showBottomSectionPicker = true">+ Section</button>
+              <button type="button" class="bottom-insert-button bottom-insert-button--container" @click="showBottomContainerPicker = true">+ Container</button>
+            </div>
+            <SectionLayoutPicker
+              v-if="showBottomSectionPicker"
+              @select="addBottomSection"
+              @close="showBottomSectionPicker = false"
+            />
+            <SectionLayoutPicker
+              v-if="showBottomContainerPicker"
+              title="Add container"
+              description="Choose a layout, or start with an empty container."
+              :allow-empty-container="true"
+              @select="addBottomContainer"
+              @close="showBottomContainerPicker = false"
+            />
+          </div>
           <div v-if="!document.children.length" class="empty-page-state" @click.stop>
             <span class="empty-page-title">Build your page</span>
             <span>Add a section to continue designing.</span>
@@ -428,6 +458,10 @@ onUnmounted(() => {
 .empty-page-state{position:relative;min-height:188px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;border:1px dashed #cbd0d7;background:#fff;color:#6b7280;font-size:12px}
 .empty-page-title{font-size:14px;font-weight:700;color:#30343a}
 .empty-page-actions{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px}
-.empty-section-button,.empty-container-button{opacity:1;pointer-events:auto;position:relative;bottom:auto;left:auto;right:auto;display:inline-flex;align-items:center;justify-content:center;height:34px;padding:0 13px;border:1px solid #df97ef;border-radius:50px;background:#fff;color:#8f0070;font-size:11px;font-weight:700;line-height:1;cursor:pointer;box-shadow:none}
+.bottom-insert-area{position:relative;width:100%;padding:28px 0 42px;box-sizing:border-box}
+.bottom-insert-divider{width:100%;height:1px;background:#e5e7eb}
+.bottom-insert-actions{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px}
+.bottom-insert-button,.empty-section-button,.empty-container-button{opacity:1;pointer-events:auto;position:relative;bottom:auto;left:auto;right:auto;display:inline-flex;align-items:center;justify-content:center;height:34px;padding:0 13px;border:1px solid #df97ef;border-radius:50px;background:#fff;color:#8f0070;font-size:11px;font-weight:700;line-height:1;cursor:pointer;box-shadow:none}
+.bottom-insert-button--container,.empty-container-button{border-color:#d8dbe0;color:#4d5560}
 .empty-container-button{border-color:#d8dbe0;color:#4d5560}
 </style>
