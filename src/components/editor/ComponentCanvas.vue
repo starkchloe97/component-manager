@@ -317,10 +317,16 @@ onUnmounted(() => {
             <EditorNode :node="node" :root-section="true" />
           </div>
           <div v-if="document.children.length" class="bottom-insert-area" @click.stop>
-            <div class="bottom-insert-divider" aria-hidden="true"></div>
+            <div class="bottom-insert-divider">
+              <span class="bottom-insert-label">Add to page</span>
+            </div>
             <div class="bottom-insert-actions">
-              <button type="button" class="bottom-insert-button" @click="showBottomSectionPicker = true">+ Section</button>
-              <button type="button" class="bottom-insert-button bottom-insert-button--container" @click="showBottomContainerPicker = true">+ Container</button>
+              <button type="button" class="bottom-insert-button bottom-insert-button--primary" @click="showBottomSectionPicker = true">
+                <span class="bottom-insert-icon">+</span><span>Section</span>
+              </button>
+              <button type="button" class="bottom-insert-button bottom-insert-button--secondary" @click="showBottomContainerPicker = true">
+                <span class="bottom-insert-icon">+</span><span>Container</span>
+              </button>
             </div>
             <SectionLayoutPicker
               v-if="showBottomSectionPicker"
@@ -458,10 +464,17 @@ onUnmounted(() => {
 .empty-page-state{position:relative;min-height:188px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;border:1px dashed #cbd0d7;background:#fff;color:#6b7280;font-size:12px}
 .empty-page-title{font-size:14px;font-weight:700;color:#30343a}
 .empty-page-actions{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px}
-.bottom-insert-area{position:relative;width:100%;padding:28px 0 42px;box-sizing:border-box}
-.bottom-insert-divider{width:100%;height:1px;background:#e5e7eb}
-.bottom-insert-actions{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px}
-.bottom-insert-button,.empty-section-button,.empty-container-button{opacity:1;pointer-events:auto;position:relative;bottom:auto;left:auto;right:auto;display:inline-flex;align-items:center;justify-content:center;height:34px;padding:0 13px;border:1px solid #df97ef;border-radius:50px;background:#fff;color:#8f0070;font-size:11px;font-weight:700;line-height:1;cursor:pointer;box-shadow:none}
-.bottom-insert-button--container,.empty-container-button{border-color:#d8dbe0;color:#4d5560}
+.bottom-insert-area{position:relative;width:100%;padding:24px 24px 36px;box-sizing:border-box}
+.bottom-insert-divider{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:1px;background:#e9ebef}
+.bottom-insert-label{position:absolute;padding:0 10px;background:#fff;color:#9aa0a8;font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;line-height:1}
+.bottom-insert-actions{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:15px}
+.bottom-insert-button,.empty-section-button,.empty-container-button{opacity:1;pointer-events:auto;position:relative;bottom:auto;left:auto;right:auto;display:inline-flex;align-items:center;justify-content:center;gap:7px;height:32px;padding:0 13px;border:1px solid #e1e4e8;border-radius:7px;background:#fff;color:#454b54;font-size:11px;font-weight:700;line-height:1;cursor:pointer;box-shadow:0 1px 2px rgba(16,24,40,.04);transition:border-color .16s ease,box-shadow .16s ease,transform .16s ease,background .16s ease,color .16s ease}
+.bottom-insert-button:hover,.empty-section-button:hover,.empty-container-button:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(16,24,40,.08);border-color:#c8cdd4}
+.bottom-insert-button:active,.empty-section-button:active,.empty-container-button:active{transform:translateY(0);box-shadow:0 1px 2px rgba(16,24,40,.05)}
+.bottom-insert-button--primary{border-color:#dca1e9;color:#8f0070;background:#fff}
+.bottom-insert-button--primary:hover{border-color:#c86bdc;background:#fff9fe;color:#7d0062}
+.bottom-insert-button--secondary,.empty-container-button{border-color:#d8dce2;color:#4d5560}
+.bottom-insert-icon{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:5px;background:#f3e5f5;color:inherit;font-size:14px;font-weight:500;line-height:15px}
+.bottom-insert-button--secondary .bottom-insert-icon,.empty-container-button .bottom-insert-icon{background:#f1f3f5}
 .empty-container-button{border-color:#d8dbe0;color:#4d5560}
 </style>
