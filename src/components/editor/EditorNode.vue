@@ -13,7 +13,7 @@ const props = defineProps({
   parentType: { type: String, default: null },
   rootSection: { type: Boolean, default: false },
 });
-const { selectedNodeId, selectNode, addNode, addComponent, addSectionAfter, addSectionToNode, addContainer, duplicateNode, deleteNode } = useEditor();
+const { selectedNodeId, selectNode, addNode, addComponent, addSectionAfter, addSectionToNode, addContainer, duplicateNode, deleteNode, updateNode } = useEditor();
 const { copySection, copySelectedComponent } = useComponentCopy();
 const sectionCopyState = ref("idle");
 const componentCopyState = ref("idle");
@@ -85,6 +85,46 @@ function updateLeafToolbarPosition() {
 function handleLeafViewportChange() {
   updateLeafToolbarPosition();
 }
+function isInlineEditableType(type) {
+  return ["heading", "text", "button"].includes(type);
+}
+function beginInlineEdit(event) {
+  if (!isInlineEditableType(props.node.type)) return;
+  event.preventDefault();
+  event.stopPropagation();
+  selectNode(props.node.id);
+  const element = event.currentTarget;
+  if (!(element instanceof HTMLElement)) return;
+  element.setAttribute("contenteditable", "true");
+  element.setAttribute("spellcheck", "true");
+  element.focus();
+  const range = document.createRange();
+  range.selectNodeContents(element);
+  range.collapse(false);
+  const selection = window.getSelection();
+  selection?.removeAllRanges();
+  selection?.addRange(range);
+}
+function syncInlineText(event) {
+  const element = event.currentTarget;
+  if (!(element instanceof HTMLElement)) return;
+  updateNode(props.node.id, { props: { text: element.textContent || "" } });
+}
+function finishInlineEdit(event) {
+  const element = event.currentTarget;
+  if (!(element instanceof HTMLElement)) return;
+  updateNode(props.node.id, { props: { text: element.textContent || "" } });
+  element.removeAttribute("contenteditable");
+  element.removeAttribute("spellcheck");
+}
+function cancelInlineEdit(event) {
+  const element = event.currentTarget;
+  if (!(element instanceof HTMLElement)) return;
+  element.textContent = props.node.props.text || "";
+  element.removeAttribute("contenteditable");
+  element.removeAttribute("spellcheck");
+}
+
 function select(event) {
   event.stopPropagation();
   if (isSelected.value && props.parentId) {
@@ -372,6 +412,10 @@ onBeforeUnmount(() => {
     :class="{ 'builder-element--selected': isSelected }"
     :style="elementStyles"
     @click.stop="select"
+    @dblclick="beginInlineEdit"
+    @input="syncInlineText"
+    @blur="finishInlineEdit"
+    @keydown.esc.prevent="cancelInlineEdit"
     ref="leafElement"
   >{{ node.props.text }}</component>
 
@@ -381,6 +425,10 @@ onBeforeUnmount(() => {
     :class="{ 'builder-element--selected': isSelected }"
     :style="elementStyles"
     @click.stop="select"
+    @dblclick="beginInlineEdit"
+    @input="syncInlineText"
+    @blur="finishInlineEdit"
+    @keydown.esc.prevent="cancelInlineEdit"
     ref="leafElement"
   >{{ node.props.text }}</p>
 
@@ -391,6 +439,10 @@ onBeforeUnmount(() => {
     :href="node.props.href || '#'"
     :style="elementStyles"
     @click.prevent.stop="select"
+    @dblclick="beginInlineEdit"
+    @input="syncInlineText"
+    @blur="finishInlineEdit"
+    @keydown.esc.prevent="cancelInlineEdit"
     ref="leafElement"
   >{{ node.props.text }}</a>
 
