@@ -205,7 +205,6 @@ function handleInlineInput(event) {
   if (!(target instanceof Element) || target !== editingElement.value) return;
   const descriptor = describeElement(target);
   if (!descriptor?.editableText) return;
-  selectElement(descriptor);
   const value = target.textContent || "";
   const existing = getContentValue(descriptor);
   setInlineContent(descriptor, value, existing);
