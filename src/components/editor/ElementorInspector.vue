@@ -7,6 +7,8 @@ import { useComponentEditor } from "@/composables/useComponentEditor";
 const { selectedNode, updateNode } = useEditor();
 const { selectedElement, getStyles, setStyle, getContent, getContentEntry, setContent, resetContent } = useComponentEditor();
 const activeTab = ref("layout");
+const uploadingImage = ref(false);
+const imageUploadError = ref("");
 const unitKeys = new Set(["width", "maxWidth", "minWidth", "height", "minHeight", "gap", "columnGap", "rowGap", "flexBasis", "padding", "paddingTop", "paddingRight", "paddingBottom", "paddingLeft", "margin", "marginTop", "marginRight", "marginBottom", "marginLeft", "fontSize", "letterSpacing", "borderWidth", "borderRadius"]);
 const numericKeys = new Set(["zIndex", "flexGrow", "flexShrink"]);
 const nodeTypes = new Set(["section", "column", "container", "component"]);
@@ -128,6 +130,61 @@ function updateStyle(key, value) {
 }
 function resetStyle(key) { updateStyle(key, ""); }
 function updateProp(key, value) { if (selectedNode.value) updateNode(selectedNode.value.id, { props: { [key]: value } }); }
+function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error("Unable to read the image."));
+    reader.readAsDataURL(file);
+  });
+}
+function loadImage(dataUrl) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("Unable to decode the image."));
+    image.src = dataUrl;
+  });
+}
+async function prepareImageForStorage(file) {
+  const original = await fileToDataUrl(file);
+  const image = await loadImage(original);
+  const maxDimension = 1920;
+  const scale = Math.min(1, maxDimension / Math.max(image.naturalWidth || image.width, image.naturalHeight || image.height));
+  const width = Math.max(1, Math.round((image.naturalWidth || image.width) * scale));
+  const height = Math.max(1, Math.round((image.naturalHeight || image.height) * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d");
+  if (!context) throw new Error("Your browser could not prepare the image.");
+  context.drawImage(image, 0, 0, width, height);
+  const webp = canvas.toDataURL("image/webp", 0.82);
+  if (webp.startsWith("data:image/webp")) return webp;
+  return canvas.toDataURL("image/jpeg", 0.82);
+}
+async function handleImageUpload(event) {
+  const input = event.target;
+  const file = input.files?.[0];
+  imageUploadError.value = "";
+  if (!file || !selectedNode.value) return;
+  if (!file.type.startsWith("image/")) {
+    imageUploadError.value = "Please select an image file.";
+    input.value = "";
+    return;
+  }
+  uploadingImage.value = true;
+  try {
+    const dataUrl = await prepareImageForStorage(file);
+    updateProp("src", dataUrl);
+  } catch (error) {
+    console.warn("Unable to upload image:", error);
+    imageUploadError.value = "Could not load this image. Please try another file.";
+  } finally {
+    uploadingImage.value = false;
+    input.value = "";
+  }
+}
 function contentValue() { return getContent(selectedElement.value.componentId, selectedElement.value.contentSelector) ?? selectedElement.value.textValue ?? ""; }
 function updateContent(value) {
   const element = selectedElement.value;
@@ -162,6 +219,12 @@ const isGrid = computed(() => current("display") === "grid");
           <h3>Image</h3>
           <label>Source URL<input :value="selectedNode.props.src" @input="updateProp('src', $event.target.value)" /></label>
           <label>Alt text<input :value="selectedNode.props.alt" @input="updateProp('alt', $event.target.value)" /></label>
+          <label class="image-upload" :class="{ disabled: uploadingImage }">
+            <span>{{ uploadingImage ? 'Processing image…' : 'Upload image' }}</span>
+            <input type="file" accept="image/*" :disabled="uploadingImage" @change="handleImageUpload" />
+          </label>
+          <p v-if="imageUploadError" class="upload-error">{{ imageUploadError }}</p>
+          <img v-if="selectedNode.props.src" class="image-preview" :src="selectedNode.props.src" :alt="selectedNode.props.alt || 'Preview'" />
         </section>
         <section v-else-if="selectedElement?.editableText" class="control-group">
           <h3>Text</h3>
@@ -582,6 +645,28 @@ const isGrid = computed(() => current("display") === "grid");
 }
 .swatch::-webkit-color-swatch-wrapper { padding: 3px; }
 .swatch::-webkit-color-swatch { border: 0; border-radius: 2px; }
+
+.image-upload {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  margin-top: 2px !important;
+  padding: 0 10px;
+  border: 1px dashed #c8ced4;
+  border-radius: 3px;
+  background: #fafafa;
+  color: var(--label);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.image-upload:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.image-upload.disabled { opacity: .6; cursor: wait; }
+.image-upload input { display: none; }
+.upload-error { margin: 4px 0 0; color: #b42318; font-size: 10px; }
+.image-preview { display: block; width: 100%; max-height: 160px; object-fit: contain; margin-top: 8px; border: 1px solid var(--line); border-radius: 3px; background: #f7f8f9; }
 
 /* Reset text */
 .reset-text {
