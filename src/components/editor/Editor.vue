@@ -1,6 +1,6 @@
 <script setup>
 import { computed, nextTick, ref, watch } from "vue";
-import { Box, Check, Copy, Eye, EyeOff, PanelRight, Plus, Redo2, RotateCcw, Undo2, X } from "@lucide/vue";
+import { Box, Check, Copy, Eye, EyeOff, Menu, Plus, Redo2, RotateCcw, Undo2, X } from "@lucide/vue";
 import ComponentCanvas from "./ComponentCanvas.vue";
 import ElementorInspector from "./ElementorInspector.vue";
 import SectionLayoutPicker from "./SectionLayoutPicker.vue";
@@ -95,7 +95,7 @@ resetHistoryForComponent();
 
 function closeEditor() { clearHistoryTimer(); showAddSection.value = false; showAddContainer.value = false; clearElement(); clearActiveComponent(); emit("close"); }
 function togglePreview() { preview.value = !preview.value; if (preview.value) clearElement(); }
-function handleElementSelected() { if (!preview.value) inspectorOpen.value = true; }
+function handleElementSelected() { /* Selection must not change inspector visibility. */ }
 function openAddSection() { if (!preview.value) { showAddSection.value = true; showAddContainer.value = false; } }
 function openAddContainer() { if (!preview.value) { showAddContainer.value = true; showAddSection.value = false; } }
 function addSectionToPage(layout) { addSection(layout); showAddSection.value = false; }
@@ -112,13 +112,13 @@ async function copyComponent() {
 <template>
   <div class="editor" :class="{ 'editor--preview': preview, 'inspector-open': inspectorOpen }">
     <section class="editor-shell" role="dialog" aria-modal="true" :aria-label="`Edit ${activeComponent?.name || 'component'}`">
-      <ElementorInspector v-if="!preview && inspectorOpen" class="editor-inspector" />
+      <div v-if="!preview" class="editor-inspector" :class="{ closed: !inspectorOpen }"><ElementorInspector /></div>
       <main class="editor-workspace">
         <header class="workspace-bar">
           <button class="brand-button" type="button" title="Close editor" aria-label="Close editor" @click="closeEditor"><X :size="21" /></button>
           <div class="workspace-name"><Box :size="17" /><span>{{ activeComponent?.name || 'Component' }}</span></div>
           <div class="workspace-actions">
-            <button type="button" :title="inspectorOpen ? 'Hide settings' : 'Show settings'" :aria-label="inspectorOpen ? 'Hide settings' : 'Show settings'" @click="inspectorOpen = !inspectorOpen"><PanelRight :size="18" /></button>
+            <button class="inspector-toggle" :class="{ active: inspectorOpen }" type="button" :title="inspectorOpen ? 'Close settings' : 'Open settings'" :aria-label="inspectorOpen ? 'Close settings' : 'Open settings'" @click="inspectorOpen = !inspectorOpen"><span class="toggle-icon"><Menu class="toggle-menu-icon" :size="18" /><X class="toggle-close-icon" :size="18" /></span></button>
             <button type="button" title="Add section" aria-label="Add section" :disabled="preview" @click="openAddSection"><Plus :size="19" /></button>
             <button type="button" title="Add container" aria-label="Add container" :disabled="preview" @click="openAddContainer"><Box :size="18" /></button>
             <span class="toolbar-divider" />
@@ -138,7 +138,7 @@ async function copyComponent() {
 </template>
 
 <style scoped>
-.editor{position:fixed;inset:0;z-index:10000;background:#fff;color:#20252b;font-family:Arial,Helvetica,sans-serif}.editor-shell{position:absolute;inset:0;display:flex;min-width:0;overflow:hidden;background:#fff}.editor-inspector{position:relative;z-index:20}.editor-workspace{position:relative;display:flex;flex:1;min-width:0;flex-direction:column;background:#f7f7f7;overflow:hidden}.workspace-bar{height:54px;flex:0 0 54px;display:flex;align-items:center;gap:13px;padding:0 17px;border-bottom:1px solid #e4e6e9;background:#fff}.brand-button,.workspace-actions button{display:grid;place-items:center;width:32px;height:32px;padding:0;border:0;border-radius:3px;background:transparent;color:#30343a;cursor:pointer}.brand-button:hover,.workspace-actions button:hover:not(:disabled){background:#f2f3f5;color:#93003f}.workspace-actions button:disabled{cursor:default;opacity:.35}.workspace-name{display:flex;align-items:center;gap:7px;min-width:0;font-size:13px;font-weight:700}.workspace-name svg{color:#93003f}.workspace-actions{display:flex;align-items:center;gap:3px;margin-left:auto}.toolbar-divider{width:1px;height:24px;margin:0 5px;background:#e1e3e6}
-@media(max-width:900px){.editor-inspector{position:absolute;top:0;bottom:0;left:0;z-index:50;box-shadow:12px 0 28px rgba(0,0,0,.14);transform:translateX(-100%);transition:transform .2s ease}.editor.inspector-open .editor-inspector{transform:translateX(0)}.mobile-inspector-toggle{position:absolute;z-index:55;top:64px;left:10px;display:grid;place-items:center;width:36px;height:36px;border:1px solid #ddd;border-radius:3px;background:#fff;color:#30343a;box-shadow:0 2px 8px rgba(0,0,0,.12);cursor:pointer}.workspace-bar{padding-left:55px}.workspace-actions button:nth-child(2),.workspace-actions .toolbar-divider{display:none}}
-@media(max-width:560px){.editor-inspector{width:min(375px,92vw);flex-basis:min(375px,92vw)}.workspace-actions{gap:0}.workspace-actions button:nth-child(5){display:none}.workspace-name span{max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
+.editor{position:fixed;inset:0;z-index:10000;background:#eef1f5;color:#20252b;font-family:Arial,Helvetica,sans-serif}.editor-shell{position:absolute;inset:0;display:flex;min-width:0;overflow:hidden;background:#fff}.editor-inspector{position:relative;z-index:20;width:375px;flex:0 0 375px;overflow:hidden;transition:width .32s cubic-bezier(.4,0,.2,1),flex-basis .32s cubic-bezier(.4,0,.2,1)}.editor-inspector.closed{width:0;flex-basis:0}.inspector-toggle .toggle-icon{position:relative;display:grid;place-items:center;width:18px;height:18px}.inspector-toggle .toggle-menu-icon,.inspector-toggle .toggle-close-icon{grid-area:1/1;transition:opacity .2s ease,transform .25s cubic-bezier(.4,0,.2,1)}.inspector-toggle .toggle-menu-icon{opacity:0;transform:scale(.65) rotate(-45deg)}.inspector-toggle .toggle-close-icon{opacity:1;transform:scale(1) rotate(0)}.inspector-toggle:not(.active) .toggle-menu-icon{opacity:1;transform:scale(1) rotate(0)}.inspector-toggle:not(.active) .toggle-close-icon{opacity:0;transform:scale(.65) rotate(45deg)}.editor-workspace{position:relative;display:flex;flex:1;margin-bottom:16px;min-width:0;flex-direction:column;background:#f7f7f7;overflow:hidden}.workspace-bar{height:54px;flex:0 0 54px;display:flex;align-items:center;gap:13px;padding:0 17px;border-bottom:1px solid #e4e6e9;background:#fff}.brand-button,.workspace-actions button{display:grid;place-items:center;width:32px;height:32px;padding:0;border:0;border-radius:3px;background:transparent;color:#30343a;cursor:pointer}.brand-button:hover,.workspace-actions button:hover:not(:disabled){background:#f2f3f5;color:#93003f}.inspector-toggle{position:relative;overflow:hidden}.workspace-actions button:disabled{cursor:default;opacity:.35}.workspace-name{display:flex;align-items:center;gap:7px;min-width:0;font-size:13px;font-weight:700}.workspace-name svg{color:#93003f}.workspace-actions{display:flex;align-items:center;gap:3px;margin-left:auto}.toolbar-divider{width:1px;height:24px;margin:0 5px;background:#e1e3e6}
+@media(max-width:900px){.editor-inspector{position:absolute;top:0;bottom:0;left:0;z-index:50;width:min(375px,92vw);flex-basis:min(375px,92vw);box-shadow:12px 0 28px rgba(0,0,0,.14);transition:transform .32s cubic-bezier(.4,0,.2,1);transform:translate3d(0,0,0)}.editor-inspector.closed{width:min(375px,92vw);flex-basis:min(375px,92vw);transform:translate3d(-100%,0,0)}.workspace-actions button:nth-child(2),.workspace-actions .toolbar-divider{display:none}}
+@media(max-width:560px){.workspace-actions{gap:0}.workspace-actions button:nth-child(6){display:none}.workspace-name span{max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
 </style>
