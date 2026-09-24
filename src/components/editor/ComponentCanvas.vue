@@ -15,7 +15,8 @@ const canvas = ref(null);
 const stage = ref(null);
 const hoveredElement = ref(null);
 const selectedDomElement = ref(null);
-const { selectedElement, selectElement, clearElement, applyOverrides } = useComponentEditor();
+const editingElement = ref(null);
+const { selectedElement, selectElement, clearElement, applyOverrides, getContent, setContent } = useComponentEditor();
 const { selectNode, document, addSection, addContainer } = useEditor();
 const showEmptySectionPicker = ref(false);
 const showEmptyContainerPicker = ref(false);
@@ -126,6 +127,7 @@ function setSelectedElement(element) {
 function clearVisualState() {
   hoveredElement.value?.element?.removeAttribute("data-editor-hovered");
   selectedDomElement.value?.removeAttribute("data-editor-selected");
+  if (editingElement.value) finishInlineEdit();
   hoveredElement.value = null;
   selectedDomElement.value = null;
 }
@@ -171,6 +173,72 @@ function addFirstSection(layout) {
 function addFirstContainer(layout) {
   addContainer(layout);
   showEmptyContainerPicker.value = false;
+}
+
+function startInlineEdit(event) {
+  if (props.preview || !(event.target instanceof Element)) return;
+  const target = event.target.closest(selectableTags);
+  if (!target || !stage.value?.contains(target)) return;
+  const descriptor = describeElement(target);
+  if (!descriptor?.editableText) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+  selectNode(null);
+  setSelectedElement(target);
+  selectElement(descriptor);
+  setHoverElement(target);
+  editingElement.value = target;
+  target.setAttribute("contenteditable", "true");
+  target.setAttribute("spellcheck", "true");
+  target.focus();
+  const range = document.createRange();
+  range.selectNodeContents(target);
+  range.collapse(false);
+  const selection = window.getSelection();
+  selection?.removeAllRanges();
+  selection?.addRange(range);
+}
+
+function handleInlineInput(event) {
+  const target = event.target;
+  if (!(target instanceof Element) || target !== editingElement.value) return;
+  const descriptor = describeElement(target);
+  if (!descriptor?.editableText) return;
+  selectElement(descriptor);
+  const value = target.textContent || "";
+  const existing = getContentValue(descriptor);
+  setInlineContent(descriptor, value, existing);
+}
+
+function getContentValue(descriptor) {
+  return descriptor?.componentId && descriptor?.contentSelector
+    ? getContent(descriptor.componentId, descriptor.contentSelector)
+    : null;
+}
+
+function setInlineContent(descriptor, value, existing) {
+  if (!descriptor) return;
+  const metadata = {
+    originalText: existing ?? descriptor.textValue,
+    occurrence: descriptor.textOccurrence,
+    tag: descriptor.tag,
+    className: descriptor.className,
+  };
+  setContent(descriptor.componentId, descriptor.contentSelector, value, metadata);
+}
+
+function finishInlineEdit() {
+  const target = editingElement.value;
+  if (!target) return;
+  const descriptor = describeElement(target);
+  if (descriptor?.editableText) {
+    setInlineContent(descriptor, target.textContent || "", getContentValue(descriptor));
+    selectElement(descriptor);
+  }
+  target.removeAttribute("contenteditable");
+  target.removeAttribute("spellcheck");
+  editingElement.value = null;
 }
 
 function handleStageClick(event) {
@@ -225,6 +293,10 @@ onUnmounted(() => {
         @mouseover="handleMouseOver"
         @mouseout="handleMouseOut"
         @click="handleClick"
+        @dblclick="startInlineEdit"
+        @input="handleInlineInput"
+        @blur="finishInlineEdit"
+        @keydown.esc.prevent="finishInlineEdit"
       >
         <component :is="component.component" />
       </div>
