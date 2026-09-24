@@ -5,7 +5,7 @@ import { useEditor } from "@/composables/useEditor";
 import { useComponentEditor } from "@/composables/useComponentEditor";
 
 const { selectedNode, updateNode } = useEditor();
-const { selectedElement, getStyles, setStyle, getContent, getContentEntry, setContent, resetContent } = useComponentEditor();
+const { selectedElement, getStyles, setStyle, getContent, getContentEntry, setContent, setImage, getImage, resetContent } = useComponentEditor();
 const activeTab = ref("layout");
 const uploadingImage = ref(false);
 const imageUploadError = ref("");
@@ -167,7 +167,7 @@ async function handleImageUpload(event) {
   const input = event.target;
   const file = input.files?.[0];
   imageUploadError.value = "";
-  if (!file || !selectedNode.value) return;
+  if (!file || (!selectedNode.value && !selectedElement.value)) return;
   if (!file.type.startsWith("image/")) {
     imageUploadError.value = "Please select an image file.";
     input.value = "";
@@ -176,7 +176,8 @@ async function handleImageUpload(event) {
   uploadingImage.value = true;
   try {
     const dataUrl = await prepareImageForStorage(file);
-    updateProp("src", dataUrl);
+    if (selectedNode.value) updateProp("src", dataUrl);
+    else updateImageUrl(dataUrl);
   } catch (error) {
     console.warn("Unable to upload image:", error);
     imageUploadError.value = "Could not load this image. Please try another file.";
@@ -186,6 +187,12 @@ async function handleImageUpload(event) {
   }
 }
 function contentValue() { return getContent(selectedElement.value.componentId, selectedElement.value.contentSelector) ?? selectedElement.value.textValue ?? ""; }
+function imageValue() { return getImage(selectedElement.value.componentId, selectedElement.value.contentSelector) ?? selectedElement.value.element?.getAttribute("src") ?? ""; }
+function updateImageUrl(value) {
+  const element = selectedElement.value;
+  if (!element?.componentId || !element?.contentSelector) return;
+  setImage(element.componentId, element.contentSelector, value);
+}
 function updateContent(value) {
   const element = selectedElement.value;
   if (!element?.editableText) return;
@@ -225,6 +232,16 @@ const isGrid = computed(() => current("display") === "grid");
           </label>
           <p v-if="imageUploadError" class="upload-error">{{ imageUploadError }}</p>
           <img v-if="selectedNode.props.src" class="image-preview" :src="selectedNode.props.src" :alt="selectedNode.props.alt || 'Preview'" />
+        </section>
+        <section v-else-if="selectedElement?.tag === 'img'" class="control-group">
+          <h3>Image</h3>
+          <label>Source URL<input :value="imageValue()" @input="updateImageUrl($event.target.value)" /></label>
+          <label class="image-upload" :class="{ disabled: uploadingImage }">
+            <span>{{ uploadingImage ? 'Processing image…' : 'Upload image' }}</span>
+            <input type="file" accept="image/*" :disabled="uploadingImage" @change="handleImageUpload" />
+          </label>
+          <p v-if="imageUploadError" class="upload-error">{{ imageUploadError }}</p>
+          <img v-if="imageValue()" class="image-preview" :src="imageValue()" alt="Preview" />
         </section>
         <section v-else-if="selectedElement?.editableText" class="control-group">
           <h3>Text</h3>
