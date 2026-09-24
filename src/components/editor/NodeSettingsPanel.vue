@@ -147,7 +147,8 @@ const isGrid = computed(() => current("display") === "grid");
           <template v-if="node.type === 'image'">
             <label>Image URL<input :value="node.props.src" @input="setProp('src', $event.target.value)" /></label>
             <label>Alt text<input :value="node.props.alt" @input="setProp('alt', $event.target.value)" /></label>
-            <label class="upload"><span>Upload image</span><input type="file" accept="image/*" @change="handleImageUpload" /></label>
+            <label class="upload" :class="{ disabled: uploadingImage }"><span>{{ uploadingImage ? 'Processing image…' : 'Upload image' }}</span><input type="file" accept="image/*" :disabled="uploadingImage" @change="handleImageUpload" /></label>
+            <p v-if="imageUploadError" class="upload-error">{{ imageUploadError }}</p>
             <img v-if="node.props.src" class="image-preview" :src="node.props.src" :alt="node.props.alt || 'Preview'" />
           </template>
         </div>
