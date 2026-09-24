@@ -5,6 +5,8 @@ import { useEditor } from "@/composables/useEditor";
 const { selectedNode, updateNode } = useEditor();
 const node = computed(() => selectedNode.value);
 const open = ref({ content: true, layout: true, spacing: true, flex: false, grid: false, typography: false, appearance: false });
+const uploadingImage = ref(false);
+const imageUploadError = ref("");
 
 const labelMap = {
   width: "Width", maxWidth: "Max width", minWidth: "Min width", height: "Height", minHeight: "Min height",
@@ -56,16 +58,61 @@ function fileToDataUrl(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
+    reader.onerror = () => reject(new Error("Unable to read the image."));
     reader.readAsDataURL(file);
   });
 }
+
+function loadImage(dataUrl) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("Unable to decode the image."));
+    image.src = dataUrl;
+  });
+}
+
+async function prepareImageForStorage(file) {
+  const original = await fileToDataUrl(file);
+  const image = await loadImage(original);
+  const maxDimension = 1920;
+  const scale = Math.min(1, maxDimension / Math.max(image.naturalWidth || image.width, image.naturalHeight || image.height));
+  const width = Math.max(1, Math.round((image.naturalWidth || image.width) * scale));
+  const height = Math.max(1, Math.round((image.naturalHeight || image.height) * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d");
+  if (!context) throw new Error("Your browser could not prepare the image.");
+  context.drawImage(image, 0, 0, width, height);
+
+  const webp = canvas.toDataURL("image/webp", 0.82);
+  if (webp.startsWith("data:image/webp")) return webp;
+  return canvas.toDataURL("image/jpeg", 0.82);
+}
+
 async function handleImageUpload(event) {
-  const file = event.target.files?.[0];
+  const input = event.target;
+  const file = input.files?.[0];
+  imageUploadError.value = "";
   if (!file || !node.value) return;
-  if (!file.type.startsWith("image/")) return;
-  const dataUrl = await fileToDataUrl(file);
-  setProp("src", dataUrl);
+  if (!file.type.startsWith("image/")) {
+    imageUploadError.value = "Please select an image file.";
+    input.value = "";
+    return;
+  }
+
+  uploadingImage.value = true;
+  try {
+    const dataUrl = await prepareImageForStorage(file);
+    setProp("src", dataUrl);
+  } catch (error) {
+    console.warn("Unable to upload image:", error);
+    imageUploadError.value = "Could not load this image. Please try another file.";
+  } finally {
+    uploadingImage.value = false;
+    input.value = "";
+  }
 }
 const title = computed(() => {
   if (!node.value) return "Element";
@@ -208,5 +255,5 @@ const isGrid = computed(() => current("display") === "grid");
 .body{flex:1;min-height:0;overflow:auto;padding:10px;display:flex;flex-direction:column;gap:8px}
 .card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden}.head{width:100%;height:40px;padding:0 11px;border:0;background:#fff;display:flex;align-items:center;justify-content:space-between;color:#334155;cursor:pointer}.head:hover{background:#f8fafc}.content{padding:2px 10px 10px;display:flex;flex-direction:column;gap:7px}
 .row{display:grid;grid-template-columns:86px minmax(0,1fr);align-items:center;gap:7px}.row label,.color-row label{font-size:10px;color:#64748b}.row input,.row select,.content input:not([type=file]):not([type=color]),.content textarea,.content select{width:100%;height:28px;box-sizing:border-box;border:1px solid #e2e8f0;border-radius:7px;background:#fff;padding:0 8px;color:#0f172a;font:11px Inter,system-ui,sans-serif;outline:0}.content textarea{height:auto;padding-top:7px;resize:vertical}.row input:focus,.row select:focus,.content input:focus,.content textarea:focus,.content select:focus{border-color:#60a5fa;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
-.spacing{padding-top:4px}.subhead{display:grid;grid-template-columns:1fr 90px 22px;gap:5px;align-items:center;margin-bottom:5px}.subhead b{font-size:10px;color:#475569}.subhead input{height:26px!important}.subhead button{height:24px;border:0;background:#f1f5f9;border-radius:5px;color:#64748b;cursor:pointer}.sides{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}.sides input{text-align:center;padding:0 3px!important}.color-row{display:grid;grid-template-columns:86px 30px minmax(0,1fr);gap:6px;align-items:center}.color-row input[type=color]{width:30px;height:28px;padding:2px;border:1px solid #e2e8f0;border-radius:7px;background:#fff}.upload{display:flex;align-items:center;justify-content:center;gap:8px;height:32px;border:1px dashed #bfdbfe;border-radius:7px;background:#eff6ff;color:#2563eb;font-weight:700;font-size:10px;cursor:pointer}.upload input{display:none}.image-preview{display:block;width:100%;max-height:160px;object-fit:contain;border-radius:7px;border:1px solid #e2e8f0;background:#f8fafc}
+.spacing{padding-top:4px}.subhead{display:grid;grid-template-columns:1fr 90px 22px;gap:5px;align-items:center;margin-bottom:5px}.subhead b{font-size:10px;color:#475569}.subhead input{height:26px!important}.subhead button{height:24px;border:0;background:#f1f5f9;border-radius:5px;color:#64748b;cursor:pointer}.sides{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}.sides input{text-align:center;padding:0 3px!important}.color-row{display:grid;grid-template-columns:86px 30px minmax(0,1fr);gap:6px;align-items:center}.color-row input[type=color]{width:30px;height:28px;padding:2px;border:1px solid #e2e8f0;border-radius:7px;background:#fff}.upload{display:flex;align-items:center;justify-content:center;gap:8px;height:32px;border:1px dashed #bfdbfe;border-radius:7px;background:#eff6ff;color:#2563eb;font-weight:700;font-size:10px;cursor:pointer}.upload.disabled{opacity:.6;cursor:wait}.upload input{display:none}.upload-error{margin:0;color:#dc2626;font-size:10px}.image-preview{display:block;width:100%;max-height:160px;object-fit:contain;border-radius:7px;border:1px solid #e2e8f0;background:#f8fafc}
 </style>
