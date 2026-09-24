@@ -192,7 +192,7 @@ function startInlineEdit(event) {
   target.setAttribute("contenteditable", "true");
   target.setAttribute("spellcheck", "true");
   target.focus();
-  const range = document.createRange();
+  const range = globalThis.document.createRange();
   range.selectNodeContents(target);
   range.collapse(false);
   const selection = window.getSelection();
