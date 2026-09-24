@@ -24,6 +24,11 @@ const leafElement = ref(null);
 const leafToolbarStyle = ref({});
 
 const isSelected = computed(() => selectedNodeId.value === props.node.id);
+const isLastRootSection = computed(() => {
+  if (!props.rootSection || props.node.type !== "section") return false;
+  const sections = document.children || [];
+  return sections[sections.length - 1]?.id === props.node.id;
+});
 const componentEntry = computed(() => componentRegistry[props.node.props?.componentId] || null);
 const componentLabel = computed(() => componentEntry.value?.name || props.node.props?.componentId || "Component");
 const basicElements = computed(() => Object.entries(editorRegistry)
@@ -286,7 +291,7 @@ onBeforeUnmount(() => {
       />
     </section>
 
-    <div v-if="props.rootSection" class="section-insert-control" @click.stop>
+    <div v-if="props.rootSection && !isLastRootSection" class="section-insert-control" @click.stop>
       <button type="button" class="section-insert-button" aria-label="Add section below" @click="openSectionPicker">+</button>
     </div>
 
