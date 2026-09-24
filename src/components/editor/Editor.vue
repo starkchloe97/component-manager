@@ -1,9 +1,8 @@
 <script setup>
 import { computed, nextTick, ref, watch } from "vue";
-import { Box, Check, Copy, Eye, EyeOff, Menu, Plus, Redo2, RotateCcw, Undo2, X } from "@lucide/vue";
+import { Box, Check, Copy, Eye, EyeOff, Menu, Redo2, RotateCcw, Undo2, X } from "@lucide/vue";
 import ComponentCanvas from "./ComponentCanvas.vue";
 import ElementorInspector from "./ElementorInspector.vue";
-import SectionLayoutPicker from "./SectionLayoutPicker.vue";
 import { componentRegistry } from "@/config/componentRegistry";
 import { useComponentEditor } from "@/composables/useComponentEditor";
 import { useComponentManager } from "@/composables/useComponentManager";
@@ -11,20 +10,20 @@ import { useStyleManager } from "@/composables/useStyleManager";
 import { useComponentCopy } from "@/composables/useComponentCopy";
 import { useEditor } from "@/composables/useEditor";
 
+defineOptions({ name: "ComponentEditor" });
+
 const props = defineProps({ initialComponentId: { type: String, default: null } });
 const emit = defineEmits(["close"]);
 const registry = Object.values(componentRegistry);
 const activeId = ref(props.initialComponentId || registry[0]?.id || null);
 const preview = ref(false);
 const inspectorOpen = ref(true);
-const showAddSection = ref(false);
-const showAddContainer = ref(false);
 const copyState = ref("idle");
-const { selectedElement, overrides, contentOverrides, clearElement, getComponentState, restoreComponentState, resetComponentState } = useComponentEditor();
+const { overrides, contentOverrides, clearElement, getComponentState, restoreComponentState, resetComponentState } = useComponentEditor();
 const { registerComponent } = useComponentManager();
 const { registerComponent: registerStyleComponent, selectComponent } = useStyleManager();
 const { copySelectedComponent } = useComponentCopy();
-const { document, selectedNodeId, activeComponentId, setActiveComponent, resetActiveComponent, clearActiveComponent, addSection, addContainer, getDocumentSnapshot, restoreDocumentSnapshot } = useEditor();
+const { document, activeComponentId, setActiveComponent, resetActiveComponent, clearActiveComponent, getDocumentSnapshot, restoreDocumentSnapshot } = useEditor();
 
 registry.forEach((entry) => {
   const config = { name: entry.name, component: entry.component, source: entry.source, styles: {} };
@@ -93,13 +92,9 @@ watch([() => document, () => overrides[activeComponentId.value] || null, () => c
 watch(activeComponentId, () => resetHistoryForComponent(), { flush: "post" });
 resetHistoryForComponent();
 
-function closeEditor() { clearHistoryTimer(); showAddSection.value = false; showAddContainer.value = false; clearElement(); clearActiveComponent(); emit("close"); }
+function closeEditor() { clearHistoryTimer(); clearElement(); clearActiveComponent(); emit("close"); }
 function togglePreview() { preview.value = !preview.value; if (preview.value) clearElement(); }
 function handleElementSelected() { /* Selection must not change inspector visibility. */ }
-function openAddSection() { if (!preview.value) { showAddSection.value = true; showAddContainer.value = false; } }
-function openAddContainer() { if (!preview.value) { showAddContainer.value = true; showAddSection.value = false; } }
-function addSectionToPage(layout) { addSection(layout); showAddSection.value = false; }
-function addContainerToPage(layout) { addContainer(layout); showAddContainer.value = false; }
 async function copyComponent() {
   if (copyState.value === "copying") return;
   copyState.value = "copying";
@@ -119,9 +114,6 @@ async function copyComponent() {
           <div class="workspace-name"><Box :size="17" /><span>{{ activeComponent?.name || 'Component' }}</span></div>
           <div class="workspace-actions">
             <button class="inspector-toggle" :class="{ active: inspectorOpen }" type="button" :title="inspectorOpen ? 'Close settings' : 'Open settings'" :aria-label="inspectorOpen ? 'Close settings' : 'Open settings'" @click="inspectorOpen = !inspectorOpen"><span class="toggle-icon"><Menu class="toggle-menu-icon" :size="18" /><X class="toggle-close-icon" :size="18" /></span></button>
-            <button type="button" title="Add section" aria-label="Add section" :disabled="preview" @click="openAddSection"><Plus :size="19" /></button>
-            <button type="button" title="Add container" aria-label="Add container" :disabled="preview" @click="openAddContainer"><Box :size="18" /></button>
-            <span class="toolbar-divider" />
             <button type="button" title="Undo" aria-label="Undo" :disabled="preview || !canUndo" @click="undo"><Undo2 :size="18" /></button>
             <button type="button" title="Redo" aria-label="Redo" :disabled="preview || !canRedo" @click="redo"><Redo2 :size="18" /></button>
             <button type="button" title="Reset component" aria-label="Reset component" :disabled="preview" @click="resetComponent"><RotateCcw :size="18" /></button>
@@ -131,8 +123,6 @@ async function copyComponent() {
         </header>
         <ComponentCanvas v-if="activeComponent" :component="activeComponent" :preview="preview" @element-selected="handleElementSelected" />
       </main>
-      <SectionLayoutPicker v-if="showAddSection" @select="addSectionToPage" @close="showAddSection = false" />
-      <SectionLayoutPicker v-if="showAddContainer" title="Add container" description="Choose a layout, or start with an empty container." :allow-empty-container="true" @select="addContainerToPage" @close="showAddContainer = false" />
     </section>
   </div>
 </template>

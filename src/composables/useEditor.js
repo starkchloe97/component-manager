@@ -283,6 +283,19 @@ export function useEditor() {
     return node;
   }
 
+  // Used by contextual "Add after" controls. Keeping this mutation here
+  // ensures sibling insertion follows the same persisted document tree as
+  // drag, duplicate, undo, and delete.
+  function addNodeAfter(type, nodeId, overrides = {}) {
+    const node = createEditorNode(type, overrides);
+    const parent = findParentInDocument(nodeId);
+    const list = parent ? parent.children : rootListFor(nodeId);
+    const index = list.findIndex((child) => child.id === nodeId);
+    list.splice(index >= 0 ? index + 1 : list.length, 0, node);
+    selectNode(node.id);
+    return node;
+  }
+
   function addComponent(componentId, parentId) {
     return addNode("component", parentId, { props: { componentId } });
   }
@@ -349,6 +362,7 @@ export function useEditor() {
     addComponentElement,
     addContainerToComponent,
     addNode,
+    addNodeAfter,
     addComponent,
     updateNode,
     moveNode,

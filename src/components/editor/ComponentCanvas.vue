@@ -2,6 +2,8 @@
 import { computed, nextTick, onMounted, onUnmounted, onUpdated, ref, watch } from "vue";
 import EditorNode from "./EditorNode.vue";
 import SectionLayoutPicker from "./SectionLayoutPicker.vue";
+import AddMenu from "./AddMenu.vue";
+import InsertionPoint from "./InsertionPoint.vue";
 import { useComponentEditor } from "@/composables/useComponentEditor";
 import { useEditor } from "@/composables/useEditor";
 
@@ -17,11 +19,11 @@ const hoveredElement = ref(null);
 const selectedDomElement = ref(null);
 const editingElement = ref(null);
 const { selectedElement, selectElement, clearElement, applyOverrides, getContent, setContent } = useComponentEditor();
-const { selectNode, document, addSection, addContainer } = useEditor();
-const showEmptySectionPicker = ref(false);
-const showEmptyContainerPicker = ref(false);
-const showBottomSectionPicker = ref(false);
-const showBottomContainerPicker = ref(false);
+const { selectNode, selectedNodeId, document, addSection, addContainer, addNode } = useEditor();
+const pageAddTrigger = ref(null);
+const showPageAdd = ref(false);
+const showPageSectionPicker = ref(false);
+const showPageContainerPicker = ref(false);
 const componentName = computed(() => props.component?.name || props.component?.id || "Component");
 const selectableTags = "section, div, h1, h2, h3, h4, h5, h6, p, span, strong, em, small, blockquote, figcaption, a, button, img, ul, ol, li, form, input, textarea, label";
 
@@ -37,6 +39,8 @@ const tagMap = {
   strong: "Text", em: "Text", small: "Text", blockquote: "Quote", figcaption: "Caption", ul: "List",
   ol: "List", li: "List item", form: "Form", input: "Input", textarea: "Text area", label: "Label",
 };
+
+watch(selectedNodeId, () => { showPageAdd.value = false; });
 
 function elementPath(element) {
   const parts = [];
@@ -168,21 +172,23 @@ function handleClick(event) {
   emit("element-selected", descriptor);
 }
 
-function addFirstSection(layout) {
-  addSection(layout);
-  showEmptySectionPicker.value = false;
+function openPageAdd(event) {
+  pageAddTrigger.value = event?.currentTarget || event;
+  showPageAdd.value = !showPageAdd.value;
 }
-function addFirstContainer(layout) {
-  addContainer(layout);
-  showEmptyContainerPicker.value = false;
+function addPageItem(type) {
+  showPageAdd.value = false;
+  if (type === "section") { showPageSectionPicker.value = true; return; }
+  if (type === "container") { showPageContainerPicker.value = true; return; }
+  addNode(type);
 }
-function addBottomSection(layout) {
+function addPageSection(layout) {
   addSection(layout, document.children.length, document.children);
-  showBottomSectionPicker.value = false;
+  showPageSectionPicker.value = false;
 }
-function addBottomContainer(layout) {
+function addPageContainer(layout) {
   addContainer(layout);
-  showBottomContainerPicker.value = false;
+  showPageContainerPicker.value = false;
 }
 
 function startInlineEdit(event) {
@@ -314,66 +320,21 @@ onUnmounted(() => {
       <div v-if="!preview" class="component-builder-extension" @click.stop>
         <div class="page-section-list">
           <div v-for="node in document.children" :key="node.id" class="page-section-node">
-            <EditorNode :node="node" :root-section="true" />
+            <EditorNode :node="node" :root-node="true" />
           </div>
           <div v-if="document.children.length" class="bottom-insert-area" @click.stop>
-            <div class="bottom-insert-divider">
-              <span class="bottom-insert-label">Add to page</span>
-            </div>
-            <div class="bottom-insert-actions">
-              <button type="button" class="bottom-insert-button bottom-insert-button--primary" @click="showBottomSectionPicker = true">
-                <span class="bottom-insert-icon">+</span><span>Section</span>
-              </button>
-              <button type="button" class="bottom-insert-button bottom-insert-button--secondary" @click="showBottomContainerPicker = true">
-                <span class="bottom-insert-icon">+</span><span>Container</span>
-              </button>
-            </div>
-            <SectionLayoutPicker
-              v-if="showBottomSectionPicker"
-              @select="addBottomSection"
-              @close="showBottomSectionPicker = false"
-            />
-            <SectionLayoutPicker
-              v-if="showBottomContainerPicker"
-              title="Add container"
-              description="Choose a layout, or start with an empty container."
-              :allow-empty-container="true"
-              @select="addBottomContainer"
-              @close="showBottomContainerPicker = false"
-            />
+            <InsertionPoint label="Add" :visible="true" @activate="openPageAdd" />
           </div>
           <div v-if="!document.children.length" class="empty-page-state" @click.stop>
             <span class="empty-page-title">Build your page</span>
-            <span>Add a section to continue designing.</span>
-            <div class="empty-page-actions">
-              <button
-                type="button"
-                class="section-insert-button empty-section-button"
-                aria-label="Add first section"
-                @click="showEmptySectionPicker = true"
-              >+ Section</button>
-              <button
-                type="button"
-                class="section-insert-button empty-container-button"
-                aria-label="Add first container"
-                @click="showEmptyContainerPicker = true"
-              >+ Container</button>
-            </div>
-            <SectionLayoutPicker
-              v-if="showEmptySectionPicker"
-              @select="addFirstSection"
-              @close="showEmptySectionPicker = false"
-            />
-            <SectionLayoutPicker
-              v-if="showEmptyContainerPicker"
-              title="Add container"
-              description="Choose a layout, or start with an empty container."
-              :allow-empty-container="true"
-              @select="addFirstContainer"
-              @close="showEmptyContainerPicker = false"
-            />
+            <span>Start with a section, container, or element.</span>
+            <button ref="pageAddTrigger" type="button" class="empty-page-add" @click="openPageAdd"><span>+</span>Add</button>
           </div>
         </div>
+
+        <AddMenu :open="showPageAdd" :anchor="pageAddTrigger" title="Add to page" @select="addPageItem" @close="showPageAdd = false" />
+        <SectionLayoutPicker v-if="showPageSectionPicker" title="Add section to page" description="Choose a layout for the next page section." @select="addPageSection" @close="showPageSectionPicker = false" />
+        <SectionLayoutPicker v-if="showPageContainerPicker" title="Add container to page" description="Choose a layout, or start with an empty container." :allow-empty-container="true" @select="addPageContainer" @close="showPageContainerPicker = false" />
 
         <EditorNode
           v-for="node in document.componentChildren"
@@ -463,18 +424,6 @@ onUnmounted(() => {
 .page-section-node{position:relative;width:100%;margin:0}
 .empty-page-state{position:relative;min-height:188px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;border:1px dashed #cbd0d7;background:#fff;color:#6b7280;font-size:12px}
 .empty-page-title{font-size:14px;font-weight:700;color:#30343a}
-.empty-page-actions{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px}
-.bottom-insert-area{position:relative;width:100%;padding:24px 24px 36px;box-sizing:border-box}
-.bottom-insert-divider{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:1px;background:#e9ebef}
-.bottom-insert-label{position:absolute;padding:0 10px;background:#fff;color:#9aa0a8;font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;line-height:1}
-.bottom-insert-actions{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:15px}
-.bottom-insert-button,.empty-section-button,.empty-container-button{opacity:1;pointer-events:auto;position:relative;bottom:auto;left:auto;right:auto;display:inline-flex;align-items:center;justify-content:center;gap:7px;height:32px;padding:0 13px;border:1px solid #e1e4e8;border-radius:7px;background:#fff;color:#454b54;font-size:11px;font-weight:700;line-height:1;cursor:pointer;box-shadow:0 1px 2px rgba(16,24,40,.04);transition:border-color .16s ease,box-shadow .16s ease,transform .16s ease,background .16s ease,color .16s ease}
-.bottom-insert-button:hover,.empty-section-button:hover,.empty-container-button:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(16,24,40,.08);border-color:#c8cdd4}
-.bottom-insert-button:active,.empty-section-button:active,.empty-container-button:active{transform:translateY(0);box-shadow:0 1px 2px rgba(16,24,40,.05)}
-.bottom-insert-button--primary{border-color:#dca1e9;color:#8f0070;background:#fff}
-.bottom-insert-button--primary:hover{border-color:#c86bdc;background:#fff9fe;color:#7d0062}
-.bottom-insert-button--secondary,.empty-container-button{border-color:#d8dce2;color:#4d5560}
-.bottom-insert-icon{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:5px;background:#f3e5f5;color:inherit;font-size:14px;font-weight:500;line-height:15px}
-.bottom-insert-button--secondary .bottom-insert-icon,.empty-container-button .bottom-insert-icon{background:#f1f3f5}
-.empty-container-button{border-color:#d8dbe0;color:#4d5560}
+.bottom-insert-area{position:relative;width:100%;padding:18px 24px 30px;box-sizing:border-box}
+.empty-page-add{display:inline-flex;align-items:center;gap:6px;min-height:30px;margin-top:8px;padding:0 12px;border:1px solid #dfc1e7;border-radius:15px;background:#fff;color:#8f0070;font-size:11px;font-weight:700;cursor:pointer}.empty-page-add:hover,.empty-page-add:focus-visible{outline:0;border-color:#b9159d;background:#fff4fe}
 </style>
