@@ -136,13 +136,10 @@ import packagingSample from "@/assets/corp-boy.jpg";
   --brand-50: #fff7ed;
   --brand-100: #ffedd5;
   --brand-200: #fed7aa;
-  --brand-300: #fdba74;
   --brand-400: #fb923c;
   --brand-500: #f97316;
   --brand-600: #ea580c;
-  --brand-700: #c2410c;
   --navy-800: #1e293b;
-  --navy-900: #0f172a;
   --navy-950: #020617;
   --neutral-50: #fafafa;
   --neutral-100: #f5f5f5;
@@ -150,22 +147,12 @@ import packagingSample from "@/assets/corp-boy.jpg";
   --neutral-300: #d4d4d4;
   --neutral-400: #a3a3a3;
   --neutral-500: #737373;
-  --neutral-600: #525252;
-  --neutral-700: #404040;
-  --neutral-800: #262626;
   --neutral-900: #171717;
-  --neutral-950: #0a0a0a;
-  --green-400: #4ade80;
-  --green-500: #22c55e;
-  --green-600: #16a34a;
   --blue-400: #60a5fa;
-  --blue-500: #3b82f6;
   --emerald-400: #34d399;
   --emerald-500: #10b981;
   --violet-400: #a78bfa;
   --violet-500: #8b5cf6;
-  --amber-400: #fbbf24;
-  --rose-400: #fb7185;
 }
 h1, h2, h3, h4, h5, button, a, p {
     font-family: Instrument Sans, sans-serif !important;
@@ -185,7 +172,6 @@ h1, h2, h3, h4, h5, button, a, p {
 }
  .types {
   padding: 96px 0;
-  /* background: var(--neutral-50); */
 }
 
 @media (min-width: 768px) {

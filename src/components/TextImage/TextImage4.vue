@@ -59,9 +59,6 @@ const features = [
 
 .overview {
   --brand: #0b55b6;
-  --brand-light: #e8f0fb;
-  --brand-dark: #083d82;
-  --brand-mid: #1a6fd4;
   --surface: #ffffff;
   --ink: #0f1d33;
   --muted: #5a6d85;

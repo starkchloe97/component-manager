@@ -86,6 +86,22 @@ const handlePlan = (msg) => {
 
 <style scoped>  
 
+.costs-section {
+  --primary: #003dc7bd;
+  --accent: #ff6d00;
+  --accent-light: #ff9e40;
+  --teal: #00897b;
+  --bg-card: #ffffff;
+  --text: #1a1a2e;
+  --text-secondary: #5c6283;
+  --text-muted: #8b90a8;
+  --border-light: #eef0f8;
+  --shadow-lg: 0 8px 40px rgba(26, 35, 126, 0.1);
+  --radius-xl: 28px;
+  --bg: #fafbff;
+  --border: #d4e0f0;
+}
+
 .v-two .section {
   padding: 80px 24px;
   max-width: 1280px;

@@ -38,15 +38,11 @@ const logos = [
 </template>
 
 <style scoped>
+
 .logo-slider {
+  --background: #faf8ff;
   padding: 40px 0 56px 0;
   background: var(--background);
-}
-
-.logo-slider-eyebrow {
-  display: block;
-  text-align: center;
-  margin-bottom: 28px;
 }
 
 .marquee {
