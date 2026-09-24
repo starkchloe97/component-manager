@@ -102,13 +102,13 @@ function flushStyleWrites() {
   pendingStyleWrites.clear();
 }
 
-function queueContentWrite(componentId, selector, value) {
+function queueContentWrite(componentId, selector, value, skipElement = null) {
   let componentWrites = pendingContentWrites.get(componentId);
   if (!componentWrites) {
     componentWrites = new Map();
     pendingContentWrites.set(componentId, componentWrites);
   }
-  componentWrites.set(selector, value);
+  componentWrites.set(selector, { value, skipElement });
   if (contentFrame !== null || typeof window === "undefined") return;
   contentFrame = window.requestAnimationFrame(flushContentWrites);
 }
@@ -120,7 +120,8 @@ function flushContentWrites() {
     componentWrites.forEach((value, selector) => {
       roots.forEach((root) => {
         root.querySelectorAll(toSelector(selector)).forEach((element) => {
-          element.textContent = value;
+          if (element === value.skipElement) return;
+          element.textContent = value.value;
         });
       });
     });
@@ -185,7 +186,7 @@ export function useComponentEditor() {
     if (metadata.occurrence !== undefined) entry.occurrence = Number(metadata.occurrence) || 0;
     if (metadata.tag) entry.tag = metadata.tag;
     if (metadata.className !== undefined) entry.className = String(metadata.className || "");
-    queueContentWrite(componentId, selector, next);
+    queueContentWrite(componentId, selector, next, metadata.preserveElement || null);
   };
 
   const getContent = (componentId, selector) => contentOverrides[componentId]?.[selector]?.text ?? null;
