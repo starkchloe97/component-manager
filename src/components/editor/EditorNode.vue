@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { ArrowUp, Box, Copy, GripVertical, Plus, Trash2 } from "@lucide/vue";
 import { useEditor } from "@/composables/useEditor";
 import { componentRegistry } from "@/config/componentRegistry";
@@ -105,10 +105,44 @@ function beginInlineEdit(event) {
   selection?.removeAllRanges();
   selection?.addRange(range);
 }
+function getCaretOffset(element) {
+  const selection = window.getSelection();
+  if (!selection?.rangeCount) return null;
+  const range = selection.getRangeAt(0);
+  if (!element.contains(range.startContainer)) return null;
+  const before = range.cloneRange();
+  before.selectNodeContents(element);
+  before.setEnd(range.startContainer, range.startOffset);
+  return before.toString().length;
+}
+function restoreCaretOffset(element, offset) {
+  if (offset == null) return;
+  const selection = window.getSelection();
+  const range = document.createRange();
+  let remaining = offset;
+  const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+  let textNode;
+  while ((textNode = walker.nextNode())) {
+    if (remaining <= textNode.textContent.length) {
+      range.setStart(textNode, remaining);
+      range.collapse(true);
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+      return;
+    }
+    remaining -= textNode.textContent.length;
+  }
+  range.selectNodeContents(element);
+  range.collapse(false);
+  selection?.removeAllRanges();
+  selection?.addRange(range);
+}
 function syncInlineText(event) {
   const element = event.currentTarget;
   if (!(element instanceof HTMLElement)) return;
+  const caretOffset = getCaretOffset(element);
   updateNode(props.node.id, { props: { text: element.textContent || "" } });
+  nextTick(() => restoreCaretOffset(element, caretOffset));
 }
 function finishInlineEdit(event) {
   const element = event.currentTarget;
