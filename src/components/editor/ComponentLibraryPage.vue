@@ -6,10 +6,14 @@ import { componentRegistry } from "@/config/componentRegistry";
 const props = defineProps({
   title: { type: String, required: true },
   description: { type: String, default: "Browse every component on one page. Open the editor for the component you want to customize." },
-  prefix: { type: String, required: true },
+  prefix: { type: String, default: "" },
+  prefixes: { type: Array, default: () => [] },
 });
 
-const components = computed(() => Object.values(componentRegistry).filter((item) => item.id.startsWith(props.prefix)));
+const prefixes = computed(() => props.prefixes.length ? props.prefixes : [props.prefix]);
+const components = computed(() => Object.values(componentRegistry).filter((item) =>
+  prefixes.value.some((prefix) => prefix && item.id.startsWith(prefix))
+));
 const EDITING_KEY = "component-manager:editing-component";
 const initialEditingId = typeof window !== "undefined" ? window.localStorage.getItem(EDITING_KEY) : null;
 const editingId = ref(initialEditingId && componentRegistry[initialEditingId]?.id?.startsWith(props.prefix) ? initialEditingId : null);
