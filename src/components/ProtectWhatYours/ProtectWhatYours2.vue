@@ -143,12 +143,11 @@ onBeforeUnmount(() => {
 
 
 <style scoped>
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
 .protect-section {
   --neutral-900: #171717;
 }
-
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
 .protect-section {
   scroll-behavior: smooth;
