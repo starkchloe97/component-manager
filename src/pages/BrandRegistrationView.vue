@@ -1,12 +1,11 @@
 <script setup>
-
-    import BrandRegistration from '@/components/WhyRegisterYourBrand/BrandRegistration.vue';
-
+import ComponentLibraryPage from "@/components/editor/ComponentLibraryPage.vue";
 </script>
 
-
 <template>
-
-    <BrandRegistration />
-
+  <ComponentLibraryPage
+    title="Brand Registration Components"
+    prefix="BrandRegistration"
+    description="Browse the Brand Registration component and open the shared editor to customize any element inside it."
+  />
 </template>
