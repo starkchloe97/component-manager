@@ -1,15 +1,11 @@
 <script setup>
-
-    import WhyFileWithUs from '@/components/WhyFileWithUs/WhyFileWithUs.vue';
-    import ProtectYourWork from '@/components/WhyFileWithUs/ProtectYourWork.vue';
-    import WhatYouCanRegister from '@/components/WhyFileWithUs/WhatYouCanRegister.vue';
-
+import ComponentLibraryPage from "@/components/editor/ComponentLibraryPage.vue";
 </script>
 
 <template>
-
-    <WhyFileWithUs />
-    <ProtectYourWork />
-    <WhatYouCanRegister />
-
+  <ComponentLibraryPage
+    title="Why File With Us Components"
+    prefix="WhyFile"
+    description="Browse every Why File With Us component and open the shared editor to customize any element inside it."
+  />
 </template>
