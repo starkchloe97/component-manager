@@ -196,7 +196,13 @@ function updateImageUrl(value) {
 function updateContent(value) {
   const element = selectedElement.value;
   if (!element?.editableText) return;
-  setContent(element.componentId, element.contentSelector, value, { originalText: element.textValue, occurrence: element.textOccurrence, tag: element.tag, className: element.className });
+  setContent(element.componentId, element.contentSelector, value, {
+    originalText: element.textValue,
+    occurrence: element.textOccurrence,
+    tag: element.tag,
+    className: element.className,
+    textNodeIndex: element.textNodeIndex,
+  });
 }
 function resetText() { const element = selectedElement.value; if (element) resetContent(element.componentId, element.contentSelector); }
 const isFlex = computed(() => current("display") === "flex");
