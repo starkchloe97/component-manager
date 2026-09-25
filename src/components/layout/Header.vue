@@ -8,6 +8,19 @@ const links = [
   { name: 'Testimonial', label: 'Testimonial', path: '/Testimonial' },
   { name: 'Hero', label: 'Hero', path: '/HEROView' },
   { name: 'FAQ', label: 'FAQ', path: '/FAQ' },
+  { name: 'Pricing', label: 'Pricing', path: '/Pricing' },
+  { name: 'Packages', label: 'LLC Packages', path: '/Packges' },
+  { name: 'Boxes', label: 'Boxes', path: '/Boxes' },
+  { name: 'DoAndDont', label: "Do & Don't", path: '/DoAndDontView' },
+  { name: 'Features', label: 'Features', path: '/FeatureSection' },
+  { name: 'Marquee', label: 'Marquee', path: '/Marquee' },
+  { name: 'Content', label: 'Content', path: '/ContentSection' },
+  { name: 'BrandRegistration', label: 'Brand Registration', path: '/BrandRegistration' },
+  { name: 'WhyFile', label: 'Why File With Us', path: '/whyFile' },
+  { name: 'Process', label: 'Process', path: '/ProcessSection' },
+  { name: 'Tabs', label: 'Tabs', path: '/TabSection' },
+  { name: 'Protect', label: 'Protect What Yours', path: '/ProtectWhatYours' },
+  { name: 'WhyWorkWithUs', label: 'Why Work With Us', path: '/WhyWorkWithUs' },
 ]
 </script>
 
