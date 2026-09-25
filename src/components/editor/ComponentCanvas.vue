@@ -25,7 +25,7 @@ const showPageAdd = ref(false);
 const showPageSectionPicker = ref(false);
 const showPageContainerPicker = ref(false);
 const componentName = computed(() => props.component?.name || props.component?.id || "Component");
-const selectableTags = "section, div, h1, h2, h3, h4, h5, h6, p, span, strong, em, small, blockquote, figcaption, a, button, img, ul, ol, li, form, input, textarea, label";
+const selectableTags = "section, div, main, header, footer, nav, aside, article, figure, figcaption, h1, h2, h3, h4, h5, h6, p, span, strong, em, small, mark, del, ins, code, pre, blockquote, time, address, a, button, img, ul, ol, li, dl, dt, dd, table, thead, tbody, tfoot, tr, th, td, caption, form, input, textarea, select, label";
 
 const elementMap = {
   "section-title": "Heading", "section-label": "Label", "body-text": "Text", "feature-title": "Feature title",
@@ -35,9 +35,13 @@ const elementMap = {
 
 const tagMap = {
   h1: "Heading", h2: "Heading", h3: "Heading", h4: "Heading", h5: "Heading", h6: "Heading", p: "Text",
-  img: "Image", a: "Link", button: "Button", section: "Section", div: "Container", span: "Text",
-  strong: "Text", em: "Text", small: "Text", blockquote: "Quote", figcaption: "Caption", ul: "List",
-  ol: "List", li: "List item", form: "Form", input: "Input", textarea: "Text area", label: "Label",
+  img: "Image", a: "Link", button: "Button", section: "Section", div: "Container", main: "Main", header: "Header",
+  footer: "Footer", nav: "Navigation", aside: "Aside", article: "Article", figure: "Figure", span: "Text",
+  strong: "Text", em: "Text", small: "Text", mark: "Text", del: "Text", ins: "Text", code: "Code", pre: "Code",
+  blockquote: "Quote", figcaption: "Caption", time: "Text", address: "Text", ul: "List", ol: "List",
+  li: "List item", dl: "List", dt: "List term", dd: "List description", table: "Table", thead: "Table head",
+  tbody: "Table body", tfoot: "Table foot", tr: "Table row", th: "Table heading", td: "Table cell",
+  caption: "Caption", form: "Form", input: "Input", textarea: "Text area", select: "Select", label: "Label",
 };
 
 watch(selectedNodeId, () => { showPageAdd.value = false; });
