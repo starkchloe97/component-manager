@@ -216,7 +216,8 @@ const isGrid = computed(() => current("display") === "grid");
       <strong>{{ normalizedName }}</strong>
     </header>
     <nav class="inspector-tabs" aria-label="Settings categories">
-      <button v-for="tab in tabs" :key="tab.id" type="button" :class="{ active: activeTab === tab.id }" @click="activeTab = tab.id">
+      <button v-for="tab in tabs" :key="tab.id" type="button" :class="{ active: activeTab === tab.id }"
+        @click="activeTab = tab.id">
         <component :is="tab.icon" :size="16" stroke-width="1.75" /><span>{{ tab.label }}</span>
       </button>
     </nav>
@@ -224,20 +225,29 @@ const isGrid = computed(() => current("display") === "grid");
       <template v-if="activeTab === 'content'">
         <section v-if="isNode && ['heading', 'text', 'button'].includes(selectedNode.type)" class="control-group">
           <h3>Content</h3>
-          <label>Text<textarea v-if="selectedNode.type === 'text'" rows="4" :value="selectedNode.props.text" @input="updateProp('text', $event.target.value)" /><input v-else :value="selectedNode.props.text" @input="updateProp('text', $event.target.value)" /></label>
-          <label v-if="selectedNode.type === 'heading'">HTML Tag<select :value="selectedNode.props.tag || 'h2'" @change="updateProp('tag', $event.target.value)"><option v-for="tag in ['h1','h2','h3','h4','h5','h6']" :key="tag">{{ tag }}</option></select></label>
-          <label v-if="selectedNode.type === 'button'">Link<input :value="selectedNode.props.href" @input="updateProp('href', $event.target.value)" placeholder="https://" /></label>
+          <label>Text<textarea v-if="selectedNode.type === 'text'" rows="4" :value="selectedNode.props.text"
+              @input="updateProp('text', $event.target.value)" /><input v-else :value="selectedNode.props.text"
+              @input="updateProp('text', $event.target.value)" /></label>
+          <label v-if="selectedNode.type === 'heading'">HTML Tag<select :value="selectedNode.props.tag || 'h2'"
+              @change="updateProp('tag', $event.target.value)">
+              <option v-for="tag in ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']" :key="tag">{{ tag }}</option>
+            </select></label>
+          <label v-if="selectedNode.type === 'button'">Link<input :value="selectedNode.props.href"
+              @input="updateProp('href', $event.target.value)" placeholder="https://" /></label>
         </section>
         <section v-else-if="isNode && selectedNode.type === 'image'" class="control-group">
           <h3>Image</h3>
-          <label>Source URL<input :value="selectedNode.props.src" @input="updateProp('src', $event.target.value)" /></label>
-          <label>Alt text<input :value="selectedNode.props.alt" @input="updateProp('alt', $event.target.value)" /></label>
+          <label>Source URL<input :value="selectedNode.props.src"
+              @input="updateProp('src', $event.target.value)" /></label>
+          <label>Alt text<input :value="selectedNode.props.alt"
+              @input="updateProp('alt', $event.target.value)" /></label>
           <label class="image-upload" :class="{ disabled: uploadingImage }">
             <span>{{ uploadingImage ? 'Processing image…' : 'Upload image' }}</span>
             <input type="file" accept="image/*" :disabled="uploadingImage" @change="handleImageUpload" />
           </label>
           <p v-if="imageUploadError" class="upload-error">{{ imageUploadError }}</p>
-          <img v-if="selectedNode.props.src" class="image-preview" :src="selectedNode.props.src" :alt="selectedNode.props.alt || 'Preview'" />
+          <img v-if="selectedNode.props.src" class="image-preview" :src="selectedNode.props.src"
+            :alt="selectedNode.props.alt || 'Preview'" />
         </section>
         <section v-else-if="selectedElement?.tag === 'img'" class="control-group">
           <h3>Image</h3>
@@ -252,9 +262,13 @@ const isGrid = computed(() => current("display") === "grid");
         <section v-else-if="selectedElement?.editableText" class="control-group">
           <h3>Text</h3>
           <textarea rows="6" :value="contentValue()" @input="updateContent($event.target.value)" />
-          <button v-if="getContentEntry(selectedElement.componentId, selectedElement.contentSelector)" class="reset-text" type="button" @click="resetText">↺ Reset text</button>
+          <button v-if="getContentEntry(selectedElement.componentId, selectedElement.contentSelector)"
+            class="reset-text" type="button" @click="resetText">↺ Reset text</button>
         </section>
-        <section v-else class="empty-state"><Type :size="26" stroke-width="1.5" /><strong>No editable content</strong><span>Select text, an image, or a button to edit its content.</span></section>
+        <section v-else class="empty-state">
+          <Type :size="26" stroke-width="1.5" /><strong>No editable content</strong><span>Select text, an image, or a
+            button to edit its content.</span>
+        </section>
       </template>
 
       <template v-else-if="activeTab === 'layout'">
@@ -262,25 +276,43 @@ const isGrid = computed(() => current("display") === "grid");
           <h3>Container Layout</h3>
           <div v-for="field in layoutFields" :key="field.key" class="field">
             <label :for="`layout-${field.key}`">{{ field.label }}</label>
-            <select v-if="field.options" :id="`layout-${field.key}`" :value="current(field.key)" @change="updateStyle(field.key, $event.target.value)"><option v-for="option in field.options" :key="option" :value="option">{{ option || 'Default' }}</option></select>
+            <select v-if="field.options" :id="`layout-${field.key}`" :value="current(field.key)"
+              @change="updateStyle(field.key, $event.target.value)">
+              <option v-for="option in field.options" :key="option" :value="option">{{ option || 'Default' }}</option>
+            </select>
             <div v-else-if="unitKeys.has(field.key)" class="unit-control">
-              <input :id="`layout-${field.key}`" type="number" step="any" inputmode="decimal" :value="numberOf(field.key)" :placeholder="field.placeholder" @input="setNumber(field.key, $event.target.value)" />
-              <select class="unit-select" :value="unitOf(field.key)" @change="setUnit(field.key, $event.target.value)"><option v-for="u in sizeUnits" :key="u" :value="u">{{ u }}</option></select>
-              <button v-if="current(field.key)" type="button" class="clear-btn" @click="resetStyle(field.key)">×</button>
+              <input :id="`layout-${field.key}`" type="number" step="any" inputmode="decimal"
+                :value="numberOf(field.key)" :placeholder="field.placeholder"
+                @input="setNumber(field.key, $event.target.value)" />
+              <select class="unit-select" :value="unitOf(field.key)" @change="setUnit(field.key, $event.target.value)">
+                <option v-for="u in sizeUnits" :key="u" :value="u">{{ u }}</option>
+              </select>
+              <button v-if="current(field.key)" type="button" class="clear-btn"
+                @click="resetStyle(field.key)">×</button>
             </div>
-            <div v-else class="value-control"><input :id="`layout-${field.key}`" :value="current(field.key)" :placeholder="field.placeholder" @input="updateStyle(field.key, $event.target.value)" /><button v-if="current(field.key)" type="button" class="clear-btn" @click="resetStyle(field.key)">×</button></div>
+            <div v-else class="value-control"><input :id="`layout-${field.key}`" :value="current(field.key)"
+                :placeholder="field.placeholder" @input="updateStyle(field.key, $event.target.value)" /><button
+                v-if="current(field.key)" type="button" class="clear-btn" @click="resetStyle(field.key)">×</button>
+            </div>
           </div>
         </section>
         <section v-if="isFlex || isGrid" class="control-group">
           <h3>{{ isFlex ? 'Items' : 'Grid' }}</h3>
           <div v-for="field in isFlex ? flexFields : gridFields" :key="field.key" class="field">
             <label>{{ field.label }}</label>
-            <select v-if="field.options" :value="current(field.key)" @change="updateStyle(field.key, $event.target.value)"><option v-for="option in field.options" :key="option" :value="option">{{ option }}</option></select>
+            <select v-if="field.options" :value="current(field.key)"
+              @change="updateStyle(field.key, $event.target.value)">
+              <option v-for="option in field.options" :key="option" :value="option">{{ option }}</option>
+            </select>
             <div v-else-if="unitKeys.has(field.key)" class="unit-control">
-              <input type="number" step="any" inputmode="decimal" :value="numberOf(field.key)" :placeholder="field.placeholder" @input="setNumber(field.key, $event.target.value)" />
-              <select class="unit-select" :value="unitOf(field.key)" @change="setUnit(field.key, $event.target.value)"><option v-for="u in sizeUnits" :key="u" :value="u">{{ u }}</option></select>
+              <input type="number" step="any" inputmode="decimal" :value="numberOf(field.key)"
+                :placeholder="field.placeholder" @input="setNumber(field.key, $event.target.value)" />
+              <select class="unit-select" :value="unitOf(field.key)" @change="setUnit(field.key, $event.target.value)">
+                <option v-for="u in sizeUnits" :key="u" :value="u">{{ u }}</option>
+              </select>
             </div>
-            <input v-else :value="current(field.key)" :placeholder="field.placeholder" @input="updateStyle(field.key, $event.target.value)" />
+            <input v-else :value="current(field.key)" :placeholder="field.placeholder"
+              @input="updateStyle(field.key, $event.target.value)" />
           </div>
         </section>
       </template>
@@ -290,25 +322,42 @@ const isGrid = computed(() => current("display") === "grid");
           <h3>Typography</h3>
           <div v-for="field in typographyFields" :key="field.key" class="field">
             <label>{{ field.label }}</label>
-            <select v-if="field.options" :value="current(field.key)" @change="updateStyle(field.key, $event.target.value)"><option v-for="option in field.options" :key="option" :value="option">{{ option || 'Default' }}</option></select>
+            <select v-if="field.options" :value="current(field.key)"
+              @change="updateStyle(field.key, $event.target.value)">
+              <option v-for="option in field.options" :key="option" :value="option">{{ option || 'Default' }}</option>
+            </select>
             <div v-else-if="unitKeys.has(field.key)" class="unit-control">
-              <input type="number" step="any" inputmode="decimal" :value="numberOf(field.key)" :placeholder="field.placeholder" @input="setNumber(field.key, $event.target.value)" />
-              <select class="unit-select" :value="unitOf(field.key)" @change="setUnit(field.key, $event.target.value)"><option v-for="u in sizeUnits" :key="u" :value="u">{{ u }}</option></select>
+              <input type="number" step="any" inputmode="decimal" :value="numberOf(field.key)"
+                :placeholder="field.placeholder" @input="setNumber(field.key, $event.target.value)" />
+              <select class="unit-select" :value="unitOf(field.key)" @change="setUnit(field.key, $event.target.value)">
+                <option v-for="u in sizeUnits" :key="u" :value="u">{{ u }}</option>
+              </select>
             </div>
-            <input v-else :value="current(field.key)" :placeholder="field.placeholder" @input="updateStyle(field.key, $event.target.value)" />
+            <input v-else :value="current(field.key)" :placeholder="field.placeholder"
+              @input="updateStyle(field.key, $event.target.value)" />
           </div>
         </section>
         <section class="control-group">
           <h3>Appearance</h3>
           <div v-for="field in appearanceFields" :key="field.key" class="field">
             <label>{{ field.label }}</label>
-            <div v-if="field.color" class="color-control"><input type="color" class="swatch" :value="current(field.key) || '#ffffff'" @input="updateStyle(field.key, $event.target.value)" /><input :value="current(field.key)" placeholder="#ffffff" @input="updateStyle(field.key, $event.target.value)" /></div>
-            <select v-else-if="field.options" :value="current(field.key)" @change="updateStyle(field.key, $event.target.value)"><option v-for="option in field.options" :key="option" :value="option">{{ option || 'Default' }}</option></select>
+            <div v-if="field.color" class="color-control"><input type="color" class="swatch"
+                :value="current(field.key) || '#ffffff'" @input="updateStyle(field.key, $event.target.value)" /><input
+                :value="current(field.key)" placeholder="#ffffff"
+                @input="updateStyle(field.key, $event.target.value)" /></div>
+            <select v-else-if="field.options" :value="current(field.key)"
+              @change="updateStyle(field.key, $event.target.value)">
+              <option v-for="option in field.options" :key="option" :value="option">{{ option || 'Default' }}</option>
+            </select>
             <div v-else-if="unitKeys.has(field.key)" class="unit-control">
-              <input type="number" step="any" inputmode="decimal" :value="numberOf(field.key)" :placeholder="field.placeholder" @input="setNumber(field.key, $event.target.value)" />
-              <select class="unit-select" :value="unitOf(field.key)" @change="setUnit(field.key, $event.target.value)"><option v-for="u in sizeUnits" :key="u" :value="u">{{ u }}</option></select>
+              <input type="number" step="any" inputmode="decimal" :value="numberOf(field.key)"
+                :placeholder="field.placeholder" @input="setNumber(field.key, $event.target.value)" />
+              <select class="unit-select" :value="unitOf(field.key)" @change="setUnit(field.key, $event.target.value)">
+                <option v-for="u in sizeUnits" :key="u" :value="u">{{ u }}</option>
+              </select>
             </div>
-            <input v-else :value="current(field.key)" :placeholder="field.placeholder" @input="updateStyle(field.key, $event.target.value)" />
+            <input v-else :value="current(field.key)" :placeholder="field.placeholder"
+              @input="updateStyle(field.key, $event.target.value)" />
           </div>
         </section>
       </template>
@@ -320,17 +369,20 @@ const isGrid = computed(() => current("display") === "grid");
             <div class="spacing-header">
               <label>{{ box[1] }}</label>
               <div class="unit-tabs">
-                <button v-for="u in boxUnits" :key="u" type="button" :class="{ active: groupUnit(box[0]) === u }" @click="setGroupUnit(box[0], u)">{{ u }}</button>
+                <button v-for="u in boxUnits" :key="u" type="button" :class="{ active: groupUnit(box[0]) === u }"
+                  @click="setGroupUnit(box[0], u)">{{ u }}</button>
               </div>
             </div>
             <div class="side-row">
               <div class="side-grid">
-                <label v-for="side in ['Top','Right','Bottom','Left']" :key="side">
-                  <input type="number" step="any" inputmode="decimal" :value="numberOf(`${box[0]}${side}`)" @input="setSideNumber(box[0], side, $event.target.value)" />
+                <label v-for="side in ['Top', 'Right', 'Bottom', 'Left']" :key="side">
+                  <input type="number" step="any" inputmode="decimal" :value="numberOf(`${box[0]}${side}`)"
+                    @input="setSideNumber(box[0], side, $event.target.value)" />
                   <span>{{ side }}</span>
                 </label>
               </div>
-              <button type="button" class="link-btn" :class="{ active: isLinked(box[0]) }" :aria-pressed="isLinked(box[0])" title="Link values together" @click="toggleLink(box[0])">
+              <button type="button" class="link-btn" :class="{ active: isLinked(box[0]) }"
+                :aria-pressed="isLinked(box[0])" title="Link values together" @click="toggleLink(box[0])">
                 <Link2 :size="14" stroke-width="2" />
               </button>
             </div>
@@ -338,17 +390,25 @@ const isGrid = computed(() => current("display") === "grid");
         </section>
         <section class="control-group">
           <h3>Layout</h3>
-          <div v-for="field in [{ key: 'gap', label: 'Gap', placeholder: '0px' }, { key: 'columnGap', label: 'Column gap', placeholder: '0px' }, { key: 'rowGap', label: 'Row gap', placeholder: '0px' }]" :key="field.key" class="field">
+          <div
+            v-for="field in [{ key: 'gap', label: 'Gap', placeholder: '0px' }, { key: 'columnGap', label: 'Column gap', placeholder: '0px' }, { key: 'rowGap', label: 'Row gap', placeholder: '0px' }]"
+            :key="field.key" class="field">
             <label>{{ field.label }}</label>
             <div class="unit-control">
-              <input type="number" step="any" inputmode="decimal" :value="numberOf(field.key)" :placeholder="field.placeholder" @input="setNumber(field.key, $event.target.value)" />
-              <select class="unit-select" :value="unitOf(field.key)" @change="setUnit(field.key, $event.target.value)"><option v-for="u in sizeUnits" :key="u" :value="u">{{ u }}</option></select>
+              <input type="number" step="any" inputmode="decimal" :value="numberOf(field.key)"
+                :placeholder="field.placeholder" @input="setNumber(field.key, $event.target.value)" />
+              <select class="unit-select" :value="unitOf(field.key)" @change="setUnit(field.key, $event.target.value)">
+                <option v-for="u in sizeUnits" :key="u" :value="u">{{ u }}</option>
+              </select>
             </div>
           </div>
         </section>
       </template>
     </div>
-    <div v-else class="empty-state"><Box :size="28" stroke-width="1.5" /><strong>Select an element</strong><span>Click a component element or builder container to edit it.</span></div>
+    <div v-else class="empty-state">
+      <Box :size="28" stroke-width="1.5" /><strong>Select an element</strong><span>Click a component element or builder
+        container to edit it.</span>
+    </div>
   </aside>
 </template>
 
@@ -388,11 +448,13 @@ const isGrid = computed(() => current("display") === "grid");
   border-bottom: 1px solid var(--line);
   background: #fff;
 }
+
 .inspector-title strong {
   font-size: 13px;
   font-weight: 500;
   color: var(--ink);
 }
+
 .title-crumbs em {
   font-style: normal;
   font-size: 10px;
@@ -408,6 +470,7 @@ const isGrid = computed(() => current("display") === "grid");
   border-bottom: 1px solid var(--line);
   background: #fcfcfc;
 }
+
 .inspector-tabs button {
   flex: 1;
   display: flex;
@@ -425,14 +488,25 @@ const isGrid = computed(() => current("display") === "grid");
   cursor: pointer;
   transition: color 0.12s ease, border-color 0.12s ease, background-color 0.12s ease;
 }
-.inspector-tabs button svg { opacity: 0.85; }
-.inspector-tabs button:hover { color: var(--ink); background: #f4f5f6; }
+
+.inspector-tabs button svg {
+  opacity: 0.85;
+}
+
+.inspector-tabs button:hover {
+  color: var(--ink);
+  background: #f4f5f6;
+}
+
 .inspector-tabs button.active {
   color: var(--accent);
   border-bottom-color: var(--accent);
   background: #fff;
 }
-.inspector-tabs button.active svg { opacity: 1; }
+
+.inspector-tabs button.active svg {
+  opacity: 1;
+}
 
 /* Body */
 .inspector-body {
@@ -442,15 +516,29 @@ const isGrid = computed(() => current("display") === "grid");
   overflow-x: hidden;
   padding: 4px 0 40px;
 }
-.inspector-body::-webkit-scrollbar { width: 8px; }
-.inspector-body::-webkit-scrollbar-thumb { background: #d9dce0; border-radius: 4px; }
-.inspector-body::-webkit-scrollbar-track { background: transparent; }
+
+.inspector-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.inspector-body::-webkit-scrollbar-thumb {
+  background: #d9dce0;
+  border-radius: 4px;
+}
+
+.inspector-body::-webkit-scrollbar-track {
+  background: transparent;
+}
 
 .control-group {
   padding: 18px 20px;
   border-bottom: 1px solid var(--line-soft);
 }
-.control-group:last-child { border-bottom: 0; }
+
+.control-group:last-child {
+  border-bottom: 0;
+}
+
 .control-group h3 {
   margin: 0 0 16px;
   font-size: 11px;
@@ -459,7 +547,8 @@ const isGrid = computed(() => current("display") === "grid");
   text-transform: uppercase;
   color: var(--muted);
 }
-.control-group > label {
+
+.control-group>label {
   display: flex;
   flex-direction: column;
   gap: 7px;
@@ -468,7 +557,10 @@ const isGrid = computed(() => current("display") === "grid");
   font-weight: 500;
   color: var(--label);
 }
-.control-group > label:last-child { margin-bottom: 0; }
+
+.control-group>label:last-child {
+  margin-bottom: 0;
+}
 
 /* Field rows (label left, control right) — the Elementor two-column control */
 .field {
@@ -479,7 +571,8 @@ const isGrid = computed(() => current("display") === "grid");
   min-height: 36px;
   padding: 4px 0;
 }
-.field > label {
+
+.field>label {
   font-size: 12px;
   font-weight: 500;
   color: var(--label);
@@ -491,9 +584,9 @@ const isGrid = computed(() => current("display") === "grid");
 /* Inputs / selects */
 .field input,
 .field select,
-.control-group > label input,
-.control-group > label textarea,
-.control-group > textarea {
+.control-group>label input,
+.control-group>label textarea,
+.control-group>textarea {
   width: 100%;
   min-height: 32px;
   border: 1px solid var(--field-border);
@@ -505,16 +598,34 @@ const isGrid = computed(() => current("display") === "grid");
   outline: 0;
   transition: border-color 0.12s ease, box-shadow 0.12s ease;
 }
-.field select { appearance: none; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236d7882'/%3E%3C/svg%3E") no-repeat right 10px center; padding-right: 26px; cursor: pointer; }
-.control-group > textarea,
-.field textarea { resize: vertical; min-height: 76px; line-height: 1.5; }
+
+.field select {
+  appearance: none;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236d7882'/%3E%3C/svg%3E") no-repeat right 10px center;
+  padding-right: 26px;
+  cursor: pointer;
+}
+
+.control-group>textarea,
+.field textarea {
+  resize: vertical;
+  min-height: 76px;
+  line-height: 1.5;
+}
+
 .field input::placeholder,
 .control-group input::placeholder,
-.control-group textarea::placeholder { color: var(--faint); }
+.control-group textarea::placeholder {
+  color: var(--faint);
+}
+
 .field input:hover,
 .field select:hover,
 .control-group input:hover,
-.control-group textarea:hover { border-color: #b9bfc5; }
+.control-group textarea:hover {
+  border-color: #b9bfc5;
+}
+
 .field input:focus,
 .field select:focus,
 .control-group input:focus,
@@ -530,16 +641,19 @@ const isGrid = computed(() => current("display") === "grid");
   justify-content: space-between;
   margin-bottom: 8px;
 }
-.spacing-header > label {
+
+.spacing-header>label {
   font-size: 12px;
   font-weight: 500;
   color: var(--label);
 }
+
 .unit-tabs {
   display: flex;
   align-items: center;
   gap: 10px;
 }
+
 .unit-tabs button {
   border: 0;
   background: transparent;
@@ -553,11 +667,27 @@ const isGrid = computed(() => current("display") === "grid");
   border-bottom: 1px solid transparent;
   transition: color 0.12s ease, border-color 0.12s ease;
 }
-.unit-tabs button:hover { color: var(--label); }
-.unit-tabs button.active { color: var(--ink); border-bottom-color: var(--ink); }
 
-.side-row { display: flex; align-items: flex-start; gap: 6px; }
-.side-row .side-grid { flex: 1; margin-top: 0; }
+.unit-tabs button:hover {
+  color: var(--label);
+}
+
+.unit-tabs button.active {
+  color: var(--ink);
+  border-bottom-color: var(--ink);
+}
+
+.side-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.side-row .side-grid {
+  flex: 1;
+  margin-top: 0;
+}
+
 .link-btn {
   flex: 0 0 34px;
   width: 34px;
@@ -572,13 +702,22 @@ const isGrid = computed(() => current("display") === "grid");
   cursor: pointer;
   transition: background-color 0.12s ease, color 0.12s ease, border-color 0.12s ease;
 }
-.link-btn:hover { border-color: #b9bfc5; color: var(--label); }
+
+.link-btn:hover {
+  border-color: #b9bfc5;
+  color: var(--label);
+}
+
 .link-btn.active {
   background: #98a2b3;
   border-color: #98a2b3;
   color: #fff;
 }
-.link-btn.active:hover { background: #838fa3; border-color: #838fa3; }
+
+.link-btn.active:hover {
+  background: #838fa3;
+  border-color: #838fa3;
+}
 
 /* Number + unit control — Elementor-style unit switcher */
 .unit-control {
@@ -586,16 +725,19 @@ const isGrid = computed(() => current("display") === "grid");
   align-items: center;
   gap: 4px;
 }
+
 .unit-control input[type="number"] {
   min-width: 0;
   flex: 1 1 auto;
   -moz-appearance: textfield;
 }
+
 .unit-control input[type="number"]::-webkit-outer-spin-button,
 .unit-control input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
+
 .unit-select {
   flex: 0 0 50px;
   width: 50px;
@@ -613,14 +755,29 @@ const isGrid = computed(() => current("display") === "grid");
   appearance: none;
   cursor: pointer;
 }
-.unit-select:hover { border-color: #b9bfc5; color: var(--ink); }
-.unit-select:focus { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); outline: 0; }
-.unit-control .clear-btn { position: static; flex: 0 0 auto; }
+
+.unit-select:hover {
+  border-color: #b9bfc5;
+  color: var(--ink);
+}
+
+.unit-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+  outline: 0;
+}
+
+.unit-control .clear-btn {
+  position: static;
+  flex: 0 0 auto;
+}
+
 .side-grid input[type="number"] {
   height: 30px;
   text-align: center;
   -moz-appearance: textfield;
 }
+
 .side-grid input[type="number"]::-webkit-outer-spin-button,
 .side-grid input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
@@ -628,8 +785,16 @@ const isGrid = computed(() => current("display") === "grid");
 }
 
 /* Value control with clear (×) button */
-.value-control { position: relative; display: flex; align-items: center; }
-.value-control input { padding-right: 26px; }
+.value-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.value-control input {
+  padding-right: 26px;
+}
+
 .clear-btn {
   position: absolute;
   right: 3px;
@@ -649,11 +814,24 @@ const isGrid = computed(() => current("display") === "grid");
   cursor: pointer;
   transition: color 0.12s ease, background-color 0.12s ease;
 }
-.clear-btn:hover { color: var(--accent); background: var(--accent-soft); }
+
+.clear-btn:hover {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
 
 /* Color control */
-.color-control { display: flex; align-items: center; gap: 6px; }
-.color-control input:last-child { min-width: 0; flex: 1; }
+.color-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.color-control input:last-child {
+  min-width: 0;
+  flex: 1;
+}
+
 .swatch {
   appearance: none;
   -webkit-appearance: none;
@@ -666,8 +844,15 @@ const isGrid = computed(() => current("display") === "grid");
   background: #fff;
   cursor: pointer;
 }
-.swatch::-webkit-color-swatch-wrapper { padding: 3px; }
-.swatch::-webkit-color-swatch { border: 0; border-radius: 2px; }
+
+.swatch::-webkit-color-swatch-wrapper {
+  padding: 3px;
+}
+
+.swatch::-webkit-color-swatch {
+  border: 0;
+  border-radius: 2px;
+}
 
 .image-upload {
   display: flex !important;
@@ -685,11 +870,38 @@ const isGrid = computed(() => current("display") === "grid");
   font-weight: 600;
   cursor: pointer;
 }
-.image-upload:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
-.image-upload.disabled { opacity: .6; cursor: wait; }
-.image-upload input { display: none; }
-.upload-error { margin: 4px 0 0; color: #b42318; font-size: 10px; }
-.image-preview { display: block; width: 100%; max-height: 160px; object-fit: contain; margin-top: 8px; border: 1px solid var(--line); border-radius: 3px; background: #f7f8f9; }
+
+.image-upload:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.image-upload.disabled {
+  opacity: .6;
+  cursor: wait;
+}
+
+.image-upload input {
+  display: none;
+}
+
+.upload-error {
+  margin: 4px 0 0;
+  color: #b42318;
+  font-size: 10px;
+}
+
+.image-preview {
+  display: block;
+  width: 100%;
+  max-height: 160px;
+  object-fit: contain;
+  margin-top: 8px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: #f7f8f9;
+}
 
 /* Reset text */
 .reset-text {
@@ -707,16 +919,23 @@ const isGrid = computed(() => current("display") === "grid");
   cursor: pointer;
   transition: background-color 0.12s ease;
 }
-.reset-text:hover { background: rgba(147, 0, 63, 0.14); }
+
+.reset-text:hover {
+  background: rgba(147, 0, 63, 0.14);
+}
 
 /* Spacing box (padding / margin) */
-.spacing + .spacing { margin-top: 18px; }
+.spacing+.spacing {
+  margin-top: 18px;
+}
+
 .side-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 6px;
   margin-top: 8px;
 }
+
 .side-grid label {
   display: flex;
   flex-direction: column;
@@ -728,6 +947,7 @@ const isGrid = computed(() => current("display") === "grid");
   color: var(--faint);
   text-align: center;
 }
+
 .side-grid input {
   width: 100%;
   height: 30px;
@@ -738,7 +958,11 @@ const isGrid = computed(() => current("display") === "grid");
   font-size: 12px;
   outline: 0;
 }
-.side-grid input:focus { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+
+.side-grid input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
 
 /* Empty states */
 .empty-state {
@@ -752,7 +976,21 @@ const isGrid = computed(() => current("display") === "grid");
   text-align: center;
   color: var(--faint);
 }
-.empty-state svg { color: var(--field-border); }
-.empty-state strong { color: var(--label); font-size: 13px; font-weight: 500; }
-.empty-state span { max-width: 200px; font-size: 11px; line-height: 1.6; color: var(--faint); }
+
+.empty-state svg {
+  color: var(--field-border);
+}
+
+.empty-state strong {
+  color: var(--label);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.empty-state span {
+  max-width: 200px;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--faint);
+}
 </style>

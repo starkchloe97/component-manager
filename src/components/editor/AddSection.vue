@@ -44,18 +44,9 @@ const layouts = [
     <h3>Choose a layout</h3>
 
     <div class="layouts">
-      <button
-        v-for="layout in layouts"
-        :key="layout.value"
-        type="button"
-        @click="addSection(layout.value)"
-      >
+      <button v-for="layout in layouts" :key="layout.value" type="button" @click="addSection(layout.value)">
         <div class="preview">
-          <span
-            v-for="width in layout.value.split('-')"
-            :key="width"
-            :style="{ width: `${width}%` }"
-          />
+          <span v-for="width in layout.value.split('-')" :key="width" :style="{ width: `${width}%` }" />
         </div>
 
         <small>{{ layout.label }}</small>
@@ -111,4 +102,4 @@ const layouts = [
 .layouts small {
   font-size: 10px;
 }
-</style>  
+</style>

@@ -84,8 +84,8 @@ function describeElement(element) {
   const nonTextTags = new Set(["img", "input", "textarea", "select", "option", "br", "hr", "svg"]);
   const directTextNodes = !nonTextTags.has(tag)
     ? Array.from(element.childNodes || []).filter(
-        (node) => node.nodeType === Node.TEXT_NODE && node.textContent?.trim(),
-      )
+      (node) => node.nodeType === Node.TEXT_NODE && node.textContent?.trim(),
+    )
     : [];
   const textNodeIndex = directTextNodes.length
     ? Array.from(element.childNodes || []).filter((node) => node.nodeType === Node.TEXT_NODE).indexOf(directTextNodes[0])
@@ -102,12 +102,12 @@ function describeElement(element) {
   // remains scoped by contentSelector, so duplicate text/classes never collide.
   const sameTextRoleElements = editableText
     ? Array.from(stage.value?.querySelectorAll(tag) || []).filter((candidate) => {
-        if (candidate.children.length > 0) return false;
-        const candidateTag = candidate.tagName?.toLowerCase();
-        if (nonTextTags.has(candidateTag)) return false;
-        if (className && !candidate.classList.contains(className)) return false;
-        return typeof candidate.textContent === "string" && candidate.textContent.trim().length > 0;
-      })
+      if (candidate.children.length > 0) return false;
+      const candidateTag = candidate.tagName?.toLowerCase();
+      if (nonTextTags.has(candidateTag)) return false;
+      if (className && !candidate.classList.contains(className)) return false;
+      return typeof candidate.textContent === "string" && candidate.textContent.trim().length > 0;
+    })
     : [];
   const textOccurrence = sameTextRoleElements.indexOf(element);
 
@@ -315,24 +315,17 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <main ref="canvas" class="component-canvas" :class="{ 'canvas--drawer-open': drawerOpen, 'canvas--preview': preview }">
+  <main ref="canvas" class="component-canvas"
+    :class="{ 'canvas--drawer-open': drawerOpen, 'canvas--preview': preview }">
     <div class="canvas-header">
       <span>{{ componentName }}</span>
       <span v-if="selectedElement && !preview" class="selection-info">{{ selectedElement.label }}</span>
     </div>
 
     <div ref="stage" class="component-stage" :data-editor-component-id="component.id" @click="handleStageClick">
-      <div
-        class="component-hit-layer"
-        :class="{ 'hit-layer--preview': preview }"
-        @mouseover="handleMouseOver"
-        @mouseout="handleMouseOut"
-        @click="handleClick"
-        @dblclick="startInlineEdit"
-        @input="handleInlineInput"
-        @blur="finishInlineEdit"
-        @keydown.esc.prevent="finishInlineEdit"
-      >
+      <div class="component-hit-layer" :class="{ 'hit-layer--preview': preview }" @mouseover="handleMouseOver"
+        @mouseout="handleMouseOut" @click="handleClick" @dblclick="startInlineEdit" @input="handleInlineInput"
+        @blur="finishInlineEdit" @keydown.esc.prevent="finishInlineEdit">
         <component :is="component.component" />
       </div>
 
@@ -347,19 +340,21 @@ onUnmounted(() => {
           <div v-if="!document.children.length" class="empty-page-state" @click.stop>
             <span class="empty-page-title">Build your page</span>
             <span>Start with a section, container, or element.</span>
-            <button ref="pageAddTrigger" type="button" class="empty-page-add" @click="openPageAdd"><span>+</span>Add</button>
+            <button ref="pageAddTrigger" type="button" class="empty-page-add"
+              @click="openPageAdd"><span>+</span>Add</button>
           </div>
         </div>
 
-        <AddMenu :open="showPageAdd" :anchor="pageAddTrigger" title="Add to page" @select="addPageItem" @close="showPageAdd = false" />
-        <SectionLayoutPicker v-if="showPageSectionPicker" title="Add section to page" description="Choose a layout for the next page section." @select="addPageSection" @close="showPageSectionPicker = false" />
-        <SectionLayoutPicker v-if="showPageContainerPicker" title="Add container to page" description="Choose a layout, or start with an empty container." :allow-empty-container="true" @select="addPageContainer" @close="showPageContainerPicker = false" />
+        <AddMenu :open="showPageAdd" :anchor="pageAddTrigger" title="Add to page" @select="addPageItem"
+          @close="showPageAdd = false" />
+        <SectionLayoutPicker v-if="showPageSectionPicker" title="Add section to page"
+          description="Choose a layout for the next page section." @select="addPageSection"
+          @close="showPageSectionPicker = false" />
+        <SectionLayoutPicker v-if="showPageContainerPicker" title="Add container to page"
+          description="Choose a layout, or start with an empty container." :allow-empty-container="true"
+          @select="addPageContainer" @close="showPageContainerPicker = false" />
 
-        <EditorNode
-          v-for="node in document.componentChildren"
-          :key="node.id"
-          :node="node"
-        />
+        <EditorNode v-for="node in document.componentChildren" :key="node.id" :node="node" />
 
 
         <!-- Root-level section insertion is intentionally handled by the
@@ -397,7 +392,9 @@ onUnmounted(() => {
   color: #30343a;
 }
 
-.selection-info { color: #93003f; }
+.selection-info {
+  color: #93003f;
+}
 
 .component-stage {
   position: relative;
@@ -407,12 +404,18 @@ onUnmounted(() => {
   box-shadow: none;
 }
 
-.component-hit-layer { position: relative; width: 100%; }
-.component-hit-layer.hit-layer--preview { pointer-events: none; }
+.component-hit-layer {
+  position: relative;
+  width: 100%;
+}
+
+.component-hit-layer.hit-layer--preview {
+  pointer-events: none;
+}
 
 /* Highlight the actual element only. No full-canvas overlay is used, so the drawer can never be covered by a selection frame. */
 .component-hit-layer :deep([data-editor-hovered="true"]) {
-  outline: 1px dashed rgba(192,40,179,.7) !important;
+  outline: 1px dashed rgba(192, 40, 179, .7) !important;
   outline-offset: 2px;
   cursor: pointer;
 }
@@ -420,12 +423,14 @@ onUnmounted(() => {
 .component-hit-layer :deep([data-editor-selected="true"]) {
   outline: 1px solid #c028b3 !important;
   outline-offset: 2px;
-  box-shadow: 0 0 0 2px rgba(232,175,244,.35);
+  box-shadow: 0 0 0 2px rgba(232, 175, 244, .35);
   cursor: pointer;
 }
 
 .component-hit-layer :deep(a[data-editor-hovered="true"]),
-.component-hit-layer :deep(button[data-editor-hovered="true"]) { cursor: pointer; }
+.component-hit-layer :deep(button[data-editor-hovered="true"]) {
+  cursor: pointer;
+}
 
 .component-hit-layer :deep(*:focus-visible) {
   outline: 2px solid #93003f;
@@ -433,16 +438,76 @@ onUnmounted(() => {
 }
 
 @media (max-width: 760px) {
-  .component-stage { width: calc(100% - 24px); margin-top: 12px; }
+  .component-stage {
+    width: calc(100% - 24px);
+    margin-top: 12px;
+  }
 }
 </style>
 
 <style scoped>
-.component-builder-extension{position:relative;background:#fff}
-.page-section-list{width:100%}
-.page-section-node{position:relative;width:100%;margin:0}
-.empty-page-state{position:relative;min-height:188px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;border:1px dashed #cbd0d7;background:#fff;color:#6b7280;font-size:12px}
-.empty-page-title{font-size:14px;font-weight:700;color:#30343a}
-.bottom-insert-area{position:relative;width:100%;padding:18px 24px 30px;box-sizing:border-box}
-.empty-page-add{display:inline-flex;align-items:center;gap:6px;min-height:30px;margin-top:8px;padding:0 12px;border:1px solid #dfc1e7;border-radius:15px;background:#fff;color:#8f0070;font-size:11px;font-weight:700;cursor:pointer}.empty-page-add:hover,.empty-page-add:focus-visible{outline:0;border-color:#b9159d;background:#fff4fe}
+.component-builder-extension {
+  position: relative;
+  background: #fff
+}
+
+.page-section-list {
+  width: 100%
+}
+
+.page-section-node {
+  position: relative;
+  width: 100%;
+  margin: 0
+}
+
+.empty-page-state {
+  position: relative;
+  min-height: 188px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px dashed #cbd0d7;
+  background: #fff;
+  color: #6b7280;
+  font-size: 12px
+}
+
+.empty-page-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #30343a
+}
+
+.bottom-insert-area {
+  position: relative;
+  width: 100%;
+  padding: 18px 24px 30px;
+  box-sizing: border-box
+}
+
+.empty-page-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  margin-top: 8px;
+  padding: 0 12px;
+  border: 1px solid #dfc1e7;
+  border-radius: 15px;
+  background: #fff;
+  color: #8f0070;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer
+}
+
+.empty-page-add:hover,
+.empty-page-add:focus-visible {
+  outline: 0;
+  border-color: #b9159d;
+  background: #fff4fe
+}
 </style>
