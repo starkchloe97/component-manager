@@ -6,39 +6,39 @@ const route = useRoute()
 const openMenu = ref(null)
 const headerRef = ref(null)
 
-const groups = [
+const componentGroups = [
   {
-    name: 'Showcase',
+    name: 'Primary',
     links: [
-      { name: 'Hero', label: 'Hero', path: '/HEROView' },
-      { name: 'TextImage', label: 'Text Image', path: '/TextImage' },
-      { name: 'CTA', label: 'CTA', path: '/CTA' },
-      { name: 'Testimonial', label: 'Testimonial', path: '/Testimonial' },
-      { name: 'FAQ', label: 'FAQ', path: '/FAQ' },
+      { name: 'HeroSection.vue', label: 'HeroSection.vue', path: '/HEROView' },
+      { name: 'TextImage', label: 'TextImage', path: '/TextImage' },
+      { name: 'CTASection', label: 'CTASection', path: '/CTA' },
+      { name: 'FaqSection', label: 'FaqSection', path: '/FAQ' },
+      { name: 'Testimonials', label: 'Testimonials', path: '/Testimonial' },
     ],
   },
   {
     name: 'Business',
     links: [
-      { name: 'Pricing', label: 'Pricing', path: '/Pricing' },
-      { name: 'Packages', label: 'LLC Packages', path: '/Packges' },
-      { name: 'BrandRegistration', label: 'Brand Registration', path: '/BrandRegistration' },
-      { name: 'WhyFile', label: 'Why File With Us', path: '/whyFile' },
-      { name: 'Process', label: 'Process', path: '/ProcessSection' },
-      { name: 'Protect', label: 'Protect What Yours', path: '/ProtectWhatYours' },
-      { name: 'WhyWorkWithUs', label: 'Why Work With Us', path: '/WhyWorkWithUs' },
-      { name: 'WhyRegisterCopyRight', label: 'Why Register Copyright', path: '/WhyRegisterCopyRight' },
+      { name: 'PricingSection', label: 'PricingSection', path: '/Pricing' },
+      { name: 'LLCPackages', label: 'LLCPackages', path: '/Packges' },
+      { name: 'WhyRegisterYourBrand', label: 'WhyRegisterYourBrand', path: '/BrandRegistration' },
+      { name: 'WhyFileWithUs', label: 'WhyFileWithUs', path: '/whyFile' },
+      { name: 'ProcessSection', label: 'ProcessSection', path: '/ProcessSection' },
+      { name: 'ProtectWhatYours', label: 'ProtectWhatYours', path: '/ProtectWhatYours' },
+      { name: 'WhyWorkWithUsSection.vue', label: 'WhyWorkWithUsSection.vue', path: '/WhyWorkWithUs' },
+      { name: 'WhyRegisterCopyRight.vue', label: 'WhyRegisterCopyRight.vue', path: '/WhyRegisterCopyRight' },
     ],
   },
   {
-    name: 'Layouts',
+    name: 'Sections',
     links: [
-      { name: 'Boxes', label: 'Boxes', path: '/Boxes' },
-      { name: 'Features', label: 'Features', path: '/FeatureSection' },
-      { name: 'Content', label: 'Content', path: '/ContentSection' },
-      { name: 'Marquee', label: 'Marquee', path: '/Marquee' },
-      { name: 'Tabs', label: 'Tabs', path: '/TabSection' },
-      { name: 'DoAndDont', label: "Do & Don't", path: '/DoAndDontView' },
+      { name: 'BoxesSection', label: 'BoxesSection', path: '/Boxes' },
+      { name: 'FeaturesSection.vue', label: 'FeaturesSection.vue', path: '/FeatureSection' },
+      { name: 'ContentSection', label: 'ContentSection', path: '/ContentSection' },
+      { name: 'MarqueeSection', label: 'MarqueeSection', path: '/Marquee' },
+      { name: 'TabsSection', label: 'TabsSection', path: '/TabSection' },
+      { name: 'DoAndDontSection', label: 'DoAndDontSection', path: '/DoAndDontView' },
     ],
   },
 ]
@@ -91,7 +91,7 @@ onBeforeUnmount(() => {
         </RouterLink>
 
         <div
-          v-for="group in groups"
+          v-for="group in componentGroups"
           :key="group.name"
           class="nav-group"
           :class="{ 'nav-group--open': openMenu === group.name }"
@@ -223,7 +223,9 @@ onBeforeUnmount(() => {
   top: calc(100% + 8px);
   left: 0;
   z-index: 100;
-  min-width: 205px;
+  min-width: 220px;
+  max-height: min(70vh, 520px);
+  overflow-y: auto;
   padding: 6px;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
