@@ -5,7 +5,7 @@ import ComponentLibraryPage from "@/components/editor/ComponentLibraryPage.vue";
 <template>
   <ComponentLibraryPage
     title="Why File With Us Components"
-    prefix="WhyFile"
+    prefixes='["WhyFileWithUs", "ProtectYourWork", "WhatYouCanRegister"]'
     description="Browse every Why File With Us component and open the shared editor to customize any element inside it."
   />
 </template>
