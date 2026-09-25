@@ -1,12 +1,11 @@
 <script setup>
-
-    import Process1 from '@/components/ProcessSection/Process1.vue';
-
+import ComponentLibraryPage from "@/components/editor/ComponentLibraryPage.vue";
 </script>
 
-
 <template>
-
-    <Process1 />
-
+  <ComponentLibraryPage
+    title="Process Components"
+    prefix="Process"
+    description="Browse every Process component and open the shared editor to customize any element inside it."
+  />
 </template>
