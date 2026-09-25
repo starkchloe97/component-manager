@@ -78,9 +78,21 @@ function describeElement(element) {
   // Any leaf element with rendered text is editable. This removes the
   // brittle dependency on a hard-coded list of semantic CSS classes.
   const nonTextTags = new Set(["img", "input", "textarea", "select", "option", "br", "hr", "svg"]);
-  const hasRenderedText = typeof element.textContent === "string" && element.textContent.trim().length > 0;
-  const editableText = !nonTextTags.has(tag) && element.children.length === 0 && hasRenderedText;
-  const textValue = editableText ? element.textContent || "" : "";
+  const directTextNodes = !nonTextTags.has(tag)
+    ? Array.from(element.childNodes || []).filter(
+        (node) => node.nodeType === Node.TEXT_NODE && node.textContent?.trim(),
+      )
+    : [];
+  const textNodeIndex = directTextNodes.length
+    ? Array.from(element.childNodes || []).filter((node) => node.nodeType === Node.TEXT_NODE).indexOf(directTextNodes[0])
+    : -1;
+  // Newer components often mix editable text with icons/SVGs inside the same
+  // button, list item, or label. Treat direct text nodes as editable without
+  // requiring the element to be a leaf, so editing never requires destroying
+  // the component's child markup.
+  const editableText = !nonTextTags.has(tag) && directTextNodes.length > 0;
+  const textValue = editableText ? directTextNodes[0].textContent || "" : "";
+  const inlineEditable = editableText && element.children.length === 0;
 
   // Export/copy needs a deterministic source occurrence. Runtime editing
   // remains scoped by contentSelector, so duplicate text/classes never collide.
@@ -104,7 +116,9 @@ function describeElement(element) {
     element,
     componentId: props.component.id,
     editableText,
+    inlineEditable,
     textValue,
+    textNodeIndex: Math.max(0, textNodeIndex),
     textOccurrence: Math.max(0, textOccurrence),
   };
 }
@@ -196,7 +210,7 @@ function startInlineEdit(event) {
   const target = event.target.closest(selectableTags);
   if (!target || !stage.value?.contains(target)) return;
   const descriptor = describeElement(target);
-  if (!descriptor?.editableText) return;
+  if (!descriptor?.editableText || !descriptor?.inlineEditable) return;
 
   event.preventDefault();
   event.stopPropagation();
@@ -239,6 +253,7 @@ function setInlineContent(descriptor, value, existing) {
     occurrence: descriptor.textOccurrence,
     tag: descriptor.tag,
     className: descriptor.className,
+    textNodeIndex: descriptor.textNodeIndex,
     preserveElement: editingElement.value,
   };
   setContent(descriptor.componentId, descriptor.contentSelector, value, metadata);
