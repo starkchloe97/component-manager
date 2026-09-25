@@ -18,6 +18,7 @@ import BrandRegistrationView from '@/pages/BrandRegistrationView.vue'
 import whyFile from '@/pages/whyFile.vue'
 import ProcessSectionView from '@/pages/ProcessSectionView.vue'
 import TabSectionView from '@/pages/TabSectionView.vue'
+import WhyWorkWithUsView from '@/pages/WhyWorkWithUsView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -112,6 +113,11 @@ const router = createRouter({
       path: '/TabSection',
       name: 'TabSectionView',
       component:TabSectionView 
+    },
+    {
+      path: '/WhyWorkWithUs',
+      name: 'WhyWorkWithUsView',
+      component: WhyWorkWithUsView,
     }
 
 
