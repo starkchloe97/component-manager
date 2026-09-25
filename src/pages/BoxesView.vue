@@ -1,20 +1,11 @@
 <script setup>
-
-import Box1 from '@/components/BoxesSection/Box1.vue';
-import Box2 from '@/components/BoxesSection/Box2.vue';
-import Box3 from '@/components/BoxesSection/Box3.vue';
-import Box4 from '@/components/BoxesSection/Box4.vue';
-import Box5 from '@/components/BoxesSection/Box5.vue';
-
+import ComponentLibraryPage from "@/components/editor/ComponentLibraryPage.vue";
 </script>
 
-
 <template>
-
-    <Box1 />
-    <Box2 />
-    <Box3 />
-    <Box4 />
-    <Box5 />
-
+  <ComponentLibraryPage
+    title="Boxes Components"
+    prefix="Boxes"
+    description="Browse every Boxes component and open the shared editor to customize any element inside it."
+  />
 </template>
