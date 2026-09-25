@@ -116,13 +116,31 @@ function flushStyleWrites() {
   pendingStyleWrites.clear();
 }
 
-function queueContentWrite(componentId, selector, value, skipElement = null) {
+function getTextNodes(element) {
+  return Array.from(element?.childNodes || []).filter((node) => node.nodeType === Node.TEXT_NODE);
+}
+
+function setElementTextValue(element, value, textNodeIndex) {
+  if (textNodeIndex === undefined || textNodeIndex === null) {
+    element.textContent = value;
+    return;
+  }
+  const textNodes = getTextNodes(element);
+  const node = textNodes[Number(textNodeIndex)];
+  if (node) node.nodeValue = value;
+}
+
+function queueContentWrite(componentId, selector, value, metadata = {}) {
   let componentWrites = pendingContentWrites.get(componentId);
   if (!componentWrites) {
     componentWrites = new Map();
     pendingContentWrites.set(componentId, componentWrites);
   }
-  componentWrites.set(selector, { value, skipElement });
+  componentWrites.set(selector, {
+    value,
+    skipElement: metadata.preserveElement || null,
+    textNodeIndex: metadata.textNodeIndex,
+  });
   if (contentFrame !== null || typeof window === "undefined") return;
   contentFrame = window.requestAnimationFrame(flushContentWrites);
 }
@@ -131,11 +149,11 @@ function flushContentWrites() {
   contentFrame = null;
   pendingContentWrites.forEach((componentWrites, componentId) => {
     const roots = document.querySelectorAll(`[data-editor-component-id="${CSS.escape(componentId)}"]`);
-    componentWrites.forEach((value, selector) => {
+    componentWrites.forEach((entry, selector) => {
       roots.forEach((root) => {
         root.querySelectorAll(toSelector(selector)).forEach((element) => {
-          if (element === value.skipElement) return;
-          element.textContent = value.value;
+          if (element === entry.skipElement) return;
+          setElementTextValue(element, entry.value, entry.textNodeIndex);
         });
       });
     });
@@ -200,7 +218,8 @@ export function useComponentEditor() {
     if (metadata.occurrence !== undefined) entry.occurrence = Number(metadata.occurrence) || 0;
     if (metadata.tag) entry.tag = metadata.tag;
     if (metadata.className !== undefined) entry.className = String(metadata.className || "");
-    queueContentWrite(componentId, selector, next, metadata.preserveElement || null);
+    if (metadata.textNodeIndex !== undefined) entry.textNodeIndex = Number(metadata.textNodeIndex) || 0;
+    queueContentWrite(componentId, selector, next, metadata);
   };
 
   const getContent = (componentId, selector) => contentOverrides[componentId]?.[selector]?.text ?? null;
@@ -230,12 +249,17 @@ export function useComponentEditor() {
 
   const resetContent = (componentId, selector) => {
     if (!componentId || !selector) return;
-    const original = contentOverrides[componentId]?.[selector]?.originalText ?? null;
+    const contentEntry = contentOverrides[componentId]?.[selector];
+    const original = contentEntry?.originalText ?? null;
     if (contentOverrides[componentId]) {
       delete contentOverrides[componentId][selector];
       if (!Object.keys(contentOverrides[componentId]).length) delete contentOverrides[componentId];
     }
-    if (original !== null) queueContentWrite(componentId, selector, original);
+    if (original !== null) {
+      queueContentWrite(componentId, selector, original, {
+        textNodeIndex: contentEntry?.textNodeIndex,
+      });
+    }
   };
 
   const resetComponentState = (componentId) => {
@@ -266,7 +290,7 @@ export function useComponentEditor() {
         const original = typeof entry === "string" ? null : entry?.originalText;
         if (original === undefined || original === null) return;
         matchingElements(root, selector).forEach((element) => {
-          element.textContent = original;
+          setElementTextValue(element, original, entry?.textNodeIndex);
         });
       });
     });
@@ -309,7 +333,7 @@ export function useComponentEditor() {
         const original = typeof entry === "string" ? null : entry?.originalText;
         if (original === undefined || original === null) return;
         root.querySelectorAll(toSelector(selector)).forEach((element) => {
-          element.textContent = original;
+          setElementTextValue(element, original, entry?.textNodeIndex);
         });
       });
     });
@@ -356,7 +380,7 @@ export function useComponentEditor() {
         const value = typeof entry === "string" ? entry : entry?.text;
         if (value === null || value === undefined) return;
         root.querySelectorAll(toSelector(selector)).forEach((element) => {
-          element.textContent = value;
+          setElementTextValue(element, value, typeof entry === "string" ? undefined : entry?.textNodeIndex);
         });
       });
     }
