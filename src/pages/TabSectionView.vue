@@ -1,14 +1,11 @@
 <script setup>
-
-    import Tab1 from '@/components/TabsSection/Tab1.vue';
-    import Tab2 from '@/components/TabsSection/Tab2.vue';
-
+import ComponentLibraryPage from "@/components/editor/ComponentLibraryPage.vue";
 </script>
 
-
 <template>
-
-    <Tab1 />
-    <Tab2 />
-
+  <ComponentLibraryPage
+    title="Tab Components"
+    prefix="Tab"
+    description="Browse every Tab component and open the shared editor to customize any element inside it."
+  />
 </template>
