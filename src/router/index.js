@@ -19,6 +19,7 @@ import whyFile from '@/pages/whyFile.vue'
 import ProcessSectionView from '@/pages/ProcessSectionView.vue'
 import TabSectionView from '@/pages/TabSectionView.vue'
 import WhyWorkWithUsView from '@/pages/WhyWorkWithUsView.vue'
+import WhyRegisterCopyRightView from '@/pages/WhyRegisterCopyRightView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -118,6 +119,11 @@ const router = createRouter({
       path: '/WhyWorkWithUs',
       name: 'WhyWorkWithUsView',
       component: WhyWorkWithUsView,
+    },
+    {
+      path: '/WhyRegisterCopyRight',
+      name: 'WhyRegisterCopyRightView',
+      component: WhyRegisterCopyRightView,
     }
 
 
