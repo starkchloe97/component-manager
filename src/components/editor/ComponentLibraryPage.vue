@@ -10,13 +10,12 @@ const props = defineProps({
   prefixes: { type: Array, default: () => [] },
 });
 
-const prefixes = computed(() => props.prefixes.length ? props.prefixes : [props.prefix]);
-const components = computed(() => Object.values(componentRegistry).filter((item) =>
-  prefixes.value.some((prefix) => prefix && item.id.startsWith(prefix))
-));
+const prefixes = computed(() => Array.isArray(props.prefixes) && props.prefixes.length ? props.prefixes : [props.prefix]);
+const matchesComponent = (id) => prefixes.value.some((prefix) => prefix && id.startsWith(prefix));
+const components = computed(() => Object.values(componentRegistry).filter((item) => matchesComponent(item.id)));
 const EDITING_KEY = "component-manager:editing-component";
 const initialEditingId = typeof window !== "undefined" ? window.localStorage.getItem(EDITING_KEY) : null;
-const editingId = ref(initialEditingId && componentRegistry[initialEditingId]?.id?.startsWith(props.prefix) ? initialEditingId : null);
+const editingId = ref(initialEditingId && componentRegistry[initialEditingId] && matchesComponent(componentRegistry[initialEditingId].id) ? initialEditingId : null);
 const editingComponent = computed(() => editingId.value ? componentRegistry[editingId.value] : null);
 
 function startEditing(id) { editingId.value = id; if (typeof window !== "undefined") window.localStorage.setItem(EDITING_KEY, id); }
