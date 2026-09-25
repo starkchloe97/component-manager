@@ -21,6 +21,7 @@ const links = [
   { name: 'Tabs', label: 'Tabs', path: '/TabSection' },
   { name: 'Protect', label: 'Protect What Yours', path: '/ProtectWhatYours' },
   { name: 'WhyWorkWithUs', label: 'Why Work With Us', path: '/WhyWorkWithUs' },
+  { name: 'WhyRegisterCopyRight', label: 'Why Register Copyright', path: '/WhyRegisterCopyRight' },
 ]
 </script>
 
