@@ -97,4 +97,16 @@ export const editorRegistry = {
       styles: { width: "100%", height: "auto", display: "block" },
     },
   },
+  icon: {
+    label: "Icon",
+    category: "Basic",
+    defaults: {
+      props: { icon: "Heart", ariaLabel: "", title: "", href: "", newTab: false, decorative: true, strokeWidth: 2 },
+      styles: {
+        width: "40px", height: "40px", display: "inline-flex", color: "#111827",
+        backgroundColor: "", borderWidth: "0px", borderStyle: "solid", borderColor: "#111827",
+        borderRadius: "0px", padding: "0px", opacity: "1", boxSizing: "border-box",
+      },
+    },
+  },
 };

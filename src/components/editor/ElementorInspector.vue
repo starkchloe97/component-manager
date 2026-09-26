@@ -1,20 +1,25 @@
 <script setup>
 import { computed, reactive, ref, watch } from "vue";
-import { Box, Link2, Paintbrush, SlidersHorizontal, Type } from "@lucide/vue";
+import { Box, Link2, Monitor, Paintbrush, Smartphone, SlidersHorizontal, Tablet, Type } from "@lucide/vue";
 import { useEditor } from "@/composables/useEditor";
 import { useComponentEditor } from "@/composables/useComponentEditor";
+import IconPicker from "./IconPicker.vue";
+import { readableIconName, resolveIcon } from "@/config/iconLibrary";
 
 const { selectedNode, updateNode } = useEditor();
 const { selectedElement, getStyles, setStyle, getContent, getContentEntry, setContent, setImage, getImage, resetContent } = useComponentEditor();
 const activeTab = ref("layout");
 const uploadingImage = ref(false);
 const imageUploadError = ref("");
+const showIconPicker = ref(false);
+const responsiveDevice = ref("desktop");
 const unitKeys = new Set(["width", "maxWidth", "minWidth", "height", "minHeight", "gap", "columnGap", "rowGap", "flexBasis", "padding", "paddingTop", "paddingRight", "paddingBottom", "paddingLeft", "margin", "marginTop", "marginRight", "marginBottom", "marginLeft", "fontSize", "letterSpacing", "borderWidth", "borderRadius"]);
 const numericKeys = new Set(["zIndex", "flexGrow", "flexShrink"]);
 const nodeTypes = new Set(["section", "column", "container", "component"]);
 const entity = computed(() => selectedNode.value || selectedElement.value);
 const isNode = computed(() => !!selectedNode.value);
 const isLayout = computed(() => isNode.value && nodeTypes.has(selectedNode.value.type));
+const isIconNode = computed(() => isNode.value && selectedNode.value.type === "icon");
 const entityName = computed(() => selectedNode.value?.type || selectedElement.value?.label || "Element");
 const normalizedName = computed(() => entityName.value.replace(/\b\w/g, (letter) => letter.toUpperCase()));
 const tabs = computed(() => isLayout.value
@@ -112,7 +117,12 @@ function setSideNumber(prefix, side, rawNumber) {
 }
 
 function current(key) {
-  if (selectedNode.value) return selectedNode.value.styles?.[key] ?? "";
+  if (selectedNode.value) {
+    if (isIconNode.value && responsiveDevice.value !== "desktop") {
+      return selectedNode.value.responsiveStyles?.[responsiveDevice.value]?.[key] ?? selectedNode.value.styles?.[key] ?? "";
+    }
+    return selectedNode.value.styles?.[key] ?? "";
+  }
   if (selectedElement.value) return getStyles(selectedElement.value.componentId, selectedElement.value.selector)[key] ?? "";
   return "";
 }
@@ -125,11 +135,32 @@ function normalize(key, raw) {
 }
 function updateStyle(key, value) {
   const nextValue = normalize(key, value);
-  if (selectedNode.value) updateNode(selectedNode.value.id, { styles: { [key]: nextValue } });
+  if (selectedNode.value) {
+    if (isIconNode.value && responsiveDevice.value !== "desktop") {
+      const responsiveStyles = { ...(selectedNode.value.responsiveStyles || {}) };
+      const deviceStyles = { ...(responsiveStyles[responsiveDevice.value] || {}) };
+      if (nextValue) deviceStyles[key] = nextValue;
+      else delete deviceStyles[key];
+      responsiveStyles[responsiveDevice.value] = deviceStyles;
+      updateNode(selectedNode.value.id, { responsiveStyles });
+    } else updateNode(selectedNode.value.id, { styles: { [key]: nextValue } });
+  }
   else if (selectedElement.value) setStyle(selectedElement.value.componentId, selectedElement.value.selector, key, nextValue);
 }
 function resetStyle(key) { updateStyle(key, ""); }
 function updateProp(key, value) { if (selectedNode.value) updateNode(selectedNode.value.id, { props: { [key]: value } }); }
+function selectIcon(icon) { updateProp("icon", icon); showIconPicker.value = false; }
+function iconSize() { return numberOf("width"); }
+function setIconSize(value) { setNumber("width", value); setNumber("height", value); }
+function iconSizeUnit() { return unitOf("width"); }
+function setIconSizeUnit(unit) {
+  const size = iconSize();
+  if (!size) return;
+  updateStyle("width", `${size}${unit}`);
+  updateStyle("height", `${size}${unit}`);
+}
+function rotationOf() { return /^rotate\((-?\d+(?:\.\d+)?)deg\)$/.exec(current("transform"))?.[1] ?? "0"; }
+function setRotation(value) { updateStyle("transform", value === "" || Number(value) === 0 ? "" : `rotate(${value}deg)`); }
 function fileToDataUrl(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -222,7 +253,31 @@ const isGrid = computed(() => current("display") === "grid");
       </button>
     </nav>
     <div v-if="entity" class="inspector-body">
+      <div v-if="isIconNode" class="responsive-switcher" aria-label="Responsive editing mode">
+        <span>Responsive</span>
+        <div>
+          <button v-for="device in [{ id: 'desktop', label: 'Desktop', icon: Monitor }, { id: 'tablet', label: 'Tablet', icon: Tablet }, { id: 'mobile', label: 'Mobile', icon: Smartphone }]"
+            :key="device.id" type="button" :class="{ active: responsiveDevice === device.id }" :title="device.label"
+            :aria-label="device.label" @click="responsiveDevice = device.id"><component :is="device.icon" :size="14" /></button>
+        </div>
+      </div>
       <template v-if="activeTab === 'content'">
+        <section v-if="isIconNode" class="control-group icon-content">
+          <h3>Icon</h3>
+          <div class="icon-current-preview"><component :is="resolveIcon(selectedNode.props.icon)" :size="34"
+            :stroke-width="selectedNode.props.strokeWidth || 2" /><div><strong>{{ readableIconName(selectedNode.props.icon) }}</strong><span>Lucide icon</span></div>
+            <button type="button" @click="showIconPicker = true">Change icon</button></div>
+          <label>Tooltip<input :value="selectedNode.props.title" placeholder="Optional tooltip"
+            @input="updateProp('title', $event.target.value)" /></label>
+          <label>Accessible label<input :value="selectedNode.props.ariaLabel" placeholder="Describe this icon"
+            :disabled="selectedNode.props.decorative" @input="updateProp('ariaLabel', $event.target.value)" /></label>
+          <label class="toggle-field"><input type="checkbox" :checked="selectedNode.props.decorative"
+            @change="updateProp('decorative', $event.target.checked)" /><span>Decorative icon</span></label>
+          <label>Link<input :value="selectedNode.props.href" placeholder="https://"
+            @input="updateProp('href', $event.target.value)" /></label>
+          <label v-if="selectedNode.props.href" class="toggle-field"><input type="checkbox" :checked="selectedNode.props.newTab"
+            @change="updateProp('newTab', $event.target.checked)" /><span>Open in new tab</span></label>
+        </section>
         <section v-if="isNode && ['heading', 'text', 'button'].includes(selectedNode.type)" class="control-group">
           <h3>Content</h3>
           <label>Text<textarea v-if="selectedNode.type === 'text'" rows="4" :value="selectedNode.props.text"
@@ -318,7 +373,19 @@ const isGrid = computed(() => current("display") === "grid");
       </template>
 
       <template v-else-if="activeTab === 'style'">
-        <section class="control-group">
+        <section v-if="isIconNode" class="control-group">
+          <h3>Icon</h3>
+          <div class="field"><label>Size</label><div class="unit-control"><input type="number" min="1" step="any"
+            :value="iconSize()" placeholder="40" @input="setIconSize($event.target.value)" /><select class="unit-select"
+            :value="iconSizeUnit()" @change="setIconSizeUnit($event.target.value)"><option v-for="u in sizeUnits" :key="u" :value="u">{{ u }}</option></select></div></div>
+          <div class="field"><label>Stroke width</label><input type="number" min="0.5" max="8" step="0.5"
+            :value="selectedNode.props.strokeWidth || 2" @input="updateProp('strokeWidth', $event.target.value)" /></div>
+          <div class="field"><label>Rotation</label><div class="rotation-control"><input type="number" min="0" max="360" step="1"
+            :value="rotationOf()" @input="setRotation($event.target.value)" /><span>deg</span></div></div>
+          <div class="field"><label>Alignment</label><select :value="current('textAlign')"
+            @change="updateStyle('textAlign', $event.target.value)"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></div>
+        </section>
+        <section v-if="!isIconNode" class="control-group">
           <h3>Typography</h3>
           <div v-for="field in typographyFields" :key="field.key" class="field">
             <label>{{ field.label }}</label>
@@ -340,7 +407,7 @@ const isGrid = computed(() => current("display") === "grid");
         <section class="control-group">
           <h3>Appearance</h3>
           <div v-for="field in appearanceFields" :key="field.key" class="field">
-            <label>{{ field.label }}</label>
+            <label>{{ isIconNode && field.key === 'color' ? 'Icon Color' : field.label }}</label>
             <div v-if="field.color" class="color-control"><input type="color" class="swatch"
                 :value="current(field.key) || '#ffffff'" @input="updateStyle(field.key, $event.target.value)" /><input
                 :value="current(field.key)" placeholder="#ffffff"
@@ -410,6 +477,8 @@ const isGrid = computed(() => current("display") === "grid");
         container to edit it.</span>
     </div>
   </aside>
+  <IconPicker :open="showIconPicker" :selected="selectedNode?.props?.icon || 'Heart'" @select="selectIcon"
+    @close="showIconPicker = false" />
 </template>
 
 <style scoped>
@@ -515,6 +584,130 @@ const isGrid = computed(() => current("display") === "grid");
   overflow-y: auto;
   overflow-x: hidden;
   padding: 4px 0 40px;
+}
+
+.responsive-switcher {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 36px;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--line-soft);
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.responsive-switcher>div {
+  display: flex;
+  gap: 2px;
+}
+
+.responsive-switcher button {
+  display: grid;
+  place-items: center;
+  width: 27px;
+  height: 26px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--faint);
+  cursor: pointer;
+}
+
+.responsive-switcher button:hover,
+.responsive-switcher button:focus-visible,
+.responsive-switcher button.active {
+  outline: 0;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.icon-current-preview {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 16px;
+  padding: 9px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--ink);
+}
+
+.icon-current-preview>svg {
+  justify-self: center;
+  color: var(--accent);
+}
+
+.icon-current-preview div {
+  display: grid;
+  min-width: 0;
+  gap: 1px;
+}
+
+.icon-current-preview strong {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.icon-current-preview span {
+  color: var(--faint);
+  font-size: 10px;
+}
+
+.icon-current-preview button {
+  min-height: 28px;
+  padding: 0 8px;
+  border: 1px solid #c98bbb;
+  border-radius: 3px;
+  background: #fff;
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.icon-current-preview button:hover,
+.icon-current-preview button:focus-visible {
+  outline: 0;
+  background: var(--accent-soft);
+}
+
+.toggle-field {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 8px !important;
+  min-height: 24px;
+}
+
+.toggle-field input {
+  width: 14px !important;
+  min-height: 14px !important;
+  margin: 0;
+  padding: 0;
+  accent-color: var(--accent);
+}
+
+.rotation-control {
+  position: relative;
+}
+
+.rotation-control input {
+  padding-right: 31px;
+}
+
+.rotation-control span {
+  position: absolute;
+  top: 50%;
+  right: 9px;
+  transform: translateY(-50%);
+  color: var(--faint);
+  font-size: 10px;
 }
 
 .inspector-body::-webkit-scrollbar {

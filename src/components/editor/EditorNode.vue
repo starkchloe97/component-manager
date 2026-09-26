@@ -4,6 +4,8 @@ import { ArrowUp, Copy, GripVertical, Plus, Trash2 } from "@lucide/vue";
 import { useEditor } from "@/composables/useEditor";
 import { componentRegistry } from "@/config/componentRegistry";
 import { editorRegistry } from "@/config/editorRegistry";
+import { resolveIcon } from "@/config/iconLibrary";
+import { resolveResponsiveNodeStyles } from "@/composables/useResponsiveNodeStyles";
 import AddMenu from "./AddMenu.vue";
 import InsertionPoint from "./InsertionPoint.vue";
 import SectionLayoutPicker from "./SectionLayoutPicker.vue";
@@ -16,11 +18,16 @@ const isLastRootNode = computed(() => props.rootNode && document.children.at(-1)
 const componentEntry = computed(() => componentRegistry[props.node.props?.componentId] || null);
 const componentLabel = computed(() => componentEntry.value?.name || props.node.props?.componentId || "Component");
 const nodeLabel = computed(() => props.node.type === "component" ? componentLabel.value : (editorRegistry[props.node.type]?.label || props.node.type));
+const renderedStyles = resolveResponsiveNodeStyles(props.node);
+const resolvedIcon = computed(() => resolveIcon(props.node.props?.icon));
 const parentLabel = computed(() => editorRegistry[props.parentType]?.label || props.parentType || "parent");
 const addTitle = computed(() => addMode.value === "inside" ? `Add inside ${nodeLabel.value}` : `Add after ${nodeLabel.value}`);
-const isLeaf = computed(() => ["heading", "text", "button", "image"].includes(props.node.type));
+const isLeaf = computed(() => ["heading", "text", "button", "image", "icon"].includes(props.node.type));
 const isEmptyHost = computed(() => ["container", "column"].includes(props.node.type) && !props.node.children.length);
-watch(selectedNodeId, id => { if (id !== props.node.id) closeMenus(); });
+watch(selectedNodeId, id => {
+  if (id !== props.node.id) closeMenus();
+  else nextTick(updateLeafToolbarPosition);
+});
 function closeMenus() { showAdd.value = false; showSectionPicker.value = false; showContainerPicker.value = false; }
 function select(event) { event?.stopPropagation(); if (isSelected.value && props.parentId) selectNode(props.parentId); else selectNode(props.node.id); closeMenus(); }
 function selectParent() { if (props.parentId) { selectNode(props.parentId); closeMenus(); } }
@@ -43,7 +50,7 @@ onBeforeUnmount(() => { window.removeEventListener("resize", updateOnViewportCha
 <template>
   <div v-if="node.type === 'section'" class="editor-node editor-node--section"
     :class="{ 'editor-node--selected': isSelected }" @click="select">
-    <section class="editor-section" :style="node.styles">
+    <section class="editor-section" :style="renderedStyles">
       <EditorNode v-for="child in node.children" :key="child.id" :node="child" :parent-id="node.id"
         :parent-type="node.type" />
     </section>
@@ -65,7 +72,7 @@ onBeforeUnmount(() => { window.removeEventListener("resize", updateOnViewportCha
 
   <div v-else-if="node.type === 'column' || node.type === 'container'" class="editor-node"
     :class="{ 'editor-node--selected': isSelected }" @click="select">
-    <div :class="node.type === 'container' ? 'editor-container' : 'editor-column'" :style="node.styles">
+    <div :class="node.type === 'container' ? 'editor-container' : 'editor-column'" :style="renderedStyles">
       <div v-if="isEmptyHost" class="empty-host"><small>Drop an element here</small><button ref="addTrigger"
           type="button" @click.stop="openAdd($event, 'inside')">
           <Plus :size="14" />Add
@@ -98,7 +105,7 @@ onBeforeUnmount(() => { window.removeEventListener("resize", updateOnViewportCha
 
   <div v-else-if="node.type === 'component'" class="editor-node" :class="{ 'editor-node--selected': isSelected }"
     @click="select">
-    <div class="component-node" :style="node.styles">
+    <div class="component-node" :style="renderedStyles">
       <div class="component-node-label">{{ componentLabel }}</div>
       <component v-if="componentEntry" :is="componentEntry.component" />
       <div v-else class="component-missing">Component unavailable</div>
@@ -118,22 +125,37 @@ onBeforeUnmount(() => { window.removeEventListener("resize", updateOnViewportCha
   </div>
 
   <component v-else-if="node.type === 'heading'" :is="node.props.tag || 'h2'" ref="leafElement" class="builder-element"
-    :class="{ 'builder-element--selected': isSelected }" :style="node.styles" @click.stop="select"
+    :class="{ 'builder-element--selected': isSelected }" :style="renderedStyles" @click.stop="select"
     @dblclick="beginInlineEdit" @input="syncInlineText" @blur="finishInlineEdit"
     @keydown.esc.prevent="cancelInlineEdit">{{ node.props.text }}</component>
   <p v-else-if="node.type === 'text'" ref="leafElement" class="builder-element"
-    :class="{ 'builder-element--selected': isSelected }" :style="node.styles" @click.stop="select"
+    :class="{ 'builder-element--selected': isSelected }" :style="renderedStyles" @click.stop="select"
     @dblclick="beginInlineEdit" @input="syncInlineText" @blur="finishInlineEdit"
     @keydown.esc.prevent="cancelInlineEdit">{{ node.props.text }}</p>
   <a v-else-if="node.type === 'button'" ref="leafElement" class="builder-element"
-    :class="{ 'builder-element--selected': isSelected }" :href="node.props.href || '#'" :style="node.styles"
+    :class="{ 'builder-element--selected': isSelected }" :href="node.props.href || '#'" :style="renderedStyles"
     @click.prevent.stop="select" @dblclick="beginInlineEdit" @input="syncInlineText" @blur="finishInlineEdit"
     @keydown.esc.prevent="cancelInlineEdit">{{ node.props.text }}</a>
   <img v-else-if="node.type === 'image'" ref="leafElement" class="builder-element builder-image"
     :class="{ 'builder-element--selected': isSelected }" :src="node.props.src" :alt="node.props.alt"
-    :style="node.styles" @click.stop="select" />
+    :style="renderedStyles" @click.stop="select" />
+  <div v-else-if="node.type === 'icon'" class="builder-icon-alignment" :style="{ textAlign: renderedStyles.textAlign || 'left' }">
+    <a v-if="node.props.href" ref="leafElement" class="builder-element builder-icon-element"
+      :class="{ 'builder-element--selected': isSelected }" :style="renderedStyles" :href="node.props.href"
+      :target="node.props.newTab ? '_blank' : null" :rel="node.props.newTab ? 'noopener noreferrer' : null"
+      :aria-label="node.props.decorative ? null : (node.props.ariaLabel || node.props.title || node.props.icon)"
+      :title="node.props.title || null" @click.prevent.stop="select">
+      <component :is="resolvedIcon" :size="'100%'" :stroke-width="node.props.strokeWidth || 2" :aria-hidden="node.props.decorative ? 'true' : null" focusable="false" />
+    </a>
+    <span v-else ref="leafElement" class="builder-element builder-icon-element"
+      :class="{ 'builder-element--selected': isSelected }" :style="renderedStyles"
+      :role="node.props.decorative ? null : 'img'" :aria-label="node.props.decorative ? null : (node.props.ariaLabel || node.props.title || node.props.icon)"
+      :title="node.props.title || null" @click.stop="select">
+      <component :is="resolvedIcon" :size="'100%'" :stroke-width="node.props.strokeWidth || 2" :aria-hidden="node.props.decorative ? 'true' : null" focusable="false" />
+    </span>
+  </div>
   <div v-else class="editor-node" :class="{ 'editor-node--selected': isSelected }" @click="select">
-    <div class="builder-element" :style="node.styles">{{ nodeLabel }}</div>
+    <div class="builder-element" :style="renderedStyles">{{ nodeLabel }}</div>
   </div>
   <div v-if="isSelected && isLeaf" class="node-toolbar node-toolbar--leaf" :style="leafToolbarStyle" @click.stop>
     <span>{{ nodeLabel }}</span>
@@ -264,6 +286,24 @@ onBeforeUnmount(() => { window.removeEventListener("resize", updateOnViewportCha
 
 .builder-image {
   max-width: 100%
+}
+
+.builder-icon-alignment {
+  line-height: 0
+}
+
+.builder-icon-element {
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  color: inherit;
+  text-decoration: none
+}
+
+.builder-icon-element svg {
+  display: block;
+  max-width: 100%;
+  max-height: 100%
 }
 
 .component-node {
