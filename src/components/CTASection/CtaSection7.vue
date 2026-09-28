@@ -2,7 +2,7 @@
 // import { useToast } from '../../composables/useToast.js'
 import { useComponentStyles } from "@/composables/useComponentStyles";
 
-const { showToast } = useToast()
+// const { showToast } = useToast()
 
 const handleStart = () => {
     showToast('Launching trademark search tool...')

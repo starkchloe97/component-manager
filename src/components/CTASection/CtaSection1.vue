@@ -57,7 +57,7 @@ import { ArrowRight, Phone } from "@lucide/vue";
 import { useComponentStyles } from "@/composables/useComponentStyles";
 const sectionRef = ref(null);
 
-useScrollReveal(sectionRef);
+// useScrollReveal(sectionRef);
 
 // const { showToast } = useToast();
 

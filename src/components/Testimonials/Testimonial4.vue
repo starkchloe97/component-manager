@@ -82,7 +82,7 @@ import { ArrowLeft, ArrowRight } from '@lucide/vue';
 const modules = [Pagination, Autoplay];
 
 const sectionRef = ref(null);
-useScrollReveal(sectionRef);
+// useScrollReveal(sectionRef);
 
 const swiperInstance = ref(null);
 const onSwiper = (swiper) => {

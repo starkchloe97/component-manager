@@ -44,7 +44,7 @@ import Brand from "@/assets/tgirl1.png";
 import { SITE_NAME } from "@/config/siteInfo.js";
 
 const sectionRef = ref(null);
-useScrollReveal(sectionRef);
+// useScrollReveal(sectionRef);
 const features = [
   { title: "Full USPTO Filing Support", desc: "We manage everything from A to Z." },
   { title: "Expert Application Review", desc: "Fewer rejections, faster approval." },

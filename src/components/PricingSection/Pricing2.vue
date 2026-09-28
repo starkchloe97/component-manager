@@ -95,9 +95,9 @@ import { ref } from "vue";
 
 const sectionRef = ref(null);
 
-useScrollReveal(sectionRef);
+// useScrollReveal(sectionRef);
 
-const { showToast } = useToast();
+// const { showToast } = useToast();
 
 const tiers = [
   {

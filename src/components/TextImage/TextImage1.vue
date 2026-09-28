@@ -43,7 +43,7 @@ import Brand from "@/assets/BrandsHeroImages.jpg";
 import { SITE_NAME } from "@/config/siteInfo.js";
 
 const sectionRef = ref(null);
-useScrollReveal(sectionRef);
+// useScrollReveal(sectionRef);
 
 const features = [
   { title: "Comprehensive Search", desc: "We search federal, state, and common-law databases for conflicts." },

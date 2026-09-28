@@ -55,8 +55,8 @@ import img from "@/assets/businessgirl.webp";
 import { useComponentStyles } from "@/composables/useComponentStyles";
 
 const sectionRef = ref(null);
-useScrollReveal(sectionRef);
-const { showToast } = useToast();
+// useScrollReveal(sectionRef);
+// const { showToast } = useToast();
 
 const handleStart = () => {
   showToast("Launching trademark search tool...");
