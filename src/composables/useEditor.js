@@ -28,15 +28,23 @@ function readStoredDocument(componentId) {
   }
 }
 
-function replaceDocument(next) {
+function replaceDocument(next, { normalize = true } = {}) {
   Object.keys(document).forEach((key) => delete document[key]);
   Object.assign(document, createEditorDocument());
   if (next?.children && Array.isArray(next.children)) document.children.push(...next.children);
   if (next?.componentChildren && Array.isArray(next.componentChildren)) document.componentChildren.push(...next.componentChildren);
-  migrateLegacyLayout(document.children);
-  migrateLegacyLayout(document.componentChildren);
-  normalizePageStructure(document.children);
-  normalizePageStructure(document.componentChildren);
+
+  // Migration/normalization is only for persisted documents being loaded into
+  // the editor. History snapshots already contain the exact live tree and must
+  // be restored byte-for-byte. Running normalizePageStructure() during undo
+  // can promote nested layouts and detach columns from their parent section.
+  if (normalize) {
+    migrateLegacyLayout(document.children);
+    migrateLegacyLayout(document.componentChildren);
+    normalizePageStructure(document.children);
+    normalizePageStructure(document.componentChildren);
+  }
+
   if (next?.version) document.version = Math.max(Number(next.version) || 0, document.version);
 }
 
@@ -143,7 +151,7 @@ export function useEditor() {
       children: cloneState(snapshot.children || []),
       componentChildren: cloneState(snapshot.componentChildren || []),
       version: document.version,
-    });
+    }, { normalize: false });
     selectedNodeId.value = null;
     scheduleDocumentPersistence();
   };
