@@ -145,6 +145,19 @@ function queueContentWrite(componentId, selector, value, metadata = {}) {
   contentFrame = window.requestAnimationFrame(flushContentWrites);
 }
 
+function cancelPendingDomWrites() {
+  if (typeof window !== "undefined") {
+    if (styleFrame !== null) window.cancelAnimationFrame(styleFrame);
+    if (contentFrame !== null) window.cancelAnimationFrame(contentFrame);
+    if (imagePersistTimer) window.clearTimeout(imagePersistTimer);
+  }
+  styleFrame = null;
+  contentFrame = null;
+  imagePersistTimer = null;
+  pendingStyleWrites.clear();
+  pendingContentWrites.clear();
+}
+
 function flushContentWrites() {
   contentFrame = null;
   pendingContentWrites.forEach((componentWrites, componentId) => {
@@ -311,6 +324,11 @@ export function useComponentEditor() {
 
   const restoreComponentState = (componentId, state = {}) => {
     if (!componentId) return;
+
+    // Undo/redo must not be followed by a queued RAF from the state being
+    // undone. Otherwise that stale write can repaint the DOM with the old
+    // value after the snapshot has already been restored.
+    cancelPendingDomWrites();
 
     const oldStyles = deepClone(overrides[componentId] || {});
     const oldContent = deepClone(contentOverrides[componentId] || {});
