@@ -39,56 +39,168 @@ const historyFuture = ref([]);
 const historyCurrent = ref(null);
 const historyTimer = ref(null);
 const historyRestoring = ref(false);
+const historyBusy = ref(false);
 const activeComponent = computed(() => componentRegistry[activeId.value] || null);
-const canUndo = computed(() => historyPast.value.length > 0);
-const canRedo = computed(() => historyFuture.value.length > 0);
+const canUndo = computed(() => !historyBusy.value && historyPast.value.length > 0);
+const canRedo = computed(() => !historyBusy.value && historyFuture.value.length > 0);
+
 function clone(value) { return JSON.parse(JSON.stringify(value)); }
-function createSnapshot() { const componentId = activeComponentId.value || activeId.value; return { componentId, document: getDocumentSnapshot(), component: getComponentState(componentId) }; }
+
+function createSnapshot() {
+  const componentId = activeComponentId.value || activeId.value;
+  return {
+    componentId,
+    document: getDocumentSnapshot(),
+    component: getComponentState(componentId),
+  };
+}
+
 function snapshotKey(snapshot) { return JSON.stringify(snapshot); }
-function clearHistoryTimer() { if (historyTimer.value !== null && typeof window !== "undefined") window.clearTimeout(historyTimer.value); historyTimer.value = null; }
+
+function clearHistoryTimer() {
+  if (historyTimer.value !== null && typeof window !== "undefined") {
+    window.clearTimeout(historyTimer.value);
+  }
+  historyTimer.value = null;
+}
+
 function commitHistorySnapshot() {
   clearHistoryTimer();
   if (historyRestoring.value || !activeComponentId.value) return;
+
   const next = createSnapshot();
-  if (!historyCurrent.value) { historyCurrent.value = next; return; }
+
+  if (!historyCurrent.value) {
+    historyCurrent.value = next;
+    return;
+  }
+
   if (snapshotKey(next) === snapshotKey(historyCurrent.value)) return;
+
+  // Each committed state is one editor action. The previous current state is
+  // exactly what Undo must restore; the new state becomes the current state.
   historyPast.value.push(historyCurrent.value);
   if (historyPast.value.length > HISTORY_LIMIT) historyPast.value.shift();
+
   historyCurrent.value = next;
   historyFuture.value = [];
 }
-function scheduleHistorySnapshot() { clearHistoryTimer(); if (typeof window !== "undefined") historyTimer.value = window.setTimeout(commitHistorySnapshot, 300); }
-function resetHistoryForComponent() { clearHistoryTimer(); historyPast.value = []; historyFuture.value = []; historyCurrent.value = createSnapshot(); }
+
+// Capture at the end of the current event-loop turn instead of using a
+// human-time debounce. A 300ms debounce could merge two separate clicks into
+// one history entry, which makes Undo appear to skip actions.
+function scheduleHistorySnapshot() {
+  clearHistoryTimer();
+  if (typeof window === "undefined") return;
+  historyTimer.value = window.setTimeout(commitHistorySnapshot, 0);
+}
+
+function resetHistoryForComponent() {
+  clearHistoryTimer();
+  historyPast.value = [];
+  historyFuture.value = [];
+  historyCurrent.value = createSnapshot();
+}
+
 async function restoreHistorySnapshot(snapshot) {
   if (!snapshot || snapshot.componentId !== activeComponentId.value) return;
+
   historyRestoring.value = true;
-  clearElement();
-  restoreDocumentSnapshot(snapshot.document);
-  await nextTick();
-  restoreComponentState(snapshot.componentId, snapshot.component);
-  historyCurrent.value = clone(snapshot);
-  await nextTick();
-  historyRestoring.value = false;
+  try {
+    clearElement();
+    restoreDocumentSnapshot(snapshot.document);
+    await nextTick();
+    restoreComponentState(snapshot.componentId, snapshot.component);
+    historyCurrent.value = clone(snapshot);
+    await nextTick();
+  } finally {
+    historyRestoring.value = false;
+  }
 }
-function flushPendingHistory() { if (historyTimer.value !== null) commitHistorySnapshot(); }
-async function undo() { flushPendingHistory(); const previous = historyPast.value.pop(); if (!previous || !historyCurrent.value) return; historyFuture.value.unshift(historyCurrent.value); await restoreHistorySnapshot(previous); }
-async function redo() { flushPendingHistory(); const next = historyFuture.value.shift(); if (!next || !historyCurrent.value) return; historyPast.value.push(historyCurrent.value); await restoreHistorySnapshot(next); }
+
+function flushPendingHistory() {
+  if (historyTimer.value !== null) commitHistorySnapshot();
+}
+
+async function undo() {
+  if (historyBusy.value) return;
+
+  flushPendingHistory();
+  const previous = historyPast.value.pop();
+  if (!previous || !historyCurrent.value) return;
+
+  historyBusy.value = true;
+  historyFuture.value.unshift(clone(historyCurrent.value));
+  try {
+    await restoreHistorySnapshot(previous);
+  } finally {
+    historyBusy.value = false;
+  }
+}
+
+async function redo() {
+  if (historyBusy.value) return;
+
+  flushPendingHistory();
+  const next = historyFuture.value.shift();
+  if (!next || !historyCurrent.value) return;
+
+  historyBusy.value = true;
+  historyPast.value.push(clone(historyCurrent.value));
+  try {
+    await restoreHistorySnapshot(next);
+  } finally {
+    historyBusy.value = false;
+  }
+}
+
 async function resetComponent() {
+  if (historyBusy.value) return;
+
   flushPendingHistory();
   const componentId = activeComponentId.value;
   if (!componentId) return;
+
   historyPast.value.push(createSnapshot());
   if (historyPast.value.length > HISTORY_LIMIT) historyPast.value.shift();
   historyFuture.value = [];
+  historyBusy.value = true;
   historyRestoring.value = true;
-  clearElement();
-  resetComponentState(componentId);
-  resetActiveComponent();
-  historyCurrent.value = { componentId, document: { children: [], componentChildren: [] }, component: { styles: {}, content: {} } };
-  await nextTick();
-  historyRestoring.value = false;
+
+  try {
+    clearElement();
+    resetComponentState(componentId);
+    resetActiveComponent();
+    historyCurrent.value = {
+      componentId,
+      document: { children: [], componentChildren: [] },
+      component: { styles: {}, content: {}, images: {} },
+    };
+    await nextTick();
+  } finally {
+    historyRestoring.value = false;
+    historyBusy.value = false;
+  }
 }
-watch([() => document, () => overrides[activeComponentId.value] || null, () => contentOverrides[activeComponentId.value] || null], () => { if (!historyRestoring.value && activeComponentId.value) scheduleHistorySnapshot(); }, { deep: true });
+
+// Document structure and existing-component overrides are one history domain.
+// Images are included as well; otherwise an image edit could change the
+// current snapshot without ever creating an undo entry.
+watch(
+  [
+    () => document,
+    () => overrides[activeComponentId.value] || null,
+    () => contentOverrides[activeComponentId.value] || null,
+    () => getComponentState(activeComponentId.value || activeId.value).images,
+  ],
+  () => {
+    if (!historyRestoring.value && !historyBusy.value && activeComponentId.value) {
+      scheduleHistorySnapshot();
+    }
+  },
+  { deep: true }
+);
+
 watch(activeComponentId, () => resetHistoryForComponent(), { flush: "post" });
 resetHistoryForComponent();
 
