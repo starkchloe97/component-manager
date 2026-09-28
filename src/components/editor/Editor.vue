@@ -19,7 +19,7 @@ const activeId = ref(props.initialComponentId || registry[0]?.id || null);
 const preview = ref(false);
 const inspectorOpen = ref(true);
 const copyState = ref("idle");
-const { overrides, contentOverrides, clearElement, getComponentState, restoreComponentState, resetComponentState } = useComponentEditor();
+const { overrides, contentOverrides, imageOverrides, clearElement, getComponentState, restoreComponentState, resetComponentState } = useComponentEditor();
 const { registerComponent } = useComponentManager();
 const { registerComponent: registerStyleComponent, selectComponent } = useStyleManager();
 const { copySelectedComponent } = useComponentCopy();
@@ -191,7 +191,7 @@ watch(
     () => document,
     () => overrides[activeComponentId.value] || null,
     () => contentOverrides[activeComponentId.value] || null,
-    () => getComponentState(activeComponentId.value || activeId.value).images,
+    () => imageOverrides[activeComponentId.value] || null,
   ],
   () => {
     if (!historyRestoring.value && !historyBusy.value && activeComponentId.value) {
