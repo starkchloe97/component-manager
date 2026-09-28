@@ -37,7 +37,7 @@
 <script setup>
 import { ref } from "vue";
 import { CheckCircle } from "@lucide/vue";
-import { useScrollReveal } from "@/composables/useScrollReveal";
+// import { useScrollReveal } from "@/composables/useScrollReveal";
 import { useComponentStyles } from "@/composables/useComponentStyles";
 import Brand from "@/assets/BrandsHeroImages.jpg";
 import { SITE_NAME } from "@/config/siteInfo.js";

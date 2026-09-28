@@ -90,8 +90,8 @@
 
 <script setup>
 import { ref } from "vue";
-import { useScrollReveal } from "../../composables/useScrollReveal";
-import { useToast } from "../../composables/useToast";
+// import { useScrollReveal } from "../../composables/useScrollReveal";
+// import { useToast } from "../../composables/useToast";
 
 const sectionRef = ref(null);
 

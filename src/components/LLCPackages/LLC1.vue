@@ -69,7 +69,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useScrollReveal } from '@/composables/useScrollReveal'
+// import { useScrollReveal } from '@/composables/useScrollReveal'
 
 const sectionRef = ref(null)
 useScrollReveal(sectionRef)

@@ -49,8 +49,8 @@
 <script setup>
 import { ref } from "vue";
 import { Phone } from "@lucide/vue";
-import { useScrollReveal } from "@/composables/useScrollReveal";
-import { useToast } from "@/composables/useToast.js";
+// import { useScrollReveal } from "@/composables/useScrollReveal";
+// import { useToast } from "@/composables/useToast.js";
 import img from "@/assets/businessgirl.webp";
 import { useComponentStyles } from "@/composables/useComponentStyles";
 

@@ -52,14 +52,14 @@
 <script setup>
 import { ref } from "vue";
 import { ArrowRight, Phone } from "@lucide/vue";
-import { useScrollReveal } from "@/composables/useScrollReveal";
-import { useToast } from "@/composables/useToast";
+// import { useScrollReveal } from "@/composables/useScrollReveal";
+// import { useToast } from "@/composables/useToast";
 import { useComponentStyles } from "@/composables/useComponentStyles";
 const sectionRef = ref(null);
 
 useScrollReveal(sectionRef);
 
-const { showToast } = useToast();
+// const { showToast } = useToast();
 
 const styles = useComponentStyles("CtaSection1.vue", {
   primary: "#1a6fd4",

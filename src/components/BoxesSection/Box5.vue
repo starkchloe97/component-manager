@@ -190,7 +190,7 @@ const visible = ref(false);
 let observer = null;
 
 onMounted(() => {
-  observer = new IntersectionObserver(
+  observer = new IntersectionObserver( 
     (entries) => {
       if (entries[0].isIntersecting) visible.value = true;
     },
