@@ -72,16 +72,19 @@ function flushPersistence() {
   if (typeof window === "undefined") return;
   if (stylePersistTimer) window.clearTimeout(stylePersistTimer);
   if (contentPersistTimer) window.clearTimeout(contentPersistTimer);
+  if (imagePersistTimer) window.clearTimeout(imagePersistTimer);
   if (styleFrame !== null) window.cancelAnimationFrame(styleFrame);
   if (contentFrame !== null) window.cancelAnimationFrame(contentFrame);
   stylePersistTimer = null;
   contentPersistTimer = null;
+  imagePersistTimer = null;
   styleFrame = null;
   contentFrame = null;
   pendingStyleWrites.clear();
   pendingContentWrites.clear();
   persistStorage(STYLE_STORAGE_KEY, overrides);
   persistStorage(CONTENT_STORAGE_KEY, contentOverrides);
+  persistStorage(IMAGE_STORAGE_KEY, imageOverrides);
 }
 
 function queueStyleWrite(componentId, selector, property, value) {
@@ -351,8 +354,9 @@ export function useComponentEditor() {
         });
       });
       Object.entries(oldImages).forEach(([selector, entry]) => {
-        if (entry?.src === undefined) return;
-        root.querySelectorAll(toSelector(selector)).forEach((element) => element.setAttribute("src", entry.src));
+        const originalSrc = entry?.originalSrc;
+        if (originalSrc === undefined) return;
+        root.querySelectorAll(toSelector(selector)).forEach((element) => element.setAttribute("src", originalSrc));
       });
       Object.entries(oldContent).forEach(([selector, entry]) => {
         const original = typeof entry === "string" ? null : entry?.originalText;
@@ -375,6 +379,10 @@ export function useComponentEditor() {
     if (Object.keys(nextImages).length) imageOverrides[componentId] = nextImages;
 
     roots.forEach((root) => applyOverrides(root, componentId));
+    // The restore cancels queued DOM/storage work from the state being
+    // undone. Persist the restored snapshot so a later reload cannot bring
+    // back the pre-undo value.
+    flushPersistence();
   };
   const applyOverrides = (root, componentId) => {
     if (!root || !componentId) return;
