@@ -1,6 +1,7 @@
 import { computed, reactive, ref, watch } from "vue";
 import { createEditorDocument } from "@/components/editor/editorModel";
 import { createEditorNode } from "@/components/editor/nodeFactory";
+import { useEditorHistory } from "@/composables/useEditorHistory";
 
 const STORAGE_PREFIX = "component-manager:editor:";
 const document = reactive(createEditorDocument());
@@ -9,6 +10,7 @@ const activeComponentId = ref(null);
 let persistenceReady = false;
 let persistTimer = null;
 const PERSIST_DELAY = 250;
+const { markDirty } = useEditorHistory();
 
 function storageKey(componentId) {
   return componentId ? STORAGE_PREFIX + componentId : null;
@@ -163,6 +165,7 @@ export function useEditor() {
     const node = createEditorNode(type, overrides);
     document.componentChildren.push(node);
     selectNode(node.id);
+    markDirty();
     return node;
   }
 
@@ -170,6 +173,7 @@ export function useEditor() {
     const container = createContainer(layout);
     document.componentChildren.push(container);
     selectNode(container.id);
+    markDirty();
     return container;
   }
 
@@ -205,6 +209,7 @@ export function useEditor() {
     const section = createSection(layout);
     list.splice(Math.max(0, Math.min(index, list.length)), 0, section);
     selectNode(section.id);
+    markDirty();
     return section;
   }
 
@@ -233,6 +238,7 @@ export function useEditor() {
     const section = createSection(layout);
     parent.children.push(section);
     selectNode(section.id);
+    markDirty();
     return section;
   }
 
@@ -263,12 +269,14 @@ export function useEditor() {
       const container = createContainer(layout);
       parent.children.push(container);
       selectNode(container.id);
+      markDirty();
       return container;
     }
 
     const container = createContainer(layout);
     document.children.push(container);
     selectNode(container.id);
+    markDirty();
     return container;
   }
 
@@ -279,6 +287,7 @@ export function useEditor() {
     const index = list.findIndex((node) => node.id === nodeId);
     list.splice(index >= 0 ? index + 1 : list.length, 0, container);
     selectNode(container.id);
+    markDirty();
     return container;
   }
 
@@ -288,6 +297,7 @@ export function useEditor() {
     if (!parent || !Array.isArray(parent.children)) return null;
     parent.children.push(node);
     selectNode(node.id);
+    markDirty();
     return node;
   }
 
@@ -301,6 +311,7 @@ export function useEditor() {
     const index = list.findIndex((child) => child.id === nodeId);
     list.splice(index >= 0 ? index + 1 : list.length, 0, node);
     selectNode(node.id);
+    markDirty();
     return node;
   }
 
@@ -316,12 +327,14 @@ export function useEditor() {
     const updatedColumnWidth = node.type === "column" && Object.prototype.hasOwnProperty.call(patch.styles || {}, "width");
     if (updatedColumnWidth) syncSectionColumnWidths(id);
     Object.entries(patch).forEach(([key, value]) => { if (key !== "props" && key !== "styles") node[key] = value; });
+    markDirty();
     return node;
   }
 
   function deleteNode(id) {
     if (!removeNode(document.children, id) && !removeNode(document.componentChildren, id)) return false;
     if (selectedNodeId.value === id) selectedNodeId.value = null;
+    markDirty();
     return true;
   }
 
@@ -335,6 +348,7 @@ export function useEditor() {
     const index = list.findIndex((child) => child.id === id);
     list.splice(index + 1, 0, clone);
     selectNode(clone.id);
+    markDirty();
     return clone;
   }
 
@@ -348,6 +362,7 @@ export function useEditor() {
     if (!target || !Array.isArray(target.children)) { sourceList.splice(sourceIndex, 0, node); return false; }
     target.children.splice(Math.max(0, Math.min(index, target.children.length)), 0, node);
     selectNode(id);
+    markDirty();
     return true;
   }
 
