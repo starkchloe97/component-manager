@@ -1,10 +1,10 @@
-import { useStyleManager } from "./useStyleManager";
+import { useComponentManager } from "./useComponentManager";
 import { useComponentEditor } from "./useComponentEditor";
 import { componentRegistry } from "@/config/componentRegistry";
 import { useEditor } from "./useEditor";
 
 export function useComponentCopy() {
-  const { selectedComponent } = useStyleManager();
+  const { selectedComponent } = useComponentManager();
   const { overrides, contentOverrides } = useComponentEditor();
   const { document } = useEditor();
 
