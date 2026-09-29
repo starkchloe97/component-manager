@@ -2,7 +2,6 @@ import { reactive, ref, computed } from "vue";
 
 const components = reactive({});
 const selectedComponentId = ref(null);
-const drawerOpen = ref(false);
 
 export function useComponentManager() {
   const registerComponent = (id, config = {}) => {
@@ -26,15 +25,6 @@ export function useComponentManager() {
     selectedComponentId.value = id;
   };
 
-  const openDrawer = (id = selectedComponentId.value) => {
-    if (id) selectComponent(id);
-    drawerOpen.value = true;
-  };
-
-  const closeDrawer = () => {
-    drawerOpen.value = false;
-  };
-
   const selectedComponent = computed(() => {
     if (!selectedComponentId.value) return null;
 
@@ -45,10 +35,7 @@ export function useComponentManager() {
     components,
     selectedComponentId,
     selectedComponent,
-    drawerOpen,
     registerComponent,
     selectComponent,
-    openDrawer,
-    closeDrawer,
   };
 }
