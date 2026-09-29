@@ -1,9 +1,9 @@
 import { reactive } from "vue";
-import { useStyleManager } from "./useStyleManager";
+import { useComponentManager } from "./useComponentManager";
 
 export function useComponentStyles(componentId, initialStyles = {}, metadata = {}) {
   const styles = reactive({ ...initialStyles });
-  const { registerComponent } = useStyleManager();
+  const { registerComponent } = useComponentManager();
 
   registerComponent(componentId, {
     name: metadata.name || componentId,
