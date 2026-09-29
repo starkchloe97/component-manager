@@ -89,7 +89,6 @@ watch(activeComponentId, configureHistory, { flush: "post" });
 configureHistory();
 
 function closeEditor() { clearElement(); history.clear(); clearActiveComponent(); emit("close"); }
- { clearHistoryTimer(); clearElement(); clearActiveComponent(); emit("close"); }
 function togglePreview() { preview.value = !preview.value; if (preview.value) clearElement(); }
 function handleElementSelected() { /* Selection must not change inspector visibility. */ }
 async function copyComponent() {
