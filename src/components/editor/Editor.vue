@@ -9,6 +9,7 @@ import { useComponentManager } from "@/composables/useComponentManager";
 import { useStyleManager } from "@/composables/useStyleManager";
 import { useComponentCopy } from "@/composables/useComponentCopy";
 import { useEditor } from "@/composables/useEditor";
+import { useEditorHistory } from "@/composables/useEditorHistory";
 
 defineOptions({ name: "ComponentEditor" });
 
@@ -19,7 +20,7 @@ const activeId = ref(props.initialComponentId || registry[0]?.id || null);
 const preview = ref(false);
 const inspectorOpen = ref(true);
 const copyState = ref("idle");
-const { overrides, contentOverrides, imageOverrides, clearElement, getComponentState, restoreComponentState, resetComponentState } = useComponentEditor();
+const { clearElement, getComponentState, restoreComponentState, resetComponentState } = useComponentEditor();
 const { registerComponent } = useComponentManager();
 const { registerComponent: registerStyleComponent, selectComponent } = useStyleManager();
 const { copySelectedComponent } = useComponentCopy();
@@ -33,18 +34,8 @@ registry.forEach((entry) => {
 selectComponent(activeId.value);
 setActiveComponent(activeId.value);
 
-const HISTORY_LIMIT = 50;
-const historyPast = ref([]);
-const historyFuture = ref([]);
-const historyCurrent = ref(null);
-const historyTimer = ref(null);
-const historyRestoring = ref(false);
-const historyBusy = ref(false);
+const history = useEditorHistory();
 const activeComponent = computed(() => componentRegistry[activeId.value] || null);
-const canUndo = computed(() => !historyBusy.value && historyPast.value.length > 0);
-const canRedo = computed(() => !historyBusy.value && historyFuture.value.length > 0);
-
-function clone(value) { return JSON.parse(JSON.stringify(value)); }
 
 function createSnapshot() {
   const componentId = activeComponentId.value || activeId.value;
@@ -55,156 +46,50 @@ function createSnapshot() {
   };
 }
 
-function snapshotKey(snapshot) { return JSON.stringify(snapshot); }
-
-function clearHistoryTimer() {
-  if (historyTimer.value !== null && typeof window !== "undefined") {
-    window.clearTimeout(historyTimer.value);
-  }
-  historyTimer.value = null;
-}
-
-function commitHistorySnapshot() {
-  clearHistoryTimer();
-  if (historyRestoring.value || !activeComponentId.value) return;
-
-  const next = createSnapshot();
-
-  if (!historyCurrent.value) {
-    historyCurrent.value = next;
-    return;
-  }
-
-  if (snapshotKey(next) === snapshotKey(historyCurrent.value)) return;
-
-  // Each committed state is one editor action. The previous current state is
-  // exactly what Undo must restore; the new state becomes the current state.
-  historyPast.value.push(historyCurrent.value);
-  if (historyPast.value.length > HISTORY_LIMIT) historyPast.value.shift();
-
-  historyCurrent.value = next;
-  historyFuture.value = [];
-}
-
-// Capture at the end of the current event-loop turn instead of using a
-// human-time debounce. A 300ms debounce could merge two separate clicks into
-// one history entry, which makes Undo appear to skip actions.
-function scheduleHistorySnapshot() {
-  clearHistoryTimer();
-  if (typeof window === "undefined") return;
-  historyTimer.value = window.setTimeout(commitHistorySnapshot, 0);
-}
-
-function resetHistoryForComponent() {
-  clearHistoryTimer();
-  historyPast.value = [];
-  historyFuture.value = [];
-  historyCurrent.value = createSnapshot();
-}
-
 async function restoreHistorySnapshot(snapshot) {
   if (!snapshot || snapshot.componentId !== activeComponentId.value) return;
 
-  historyRestoring.value = true;
-  try {
-    clearElement();
-    restoreDocumentSnapshot(snapshot.document);
-    await nextTick();
-    restoreComponentState(snapshot.componentId, snapshot.component);
-    historyCurrent.value = clone(snapshot);
-    await nextTick();
-  } finally {
-    historyRestoring.value = false;
-  }
+  clearElement();
+  restoreDocumentSnapshot(snapshot.document);
+  await nextTick();
+  restoreComponentState(snapshot.componentId, snapshot.component);
+  await nextTick();
 }
 
-function flushPendingHistory() {
-  if (historyTimer.value !== null) commitHistorySnapshot();
-}
-
-async function undo() {
-  if (historyBusy.value) return;
-
-  flushPendingHistory();
-  const previous = historyPast.value.pop();
-  if (!previous || !historyCurrent.value) return;
-
-  historyBusy.value = true;
-  historyFuture.value.unshift(clone(historyCurrent.value));
-  try {
-    await restoreHistorySnapshot(previous);
-  } finally {
-    historyBusy.value = false;
-  }
-}
-
-async function redo() {
-  if (historyBusy.value) return;
-
-  flushPendingHistory();
-  const next = historyFuture.value.shift();
-  if (!next || !historyCurrent.value) return;
-
-  historyBusy.value = true;
-  historyPast.value.push(clone(historyCurrent.value));
-  try {
-    await restoreHistorySnapshot(next);
-  } finally {
-    historyBusy.value = false;
-  }
+function configureHistory() {
+  history.configure({
+    componentId: activeComponentId.value || activeId.value,
+    snapshot: createSnapshot,
+    restore: restoreHistorySnapshot,
+  });
+  history.reset();
 }
 
 async function resetComponent() {
-  if (historyBusy.value) return;
+  if (history.busy.value) return;
 
-  flushPendingHistory();
   const componentId = activeComponentId.value;
   if (!componentId) return;
 
-  historyPast.value.push(createSnapshot());
-  if (historyPast.value.length > HISTORY_LIMIT) historyPast.value.shift();
-  historyFuture.value = [];
-  historyBusy.value = true;
-  historyRestoring.value = true;
-
-  try {
+  await history.runHistoryOperation(async () => {
     clearElement();
     resetComponentState(componentId);
     resetActiveComponent();
-    historyCurrent.value = {
-      componentId,
-      document: { children: [], componentChildren: [] },
-      component: { styles: {}, content: {}, images: {} },
-    };
     await nextTick();
-  } finally {
-    historyRestoring.value = false;
-    historyBusy.value = false;
-  }
+  });
+
+  history.recordReset({
+    componentId,
+    document: { children: [], componentChildren: [] },
+    component: { styles: {}, content: {}, images: {} },
+  });
 }
 
-// Document structure and existing-component overrides are one history domain.
-// Images are included as well; otherwise an image edit could change the
-// current snapshot without ever creating an undo entry.
-watch(
-  [
-    () => document,
-    () => overrides[activeComponentId.value] || null,
-    () => contentOverrides[activeComponentId.value] || null,
-    () => imageOverrides[activeComponentId.value] || null,
-  ],
-  () => {
-    if (!historyRestoring.value && !historyBusy.value && activeComponentId.value) {
-      scheduleHistorySnapshot();
-    }
-  },
-  { deep: true }
-);
+watch(activeComponentId, configureHistory, { flush: "post" });
+configureHistory();
 
-watch(activeComponentId, () => resetHistoryForComponent(), { flush: "post" });
-resetHistoryForComponent();
-
-function closeEditor() { clearHistoryTimer(); clearElement(); clearActiveComponent(); emit("close"); }
+function closeEditor() { clearElement(); history.clear(); clearActiveComponent(); emit("close"); }
+ { clearHistoryTimer(); clearElement(); clearActiveComponent(); emit("close"); }
 function togglePreview() { preview.value = !preview.value; if (preview.value) clearElement(); }
 function handleElementSelected() { /* Selection must not change inspector visibility. */ }
 async function copyComponent() {
@@ -240,10 +125,10 @@ async function copyComponent() {
                 <Menu class="toggle-menu-icon" :size="18" />
                 <X class="toggle-close-icon" :size="18" />
               </span></button>
-            <button type="button" title="Undo" aria-label="Undo" :disabled="preview || !canUndo" @click="undo">
+            <button type="button" title="Undo" aria-label="Undo" :disabled="preview || !history.canUndo.value" @click="history.undo">
               <Undo2 :size="18" />
             </button>
-            <button type="button" title="Redo" aria-label="Redo" :disabled="preview || !canRedo" @click="redo">
+            <button type="button" title="Redo" aria-label="Redo" :disabled="preview || !history.canRedo.value" @click="history.redo">
               <Redo2 :size="18" />
             </button>
             <button type="button" title="Reset component" aria-label="Reset component" :disabled="preview"
