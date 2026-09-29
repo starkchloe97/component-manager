@@ -1,4 +1,5 @@
 import { reactive, ref, watch } from "vue";
+import { useEditorHistory } from "@/composables/useEditorHistory";
 
 const selectedElement = ref(null);
 const STYLE_STORAGE_KEY = "component-manager:element-overrides";
@@ -15,6 +16,7 @@ let styleFrame = null;
 let contentFrame = null;
 const pendingStyleWrites = new Map();
 const pendingContentWrites = new Map();
+const { markDirty } = useEditorHistory();
 
 function loadStorage(key) {
   if (typeof window === "undefined") return {};
@@ -214,6 +216,7 @@ export function useComponentEditor() {
     if (!componentId || !selector || !property) return;
     ensurePath(overrides, componentId, selector)[property] = value;
     queueStyleWrite(componentId, selector, property, value);
+    markDirty();
   };
 
   const getStyles = (componentId, selector) => overrides[componentId]?.[selector] || {};
@@ -233,6 +236,7 @@ export function useComponentEditor() {
     if (metadata.className !== undefined) entry.className = String(metadata.className || "");
     if (metadata.textNodeIndex !== undefined) entry.textNodeIndex = Number(metadata.textNodeIndex) || 0;
     queueContentWrite(componentId, selector, next, metadata);
+    markDirty();
   };
 
   const getContent = (componentId, selector) => contentOverrides[componentId]?.[selector]?.text ?? null;
@@ -257,6 +261,7 @@ export function useComponentEditor() {
       element.setAttribute("src", String(value ?? ""));
     }));
     schedulePersistence("image");
+    markDirty();
   };
   const getImage = (componentId, selector) => imageOverrides[componentId]?.[selector]?.src ?? null;
 
@@ -273,6 +278,7 @@ export function useComponentEditor() {
         textNodeIndex: contentEntry?.textNodeIndex,
       });
     }
+    markDirty();
   };
 
   const resetComponentState = (componentId) => {
@@ -314,6 +320,7 @@ export function useComponentEditor() {
     pendingStyleWrites.delete(componentId);
     pendingContentWrites.delete(componentId);
     flushPersistence();
+    markDirty();
     return true;
   };
   const getComponentState = (componentId) => ({
