@@ -9,7 +9,6 @@ import { useEditor } from "@/composables/useEditor";
 
 const props = defineProps({
   component: { type: Object, required: true },
-  drawerOpen: { type: Boolean, default: false },
   preview: { type: Boolean, default: false },
 });
 const emit = defineEmits(["element-selected"]);
@@ -316,7 +315,7 @@ onUnmounted(() => {
 
 <template>
   <main ref="canvas" class="component-canvas"
-    :class="{ 'canvas--drawer-open': drawerOpen, 'canvas--preview': preview }">
+    :class="{ 'canvas--preview': preview }">
     <div class="canvas-header">
       <span>{{ componentName }}</span>
       <span v-if="selectedElement && !preview" class="selection-info">{{ selectedElement.label }}</span>
@@ -413,7 +412,7 @@ onUnmounted(() => {
   pointer-events: none;
 }
 
-/* Highlight the actual element only. No full-canvas overlay is used, so the drawer can never be covered by a selection frame. */
+/* Highlight the actual element only. */
 .component-hit-layer :deep([data-editor-hovered="true"]) {
   outline: 1px dashed rgba(192, 40, 179, .7) !important;
   outline-offset: 2px;
