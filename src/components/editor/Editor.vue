@@ -6,7 +6,6 @@ import ElementorInspector from "./ElementorInspector.vue";
 import { componentRegistry } from "@/config/componentRegistry";
 import { useComponentEditor } from "@/composables/useComponentEditor";
 import { useComponentManager } from "@/composables/useComponentManager";
-import { useStyleManager } from "@/composables/useStyleManager";
 import { useComponentCopy } from "@/composables/useComponentCopy";
 import { useEditor } from "@/composables/useEditor";
 import { useEditorHistory } from "@/composables/useEditorHistory";
@@ -22,16 +21,13 @@ const inspectorOpen = ref(true);
 const copyState = ref("idle");
 const { clearElement, getComponentState, restoreComponentState, resetComponentState } = useComponentEditor();
 const { registerComponent } = useComponentManager();
-const { registerComponent: registerStyleComponent, selectComponent } = useStyleManager();
 const { copySelectedComponent } = useComponentCopy();
 const { document, activeComponentId, setActiveComponent, resetActiveComponent, clearActiveComponent, getDocumentSnapshot, restoreDocumentSnapshot } = useEditor();
 
 registry.forEach((entry) => {
   const config = { name: entry.name, component: entry.component, source: entry.source, styles: {} };
   registerComponent(entry.id, config);
-  registerStyleComponent(entry.id, config);
 });
-selectComponent(activeId.value);
 setActiveComponent(activeId.value);
 
 const history = useEditorHistory();
