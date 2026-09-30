@@ -2,7 +2,7 @@
 
 export function createEditorDocument() {
   return {
-    version: 3,
+    version: 4,
     children: [],
     componentChildren: [],
   };
