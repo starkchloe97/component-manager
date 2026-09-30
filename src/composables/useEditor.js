@@ -509,92 +509,114 @@ function syncSectionColumnWidths(columnId) {
 
 function normalizePageStructure(nodes) {
   const source = Array.isArray(nodes) ? [...nodes] : [];
-  const result = [];
 
-  function normalizeContainerNode(node) {
-    if (!node) return null;
-    node.styles = {
-      ...(node.styles || {}),
-      display: "grid",
-      gap: "0px",
-      width: "100%",
-      maxWidth: node.styles?.maxWidth || "100%",
-    };
+  function numericWidth(value) {
+    const match = /^(\\d+(?:\\.\\d+)?)%$/.exec(String(value || "").trim());
+    return match ? Number(match[1]) : null;
+  }
 
-    // Containers are first-class nodes and may contain columns, nested
-    // containers, or editable elements. Never promote them to sections.
-    const columns = (node.children || []).filter(child => child?.type === "column");
-    if (columns.length) {
-      const tracks = columns.map(column => {
-        const n = Number.parseFloat(column.styles?.width);
-        return Number.isFinite(n) && n > 0 ? n : 1;
-      });
-      const total = tracks.reduce((sum, n) => sum + n, 0);
-      node.styles.gridTemplateColumns = tracks.map(n => `${n / total}fr`).join(" ");
-    }
+  function flexDefaults(styles = {}, direction = "column") {
+    const nextStyles = { ...(styles || {}) };
+    delete nextStyles.gridTemplateColumns;
+    delete nextStyles.gridTemplateRows;
+    delete nextStyles.gridAutoColumns;
+    delete nextStyles.gridAutoRows;
+    nextStyles.display = "flex";
+    nextStyles.flexDirection = direction;
+    nextStyles.flexWrap = nextStyles.flexWrap || "nowrap";
+    nextStyles.alignItems = nextStyles.alignItems || "stretch";
+    nextStyles.justifyContent = nextStyles.justifyContent || "flex-start";
+    nextStyles.alignContent = nextStyles.alignContent || "stretch";
+    nextStyles.gap = nextStyles.gap || "0px";
+    nextStyles.columnGap = nextStyles.columnGap || nextStyles.gap || "0px";
+    nextStyles.rowGap = nextStyles.rowGap || nextStyles.gap || "0px";
+    nextStyles.width = nextStyles.width || "100%";
+    nextStyles.maxWidth = nextStyles.maxWidth || "100%";
+    nextStyles.minWidth = nextStyles.minWidth || "0";
+    nextStyles.boxSizing = nextStyles.boxSizing || "border-box";
+    return nextStyles;
+  }
+
+  function convertNode(node) {
+    if (!node || typeof node !== "object") return node;
+    if (node.type === "section") return convertSection(node);
+    if (node.type === "column") return convertColumn(node);
+    if (node.type === "container") return convertContainer(node);
+
+    if (Array.isArray(node.children)) node.children = node.children.map(convertNode);
     return node;
   }
 
-  function asSection(node) {
-    if (!node) return null;
-    if (node.type !== "section") return null;
-    node.styles = { ...(node.styles || {}), display: "grid", gap: "0px", width: "100%" };
-
-    const directColumns = (node.children || []).filter(child => child?.type === "column");
-    const nestedLayouts = (node.children || []).filter(child => child?.type === "section" || child?.type === "container");
-
-    if (directColumns.length) {
-      node.children = directColumns;
-      const tracks = directColumns.map(column => {
-        const n = Number.parseFloat(column.styles?.width);
-        return Number.isFinite(n) && n > 0 ? n : 1;
-      });
-      const total = tracks.reduce((sum, n) => sum + n, 0);
-      node.styles.gridTemplateColumns = tracks.map(n => `${n / total}fr`).join(" ");
-      directColumns.forEach(column => {
-        column.styles = { ...(column.styles || {}), width: "100%", minWidth: "0", padding: "0", boxSizing: "border-box" };
-        extractNestedLayouts(column);
-      });
-      return node;
+  function convertColumn(node, flexBasis = null) {
+    node.type = "container";
+    node.styles = flexDefaults(node.styles, "column");
+    node.styles.minHeight = node.styles.minHeight || "72px";
+    node.styles.padding = node.styles.padding ?? "0";
+    if (flexBasis) {
+      node.styles.flex = node.styles.flex || `0 1 ${flexBasis}`;
+      node.styles.flexBasis = node.styles.flexBasis || flexBasis;
     }
-
-    // Old structure: section -> container/section. Promote those layouts
-    // instead of keeping an empty wrapper around them.
-    for (const child of nestedLayouts) {
-      const promoted = asSection(child);
-      if (promoted) result.push(promoted);
-    }
-    return null;
+    node.children = (node.children || []).map(convertNode);
+    return node;
   }
 
-  function extractNestedLayouts(node) {
-    if (!node?.children) return;
-    const kept = [];
-    for (const child of node.children) {
-      if (child?.type === "section" || child?.type === "container") {
-        const promoted = asSection(child);
-        if (promoted) result.push(promoted);
-      } else {
-        extractNestedLayouts(child);
-        kept.push(child);
-      }
-    }
-    node.children = kept;
-  }
+  function convertSection(node) {
+    const oldChildren = Array.isArray(node.children) ? node.children : [];
+    const columns = oldChildren.filter((child) => child?.type === "column");
+    const otherChildren = oldChildren.filter((child) => child?.type !== "column");
 
-  for (const node of source) {
-    if (node?.type === "section") {
-      const section = asSection(node);
-      if (section) result.push(section);
-    } else if (node?.type === "container") {
-      const container = normalizeContainerNode(node);
-      if (container) result.push(container);
+    const trackValues = columns.map((column) => numericWidth(column.styles?.width));
+    const hasMultipleColumns = columns.length > 1;
+    const direction = hasMultipleColumns
+      ? "row"
+      : node.styles?.flexDirection || "column";
+
+    node.type = "container";
+    node.styles = flexDefaults(node.styles, direction);
+    node.styles.minHeight = node.styles.minHeight || "80px";
+
+    if (columns.length) {
+      const total = trackValues.reduce((sum, value) => sum + (value || 1), 0);
+      node.children = columns.map((column, index) => {
+        const width = trackValues[index];
+        const basis = width ? `${(width / total) * 100}%` : null;
+        return convertColumn(column, basis);
+      });
+      node.children.push(...otherChildren.map(convertNode));
     } else {
-      result.push(node);
+      node.children = otherChildren.map(convertNode);
     }
+
+    return node;
   }
 
-  // Replace the reactive array without retaining the obsolete wrappers.
+  function convertContainer(node) {
+    const oldChildren = Array.isArray(node.children) ? node.children : [];
+    const columns = oldChildren.filter((child) => child?.type === "column");
+    const otherChildren = oldChildren.filter((child) => child?.type !== "column");
+    const direction = columns.length > 1
+      ? "row"
+      : node.styles?.flexDirection || "column";
+
+    node.styles = flexDefaults(node.styles, direction);
+    node.styles.minHeight = node.styles.minHeight || "80px";
+
+    if (columns.length) {
+      const widths = columns.map((column) => numericWidth(column.styles?.width));
+      const total = widths.reduce((sum, value) => sum + (value || 1), 0);
+      node.children = columns.map((column, index) => {
+        const width = widths[index];
+        return convertColumn(column, width ? `${(width / total) * 100}%` : null);
+      });
+      node.children.push(...otherChildren.map(convertNode));
+    } else {
+      node.children = oldChildren.map(convertNode);
+    }
+
+    return node;
+  }
+
+  const result = source.map(convertNode).filter(Boolean);
   nodes.splice(0, nodes.length, ...result);
 }
 
