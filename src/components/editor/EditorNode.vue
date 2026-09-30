@@ -8,6 +8,7 @@ import { resolveIcon } from "@/config/iconLibrary";
 import { resolveResponsiveNodeStyles } from "@/composables/useResponsiveNodeStyles";
 import AddMenu from "./AddMenu.vue";
 import InsertionPoint from "./InsertionPoint.vue";
+import ContainerDirectionModal from "./ContainerDirectionModal.vue";
 
 const props = defineProps({
   node: { type: Object, required: true },
@@ -544,11 +545,8 @@ onBeforeUnmount(() => {
     @close="showAdd = false"
   />
 
-  <SectionLayoutPicker
-    v-if="showContainerPicker"
-    title="Add Flexbox container to page"
-    description="Choose a container direction."
-    :container-mode="true"
+  <ContainerDirectionModal
+    :open="showContainerPicker"
     @select="addContainerWithLayout"
     @close="showContainerPicker = false"
   />
