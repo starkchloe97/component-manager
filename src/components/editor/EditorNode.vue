@@ -210,22 +210,6 @@ function handleDrop(event) {
     if (nodeId !== props.node.id && sourceParentId === targetParentId) {
       const rect = event.currentTarget?.getBoundingClientRect?.();
       const insertAfter = rect ? event.clientY >= rect.top + rect.height / 2 : true;
-      let targetIndex = insertAfter ? 1 : 0;
-
-      // moveNode expects an index in the list after the source is removed.
-      // Determine the sibling position from the current target parent.
-      const siblings = targetParentId
-        ? (props.node.parent?.children || [])
-        : null;
-
-      // The editor tree is authoritative; use the target's DOM position as
-      // before/after and let moveNode clamp the final index.
-      const currentIndex = targetParentId
-        ? 0
-        : 0;
-      void siblings;
-      void currentIndex;
-
       // For root and nested sibling lists, use the target node's current
       // position through the document snapshot exposed by moveNode's list.
       // A drop immediately before/after the target is represented by the
