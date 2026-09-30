@@ -1,7 +1,7 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, onUpdated, ref, watch } from "vue";
 import EditorNode from "./EditorNode.vue";
-import SectionLayoutPicker from "./SectionLayoutPicker.vue";
+import ContainerDirectionModal from "./ContainerDirectionModal.vue";
 import AddMenu from "./AddMenu.vue";
 import InsertionPoint from "./InsertionPoint.vue";
 import { useComponentEditor } from "@/composables/useComponentEditor";
@@ -340,9 +340,11 @@ onUnmounted(() => {
 
         <AddMenu :open="showPageAdd" :anchor="pageAddTrigger" title="Add to page" @select="addPageItem"
           @close="showPageAdd = false" />
-        <SectionLayoutPicker v-if="showPageContainerPicker" title="Add Flexbox container to page"
-          description="Choose a container direction." :container-mode="true"
-          @select="addPageContainer" @close="showPageContainerPicker = false" />
+        <ContainerDirectionModal
+          :open="showPageContainerPicker"
+          @select="addPageContainer"
+          @close="showPageContainerPicker = false"
+        />
 
         <EditorNode v-for="node in document.componentChildren" :key="node.id" :node="node" />
 
