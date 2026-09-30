@@ -9,8 +9,8 @@ const emit = defineEmits(["select", "close"]);
 
 const layouts = props.containerMode
   ? [
-    { label: "Flexbox · Column", value: "column", empty: true, direction: "column" },
-    { label: "Flexbox · Row", value: "row", empty: true, direction: "row" },
+    { label: "Flexbox - Column", value: "column", empty: true, direction: "column" },
+    { label: "Flexbox - Row", value: "row", empty: true, direction: "row" },
   ]
   : [
     ...(props.allowEmptyContainer ? [{ label: "Empty Container", value: null, empty: true }] : []),
@@ -27,7 +27,7 @@ const layouts = props.containerMode
 
 <template>
   <div class="picker-backdrop" @click.self="emit('close')">
-    <section class="picker" role="dialog" aria-modal="true" aria-label="Add section">
+    <section class="picker" role="dialog" aria-modal="true" aria-label="Add Flexbox container to page">
       <header class="picker-header">
         <div>
           <strong>{{ props.title }}</strong>
