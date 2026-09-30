@@ -31,6 +31,12 @@ function updatePosition() {
 }
 function close() { emit("close"); }
 function select(type) { emit("select", type); }
+function startDrag(type, event) {
+  if (!event.dataTransfer) return;
+  event.dataTransfer.effectAllowed = "copy";
+  event.dataTransfer.setData("application/x-editor-node-type", type);
+  event.dataTransfer.setData("text/plain", type);
+}
 function handleKeydown(event) {
   if (event.key === "Escape") {
     event.preventDefault();
@@ -69,11 +75,12 @@ onBeforeUnmount(() => {
       @keydown="handleKeydown">
       <p class="add-menu-title">{{ title }}</p>
       <p class="add-menu-group">Elements</p>
-      <button v-for="item in elementTypes" :key="item.type" type="button" role="menuitem" @click="select(item.type)">
+      <button v-for="item in elementTypes" :key="item.type" type="button" role="menuitem" draggable="true"
+        @dragstart="startDrag(item.type, $event)" @click="select(item.type)">
         <component :is="iconFor[item.type] || Type" :size="15" />{{ item.label }}
       </button>
       <p class="add-menu-group">Layout</p>
-      <button type="button" role="menuitem" @click="select('container')">
+      <button type="button" role="menuitem" draggable="true" @dragstart="startDrag('container', $event)" @click="select('container')">
         <Box :size="15" />Container
       </button>
       <button type="button" role="menuitem" @click="select('section')">
