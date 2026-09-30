@@ -3,20 +3,26 @@ const props = defineProps({
   title: { type: String, default: "Add section" },
   description: { type: String, default: "Choose the column layout for the new section." },
   allowEmptyContainer: { type: Boolean, default: false },
+  containerMode: { type: Boolean, default: false },
 });
 const emit = defineEmits(["select", "close"]);
 
-const layouts = [
-  ...(props.allowEmptyContainer ? [{ label: "Empty Container", value: null, empty: true }] : []),
-  { label: "Full Width", value: "100" },
-  { label: "50 / 50", value: "50-50" },
-  { label: "33 / 67", value: "33-67" },
-  { label: "67 / 33", value: "67-33" },
-  { label: "25 / 75", value: "25-75" },
-  { label: "75 / 25", value: "75-25" },
-  { label: "33 / 33 / 33", value: "33-33-33" },
-  { label: "25 / 50 / 25", value: "25-50-25" },
-];
+const layouts = props.containerMode
+  ? [
+    { label: "Flexbox · Column", value: "column", empty: true, direction: "column" },
+    { label: "Flexbox · Row", value: "row", empty: true, direction: "row" },
+  ]
+  : [
+    ...(props.allowEmptyContainer ? [{ label: "Empty Container", value: null, empty: true }] : []),
+    { label: "Full Width", value: "100" },
+    { label: "50 / 50", value: "50-50" },
+    { label: "33 / 67", value: "33-67" },
+    { label: "67 / 33", value: "67-33" },
+    { label: "25 / 75", value: "25-75" },
+    { label: "75 / 25", value: "75-25" },
+    { label: "33 / 33 / 33", value: "33-33-33" },
+    { label: "25 / 50 / 25", value: "25-50-25" },
+  ];
 </script>
 
 <template>
@@ -38,7 +44,10 @@ const layouts = [
           class="layout"
           @click="emit('select', layout.value)"
         >
-          <span v-if="layout.empty" class="preview empty-preview">
+          <span v-if="layout.empty && props.containerMode" class="preview flex-preview">
+            <i v-for="n in 3" :key="n" :class="{ horizontal: layout.direction === 'row' }" />
+          </span>
+          <span v-else-if="layout.empty" class="preview empty-preview">
             <i />
           </span>
           <span v-else class="preview">
