@@ -23,6 +23,7 @@ const {
   selectNode,
   setHoveredNode,
   isNodeAncestor,
+  getNodeParentId,
   addNode,
   addNodeAfter,
   addContainer,
@@ -195,16 +196,74 @@ function handleDrop(event) {
   if (!canAcceptChildren.value) return;
   event.preventDefault();
   event.stopPropagation();
+
   const nodeId = event.dataTransfer?.getData("application/x-editor-node-id");
   const type = event.dataTransfer?.getData("application/x-editor-node-type");
 
   if (nodeId) {
-    moveNode(nodeId, props.node.id, props.node.children?.length || 0);
+    const targetParentId = getNodeParentId(props.node.id);
+    const sourceParentId = getNodeParentId(nodeId);
+
+    // Dropping a node onto a sibling reorders it before/after that sibling.
+    // Dropping onto a container from a different parent nests it instead.
+    if (nodeId !== props.node.id && sourceParentId === targetParentId) {
+      const rect = event.currentTarget?.getBoundingClientRect?.();
+      const insertAfter = rect ? event.clientY >= rect.top + rect.height / 2 : true;
+      let targetIndex = insertAfter ? 1 : 0;
+
+      // moveNode expects an index in the list after the source is removed.
+      // Determine the sibling position from the current target parent.
+      const siblings = targetParentId
+        ? (props.node.parent?.children || [])
+        : null;
+
+      // The editor tree is authoritative; use the target's DOM position as
+      // before/after and let moveNode clamp the final index.
+      const currentIndex = targetParentId
+        ? 0
+        : 0;
+      void siblings;
+      void currentIndex;
+
+      // For root and nested sibling lists, use the target node's current
+      // position through the document snapshot exposed by moveNode's list.
+      // A drop immediately before/after the target is represented by the
+      // target's current sibling index and adjusted for source removal.
+      const targetList = targetParentId
+        ? findSiblingList(targetParentId)
+        : document.children;
+      const targetIndex = targetList.findIndex((item) => item.id === props.node.id);
+      const sourceIndex = targetList.findIndex((item) => item.id === nodeId);
+      if (targetIndex >= 0) {
+        let insertionIndex = targetIndex + (insertAfter ? 1 : 0);
+        if (sourceIndex >= 0 && sourceIndex < insertionIndex) insertionIndex -= 1;
+        moveNode(nodeId, targetParentId, insertionIndex);
+      }
+    } else {
+      moveNode(nodeId, props.node.id, props.node.children?.length || 0);
+    }
   } else if (type && editorRegistry[type]) {
     addNode(type, props.node.id);
   }
 
   resetDropState();
+}
+
+function findSiblingList(parentId) {
+  const parent = findNodeInEditorDocument(parentId);
+  return parent?.children || [];
+}
+
+function findNodeInEditorDocument(id) {
+  const walk = (nodes) => {
+    for (const node of nodes || []) {
+      if (node.id === id) return node;
+      const found = walk(node.children || []);
+      if (found) return found;
+    }
+    return null;
+  };
+  return walk(document.children) || walk(document.componentChildren);
 }
 
 function openDropAdd(event) {
