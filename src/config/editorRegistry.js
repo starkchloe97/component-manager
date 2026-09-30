@@ -3,12 +3,13 @@ export const editorRegistry = {
     label: "Section",
     category: "Layout",
     canHaveChildren: true,
+    legacy: true,
     defaults: {
       styles: {
         width: "100%",
         display: "flex",
-        flexDirection: "row",
-        flexWrap: "wrap",
+        flexDirection: "column",
+        flexWrap: "nowrap",
         alignItems: "stretch",
         justifyContent: "flex-start",
         gap: "0px",
@@ -23,21 +24,35 @@ export const editorRegistry = {
   container: {
     label: "Container",
     category: "Layout",
-    defaultStyles: {
-      width: "100%",
-      maxWidth: "100%",
-      marginLeft: "0",
-      marginRight: "0",
-      padding: "0",
-      boxSizing: "border-box",
-      minWidth: "0",
-      flexShrink: "1"
-    }
+    canHaveChildren: true,
+    structural: true,
+    defaults: {
+      styles: {
+        width: "100%",
+        maxWidth: "100%",
+        minWidth: "0",
+        minHeight: "80px",
+        boxSizing: "border-box",
+        display: "flex",
+        flexDirection: "column",
+        flexWrap: "nowrap",
+        alignItems: "stretch",
+        justifyContent: "flex-start",
+        alignContent: "stretch",
+        gap: "0px",
+        columnGap: "0px",
+        rowGap: "0px",
+        flexGrow: "0",
+        flexShrink: "1",
+        flexBasis: "auto",
+      },
+    },
   },
   column: {
     label: "Column",
     category: "Layout",
     canHaveChildren: true,
+    legacy: true,
     defaults: {
       styles: {
         width: "100%",
