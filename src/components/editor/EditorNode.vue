@@ -45,6 +45,11 @@ const dragDepth = ref(0);
 const isDropTarget = ref(false);
 
 const isSelected = computed(() => selectedNodeId.value === props.node.id);
+const isSelectionAncestor = computed(() => isNodeAncestor(props.node.id, selectedNodeId.value));
+const isDirectChildOfSelectedContainer = computed(
+  () => isContainer.value && !!props.parentId && selectedNodeId.value === props.parentId,
+);
+const isNestedContainer = computed(() => isContainer.value && !!props.parentId);
 const isHovered = computed(() => hoveredNodeId.value === props.node.id);
 const isAncestorHovered = computed(() => isNodeAncestor(props.node.id, hoveredNodeId.value));
 const isContainer = computed(() => props.node.type === "container");
@@ -68,9 +73,16 @@ function closeMenus() {
 }
 
 function select(event) {
+  event?.preventDefault?.();
   event?.stopPropagation?.();
   selectNode(props.node.id);
   closeMenus();
+}
+
+function selectOnPointerDown(event) {
+  event?.stopPropagation?.();
+  if (event?.button !== undefined && event.button !== 0) return;
+  selectNode(props.node.id);
 }
 
 function setHover(value) {
@@ -283,10 +295,15 @@ onBeforeUnmount(() => {
     class="editor-node editor-node--container"
     :class="{
       'editor-node--selected': isSelected,
+      'editor-node--selection-ancestor': isSelectionAncestor,
+      'editor-node--direct-child-container': isDirectChildOfSelectedContainer,
+      'editor-node--nested-container': isNestedContainer,
       'editor-node--hovered': isHovered,
       'editor-node--ancestor-hovered': isAncestorHovered,
       'editor-node--drop-target': isDropTarget,
     }"
+    @pointerdown.stop="selectOnPointerDown"
+    @pointerdown.stop="selectOnPointerDown"
     @click.stop="select"
     @mouseenter="setHover(true)"
     @mouseleave="setHover(false)"
@@ -369,6 +386,12 @@ onBeforeUnmount(() => {
       v-if="rootNode && !isLastRootNode"
       label="Add after"
       :visible="isSelected"
+      @activate="openInsertion"
+    />
+    <InsertionPoint
+      v-if="!rootNode && isSelected"
+      label="Add"
+      :visible="true"
       @activate="openInsertion"
     />
   </div>
@@ -544,15 +567,29 @@ onBeforeUnmount(() => {
 }
 
 .editor-node--container {
+  position: relative;
   width: 100%;
   min-height: 80px;
+  z-index: 1;
+}
+
+.editor-node--container.editor-node--nested-container {
+  min-height: 56px;
+}
+
+.editor-node--container.editor-node--selection-ancestor {
+  z-index: 8;
+}
+
+.editor-node--container.editor-node--selected {
+  z-index: 40;
 }
 
 .editor-node--container > .editor-container {
   position: relative;
   width: 100%;
   min-width: 0;
-  min-height: 80px;
+  min-height: inherit;
   box-sizing: border-box;
   border: 1px solid transparent;
   background: rgba(255, 255, 255, .42);
@@ -574,6 +611,32 @@ onBeforeUnmount(() => {
   border-color: #d86ce9;
   border-style: solid;
   box-shadow: 0 0 0 1px rgba(216, 108, 233, .16);
+  background: rgba(255, 250, 255, .48);
+}
+
+.editor-node--container.editor-node--selection-ancestor > .editor-container {
+  border-color: rgba(205, 145, 214, .42);
+  border-style: solid;
+  box-shadow: none;
+  background: rgba(255, 255, 255, .2);
+}
+
+.editor-node--container.editor-node--direct-child-container > .editor-container {
+  border-color: rgba(160, 166, 176, .72);
+  border-style: dashed;
+  border-width: 1px;
+  background: rgba(249, 250, 251, .38);
+}
+
+.editor-node--container.editor-node--direct-child-container.editor-node--hovered > .editor-container {
+  border-color: rgba(71, 145, 255, .9);
+  border-style: dashed;
+  background: rgba(240, 248, 255, .5);
+}
+
+.editor-node--container.editor-node--direct-child-container.editor-node--selected > .editor-container {
+  border-color: #d86ce9;
+  border-style: solid;
   background: rgba(255, 250, 255, .48);
 }
 
@@ -896,5 +959,43 @@ onBeforeUnmount(() => {
   .context-drop-actions button {
     transition: none;
   }
+}
+</style>
+
+
+<style scoped>
+/* Nested empty containers deliberately use a compact interaction target so
+   several levels can be inspected without consuming the whole canvas. */
+.editor-node--container.editor-node--nested-container > .editor-container > .container-empty-state {
+  min-height: 54px;
+  gap: 4px;
+  font-size: 9px;
+  line-height: 1.25;
+}
+
+.editor-node--container.editor-node--nested-container > .editor-container > .container-empty-state .container-quick-add {
+  width: 28px;
+  height: 28px;
+}
+
+.editor-node--container.editor-node--nested-container > .editor-container > .container-empty-state .container-quick-add svg {
+  width: 16px;
+  height: 16px;
+}
+
+.editor-node--container.editor-node--nested-container > .container-handle {
+  z-index: 1000;
+}
+
+.editor-node--container.editor-node--selection-ancestor > .container-handle {
+  display: none;
+}
+
+.editor-node--container.editor-node--selected > .container-handle {
+  z-index: 1200;
+}
+
+.editor-node--container.editor-node--selected > .editor-container {
+  cursor: default;
 }
 </style>
