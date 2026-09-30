@@ -485,7 +485,7 @@ onBeforeUnmount(() => {
       </span>
     </div>
 
-    <div v-if="isSelected" ref="leafElement" class="node-toolbar node-toolbar--leaf" :style="leafToolbarStyle" @click.stop>
+    <div v-if="isSelected" class="node-toolbar node-toolbar--leaf" :style="leafToolbarStyle" @click.stop>
       <span class="node-toolbar-label">{{ nodeLabel }}</span>
       <GripVertical :size="15" class="drag-grip" draggable="true" @dragstart="startNodeDrag" />
       <button type="button" class="toolbar-icon-button" aria-label="Add after element" @click="openAdd($event, 'after')"><Plus :size="15" /></button>
