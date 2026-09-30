@@ -18,10 +18,9 @@ const hoveredElement = ref(null);
 const selectedDomElement = ref(null);
 const editingElement = ref(null);
 const { selectedElement, selectElement, clearElement, applyOverrides, getContent, setContent } = useComponentEditor();
-const { selectNode, selectedNodeId, document, addSection, addContainer, addNode } = useEditor();
+const { selectNode, selectedNodeId, document, addContainer, addNode } = useEditor();
 const pageAddTrigger = ref(null);
 const showPageAdd = ref(false);
-const showPageSectionPicker = ref(false);
 const showPageContainerPicker = ref(false);
 const componentName = computed(() => props.component?.name || props.component?.id || "Component");
 const selectableTags = "section, div, main, header, footer, nav, aside, article, figure, figcaption, h1, h2, h3, h4, h5, h6, p, span, strong, em, small, mark, del, ins, code, pre, blockquote, time, address, a, button, img, ul, ol, li, dl, dt, dd, table, thead, tbody, tfoot, tr, th, td, caption, form, input, textarea, select, label";
@@ -195,13 +194,8 @@ function openPageAdd(event) {
 }
 function addPageItem(type) {
   showPageAdd.value = false;
-  if (type === "section") { showPageSectionPicker.value = true; return; }
   if (type === "container") { showPageContainerPicker.value = true; return; }
   addNode(type);
-}
-function addPageSection(layout) {
-  addSection(layout, document.children.length, document.children);
-  showPageSectionPicker.value = false;
 }
 function addPageContainer(direction) {
   addContainer(direction === "row" ? "row" : "column");
@@ -346,9 +340,6 @@ onUnmounted(() => {
 
         <AddMenu :open="showPageAdd" :anchor="pageAddTrigger" title="Add to page" @select="addPageItem"
           @close="showPageAdd = false" />
-        <SectionLayoutPicker v-if="showPageSectionPicker" title="Add section to page"
-          description="Choose a layout for the next page section." @select="addPageSection"
-          @close="showPageSectionPicker = false" />
         <SectionLayoutPicker v-if="showPageContainerPicker" title="Add Flexbox container to page"
           description="Choose a container direction." :container-mode="true"
           @select="addPageContainer" @close="showPageContainerPicker = false" />
