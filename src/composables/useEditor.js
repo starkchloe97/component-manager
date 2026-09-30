@@ -180,8 +180,8 @@ export function useEditor() {
     return node;
   }
 
-  function addContainerToComponent(layout = "100") {
-    const container = createContainer(layout);
+  function addContainerToComponent(direction = "column") {
+    const container = createContainer(direction);
     document.componentChildren.push(container);
     selectNode(container.id);
     markDirty();
