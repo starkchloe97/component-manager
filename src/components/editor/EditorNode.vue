@@ -1,6 +1,6 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { ArrowUp, Copy, FolderOpen, GripVertical, Plus, Sparkles, Trash2, X } from "@lucide/vue";
+import { Copy, FolderOpen, GripVertical, Plus, Sparkles, Trash2, X } from "@lucide/vue";
 import { useEditor } from "@/composables/useEditor";
 import { componentRegistry } from "@/config/componentRegistry";
 import { editorRegistry } from "@/config/editorRegistry";
@@ -25,8 +25,6 @@ const {
   isNodeAncestor,
   addNode,
   addNodeAfter,
-  addSectionToNode,
-  addStandaloneSectionAfter,
   addContainer,
   addContainerAfter,
   duplicateNode,
@@ -55,7 +53,6 @@ const componentLabel = computed(() => componentEntry.value?.name || props.node.p
 const nodeLabel = computed(() => props.node.type === "component" ? componentLabel.value : (editorRegistry[props.node.type]?.label || props.node.type));
 const renderedStyles = resolveResponsiveNodeStyles(props.node);
 const resolvedIcon = computed(() => resolveIcon(props.node.props?.icon));
-const parentLabel = computed(() => editorRegistry[props.parentType]?.label || props.parentType || "parent");
 const addTitle = computed(() => addMode.value === "inside" ? `Add inside ${nodeLabel.value}` : `Add after ${nodeLabel.value}`);
 const isLeaf = computed(() => ["heading", "text", "button", "image", "icon"].includes(props.node.type));
 const canAcceptChildren = computed(() => ["container", "column", "section"].includes(props.node.type));
@@ -74,13 +71,6 @@ function select(event) {
   event?.stopPropagation?.();
   selectNode(props.node.id);
   closeMenus();
-}
-
-function selectParent() {
-  if (props.parentId) {
-    selectNode(props.parentId);
-    closeMenus();
-  }
 }
 
 function setHover(value) {
