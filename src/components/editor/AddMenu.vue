@@ -1,6 +1,6 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
-import { Box, Columns3, Heart, Image, Minus, MousePointer2, Pilcrow, Type } from "@lucide/vue";
+import { Box, Heart, Image, Minus, MousePointer2, Pilcrow, Type } from "@lucide/vue";
 import { editorRegistry } from "@/config/editorRegistry";
 
 const props = defineProps({
@@ -81,10 +81,7 @@ onBeforeUnmount(() => {
       </button>
       <p class="add-menu-group">Layout</p>
       <button type="button" role="menuitem" draggable="true" @dragstart="startDrag('container', $event)" @click="select('container')">
-        <Box :size="15" />Container
-      </button>
-      <button type="button" role="menuitem" @click="select('section')">
-        <Columns3 :size="15" />Section
+        <Box :size="15" />Flexbox Container
       </button>
     </section>
   </Teleport>
