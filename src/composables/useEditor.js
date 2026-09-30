@@ -162,6 +162,7 @@ export function useEditor() {
   const selectedNode = computed(() => selectedNodeId.value ? findNodeInDocument(selectedNodeId.value) : null);
   const selectNode = (id) => { selectedNodeId.value = id || null; };
   const setHoveredNode = (id) => { hoveredNodeId.value = id || null; };
+  const getNodeParentId = (id) => findParentInDocument(id)?.id || null;
   const isNodeAncestor = (ancestorId, descendantId) => {
     if (!ancestorId || !descendantId || ancestorId === descendantId) return false;
     let parent = findParentInDocument(descendantId);
@@ -397,6 +398,7 @@ export function useEditor() {
     hoveredNodeId,
     selectedNode,
     setHoveredNode,
+    getNodeParentId,
     isNodeAncestor,
     activeComponentId,
     setActiveComponent,
