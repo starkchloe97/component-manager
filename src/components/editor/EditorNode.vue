@@ -53,13 +53,11 @@ const componentLabel = computed(() => componentEntry.value?.name || props.node.p
 const nodeLabel = computed(() => props.node.type === "component" ? componentLabel.value : (editorRegistry[props.node.type]?.label || props.node.type));
 const renderedStyles = resolveResponsiveNodeStyles(props.node);
 const resolvedIcon = computed(() => resolveIcon(props.node.props?.icon));
-const addTitle = computed(() => addMode.value === "inside" ? `Add inside ${nodeLabel.value}` : `Add after ${nodeLabel.value}`);
 const isLeaf = computed(() => ["heading", "text", "button", "image", "icon"].includes(props.node.type));
 const canAcceptChildren = computed(() => ["container", "column", "section"].includes(props.node.type));
 
 watch(selectedNodeId, id => {
-  if (id !== props.node.id) closeMenus();
-  else nextTick(updateLeafToolbarPosition);
+  if (id === props.node.id) nextTick(updateLeafToolbarPosition);
 });
 
 function closeMenus() {
@@ -482,15 +480,15 @@ onBeforeUnmount(() => {
   <AddMenu
     :open="showAdd"
     :anchor="addTrigger"
-    :title="addTitle"
+    title="Add to page"
     @select="handleAdd"
     @close="showAdd = false"
   />
 
   <SectionLayoutPicker
     v-if="showContainerPicker"
-    :title="addMode === 'inside' ? 'Add Flexbox container inside' : 'Add Flexbox container after'"
-    description="Choose the container direction."
+    title="Add Flexbox container to page"
+    description="Choose a container direction."
     :container-mode="true"
     @select="addContainerWithLayout"
     @close="showContainerPicker = false"
