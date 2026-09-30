@@ -8,7 +8,6 @@ import { resolveIcon } from "@/config/iconLibrary";
 import { resolveResponsiveNodeStyles } from "@/composables/useResponsiveNodeStyles";
 import AddMenu from "./AddMenu.vue";
 import InsertionPoint from "./InsertionPoint.vue";
-import SectionLayoutPicker from "./SectionLayoutPicker.vue";
 
 const props = defineProps({
   node: { type: Object, required: true },
@@ -39,7 +38,6 @@ const {
 const addTrigger = ref(null);
 const showAdd = ref(false);
 const addMode = ref("inside");
-const showSectionPicker = ref(false);
 const showContainerPicker = ref(false);
 const leafElement = ref(null);
 const leafToolbarStyle = ref({});
@@ -69,7 +67,6 @@ watch(selectedNodeId, id => {
 
 function closeMenus() {
   showAdd.value = false;
-  showSectionPicker.value = false;
   showContainerPicker.value = false;
 }
 
@@ -102,22 +99,12 @@ function openAdd(event, mode = "inside") {
 
 function handleAdd(type) {
   showAdd.value = false;
-  if (type === "section") {
-    showSectionPicker.value = true;
-    return;
-  }
   if (type === "container") {
     showContainerPicker.value = true;
     return;
   }
   if (addMode.value === "inside") addNode(type, props.node.id);
   else addNodeAfter(type, props.node.id);
-}
-
-function addSectionWithLayout(layout) {
-  if (addMode.value === "inside") addSectionToNode(props.node.id, layout);
-  else addStandaloneSectionAfter(props.node.id, layout);
-  showSectionPicker.value = false;
 }
 
 function addContainerWithLayout(direction) {
@@ -508,14 +495,6 @@ onBeforeUnmount(() => {
     :title="addTitle"
     @select="handleAdd"
     @close="showAdd = false"
-  />
-
-  <SectionLayoutPicker
-    v-if="showSectionPicker"
-    :title="addMode === 'inside' ? 'Add section inside' : 'Add section after'"
-    :description="addMode === 'inside' ? 'Choose a layout for the section inside this container.' : 'Choose a layout for the next page section.'"
-    @select="addSectionWithLayout"
-    @close="showSectionPicker = false"
   />
 
   <SectionLayoutPicker
