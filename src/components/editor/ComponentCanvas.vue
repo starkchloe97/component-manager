@@ -349,8 +349,8 @@ onUnmounted(() => {
         <SectionLayoutPicker v-if="showPageSectionPicker" title="Add section to page"
           description="Choose a layout for the next page section." @select="addPageSection"
           @close="showPageSectionPicker = false" />
-        <SectionLayoutPicker v-if="showPageContainerPicker" title="Add container to page"
-          description="Choose a layout, or start with an empty container." :allow-empty-container="true"
+        <SectionLayoutPicker v-if="showPageContainerPicker" title="Add Flexbox container to page"
+          description="Choose a container direction." :container-mode="true"
           @select="addPageContainer" @close="showPageContainerPicker = false" />
 
         <EditorNode v-for="node in document.componentChildren" :key="node.id" :node="node" />
