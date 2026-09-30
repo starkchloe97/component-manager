@@ -203,8 +203,8 @@ function addPageSection(layout) {
   addSection(layout, document.children.length, document.children);
   showPageSectionPicker.value = false;
 }
-function addPageContainer(layout) {
-  addContainer(layout);
+function addPageContainer(direction) {
+  addContainer(direction === "row" ? "row" : "column");
   showPageContainerPicker.value = false;
 }
 
