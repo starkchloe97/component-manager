@@ -6,6 +6,7 @@ import { useEditorHistory } from "@/composables/useEditorHistory";
 const STORAGE_PREFIX = "component-manager:editor:";
 const document = reactive(createEditorDocument());
 const selectedNodeId = ref(null);
+const hoveredNodeId = ref(null);
 const activeComponentId = ref(null);
 let persistenceReady = false;
 let persistTimer = null;
@@ -159,7 +160,17 @@ export function useEditor() {
   };
 
   const selectedNode = computed(() => selectedNodeId.value ? findNodeInDocument(selectedNodeId.value) : null);
-  const selectNode = (id) => { selectedNodeId.value = id; };
+  const selectNode = (id) => { selectedNodeId.value = id || null; };
+  const setHoveredNode = (id) => { hoveredNodeId.value = id || null; };
+  const isNodeAncestor = (ancestorId, descendantId) => {
+    if (!ancestorId || !descendantId || ancestorId === descendantId) return false;
+    let parent = findParentInDocument(descendantId);
+    while (parent) {
+      if (parent.id === ancestorId) return true;
+      parent = findParentInDocument(parent.id);
+    }
+    return false;
+  };
 
   function addComponentElement(type, overrides = {}) {
     const node = createEditorNode(type, overrides);
@@ -187,21 +198,25 @@ export function useEditor() {
     return section;
   }
 
-  function createContainer(layout = null) {
-    // A container is always a standalone root/layout node. Columns are created
-    // only when the user explicitly chooses a layout in the picker.
+  function createContainer(direction = "column") {
     const container = createEditorNode("container");
-    container.styles.display = "grid";
-    container.styles.width = "100%";
-    container.styles.maxWidth = "100%";
-    container.styles.gap = "0px";
-
-    if (layout) {
-      const columns = layout.split("-").map(Number);
-      container.styles.gridTemplateColumns = columns.map((width) => `${width}fr`).join(" ");
-      container.children.push(...createLayoutChildren(layout));
-    }
-
+    container.styles = {
+      ...container.styles,
+      display: "flex",
+      flexDirection: direction === "row" ? "row" : "column",
+      flexWrap: "nowrap",
+      alignItems: "stretch",
+      justifyContent: "flex-start",
+      alignContent: "stretch",
+      gap: "0px",
+      columnGap: "0px",
+      rowGap: "0px",
+      width: "100%",
+      maxWidth: "100%",
+      minWidth: "0",
+      minHeight: "80px",
+      boxSizing: "border-box",
+    };
     return container;
   }
 
@@ -263,25 +278,25 @@ export function useEditor() {
   // A container is a first-class layout node. Creating one from the
   // container/column controls keeps it in that parent; creating one without
   // a container/column context puts it directly at the page root.
-  function addContainer(layout = null, parentId = null) {
+  function addContainer(direction = "column", parentId = null) {
     const parent = parentId ? findNodeInDocument(parentId) : null;
     if (parent?.type === "column" || parent?.type === "container") {
-      const container = createContainer(layout);
+      const container = createContainer(direction);
       parent.children.push(container);
       selectNode(container.id);
       markDirty();
       return container;
     }
 
-    const container = createContainer(layout);
+    const container = createContainer(direction);
     document.children.push(container);
     selectNode(container.id);
     markDirty();
     return container;
   }
 
-  function addContainerAfter(nodeId, layout = null) {
-    const container = createContainer(layout);
+  function addContainerAfter(nodeId, direction = "column") {
+    const container = createContainer(direction);
     const parent = findParentInDocument(nodeId);
     const list = parent ? parent.children : rootListFor(nodeId);
     const index = list.findIndex((node) => node.id === nodeId);
@@ -353,14 +368,24 @@ export function useEditor() {
   }
 
   function moveNode(id, targetParentId, index = 0) {
+    const sourceNode = findNodeInDocument(id);
+    if (!sourceNode) return false;
+
     const sourceParent = findParentInDocument(id);
     const sourceList = sourceParent ? sourceParent.children : rootListFor(id);
-    const sourceIndex = sourceList.findIndex((child) => child.id === id);
+    const sourceIndex = sourceList.findIndex((node) => node.id === id);
     if (sourceIndex < 0) return false;
-    const [node] = sourceList.splice(sourceIndex, 1);
+
     const target = targetParentId ? findNodeInDocument(targetParentId) : document;
-    if (!target || !Array.isArray(target.children)) { sourceList.splice(sourceIndex, 0, node); return false; }
-    target.children.splice(Math.max(0, Math.min(index, target.children.length)), 0, node);
+    if (!target || !Array.isArray(target.children)) return false;
+
+    // Never allow a node to be dropped into itself or one of its descendants.
+    if (targetParentId === id || isNodeAncestor(id, targetParentId)) return false;
+    if (targetParentId && !["section", "column", "container"].includes(target.type)) return false;
+
+    const [node] = sourceList.splice(sourceIndex, 1);
+    const targetIndex = Math.max(0, Math.min(Number(index) || 0, target.children.length));
+    target.children.splice(targetIndex, 0, node);
     selectNode(id);
     markDirty();
     return true;
@@ -369,7 +394,10 @@ export function useEditor() {
   return {
     document,
     selectedNodeId,
+    hoveredNodeId,
     selectedNode,
+    setHoveredNode,
+    isNodeAncestor,
     activeComponentId,
     setActiveComponent,
     resetActiveComponent,
