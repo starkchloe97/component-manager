@@ -90,6 +90,8 @@ function setHover(value) {
   setHoveredNode(value ? props.node.id : null);
 }
 
+function openInsertion(event) { openAdd(event, "after"); }
+
 function openAdd(event, mode = "inside") {
   event?.stopPropagation?.();
   addTrigger.value = event?.currentTarget || event || addTrigger.value;
@@ -348,7 +350,7 @@ onBeforeUnmount(() => {
       v-if="rootNode && !isLastRootNode"
       label="Add after"
       :visible="isSelected"
-      @activate="openAdd"
+      @activate="openInsertion"
     />
   </div>
 
