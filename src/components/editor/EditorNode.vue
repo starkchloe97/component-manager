@@ -276,7 +276,7 @@ onBeforeUnmount(() => {
     @dragleave="handleDragLeave"
     @drop="handleDrop"
   >
-    <div class="editor-container" :style="renderedStyles">
+    <div class="editor-container elementor-container" :style="renderedStyles">
       <div v-if="isEmptyContainer" class="container-empty-state">
         <button
           type="button"
