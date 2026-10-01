@@ -7,11 +7,30 @@ const STORAGE_PREFIX = "component-manager:editor:";
 const document = reactive(createEditorDocument());
 const selectedNodeId = ref(null);
 const hoveredNodeId = ref(null);
+// Set while an HTML5 drag of a builder node is in progress. Hover updates are
+// ignored during a drag so the interaction layer stays stable.
+const draggingNodeId = ref(null);
+// Shared, rAF-throttled viewport tick. Replaces per-node window scroll/resize
+// listeners (2N listeners for N nodes) with exactly two global listeners.
+const viewportTick = ref(0);
 const activeComponentId = ref(null);
 let persistenceReady = false;
 let persistTimer = null;
 const PERSIST_DELAY = 250;
 const { markDirty } = useEditorHistory();
+
+if (typeof window !== "undefined") {
+  let viewportFrame = null;
+  const bumpViewportTick = () => {
+    if (viewportFrame !== null) return;
+    viewportFrame = window.requestAnimationFrame(() => {
+      viewportFrame = null;
+      viewportTick.value += 1;
+    });
+  };
+  window.addEventListener("resize", bumpViewportTick, { passive: true });
+  window.addEventListener("scroll", bumpViewportTick, { capture: true, passive: true });
+}
 
 function storageKey(componentId) {
   return componentId ? STORAGE_PREFIX + componentId : null;
@@ -103,6 +122,7 @@ function setActiveComponent(componentId) {
   replaceDocument(stored);
   activeComponentId.value = componentId;
   selectedNodeId.value = null;
+  hoveredNodeId.value = null;
   persistenceReady = true;
   // Persist the normalized tree immediately so old nested layouts cannot
   // reappear on the next editor open.
@@ -123,6 +143,7 @@ function resetActiveComponent() {
 
   replaceDocument(null);
   selectedNodeId.value = null;
+  hoveredNodeId.value = null;
   persistenceReady = true;
   return true;
 }
@@ -131,6 +152,7 @@ function clearActiveComponent() {
   activeComponentId.value = null;
   replaceDocument(null);
   selectedNodeId.value = null;
+  hoveredNodeId.value = null;
   persistenceReady = false;
 }
 
@@ -156,13 +178,56 @@ export function useEditor() {
       version: document.version,
     }, { normalize: false });
     selectedNodeId.value = null;
+    hoveredNodeId.value = null;
     scheduleDocumentPersistence();
   };
 
   const selectedNode = computed(() => selectedNodeId.value ? findNodeInDocument(selectedNodeId.value) : null);
-  const selectNode = (id) => { selectedNodeId.value = id || null; };
-  const setHoveredNode = (id) => { hoveredNodeId.value = id || null; };
+  // Selection only ever changes through an intentional action. The id is
+  // validated against the live document so a stale id can never be selected.
+  const selectNode = (id) => {
+    if (!id) { selectedNodeId.value = null; return; }
+    if (!findNodeInDocument(id)) return;
+    selectedNodeId.value = id;
+  };
+  const clearSelection = () => { selectedNodeId.value = null; };
+  const setHoveredNode = (id) => {
+    if (draggingNodeId.value) return;
+    hoveredNodeId.value = id || null;
+  };
+  const startDragging = (id) => { draggingNodeId.value = id || null; };
+  const endDragging = () => { draggingNodeId.value = null; };
   const getNodeParentId = (id) => findParentInDocument(id)?.id || null;
+  const getNodeById = (id) => (id ? findNodeInDocument(id) : null);
+  const getNodeParent = (id) => (id ? findParentInDocument(id) : null);
+  const getNodeAncestors = (id) => {
+    const ancestors = [];
+    let parent = id ? findParentInDocument(id) : null;
+    while (parent) {
+      ancestors.unshift(parent);
+      parent = findParentInDocument(parent.id);
+    }
+    return ancestors;
+  };
+  const getNodeDepth = (id) => getNodeAncestors(id).length;
+  const isContainerNode = (id) => ["section", "column", "container"].includes(getNodeById(id)?.type);
+  const isDescendantOf = (childId, parentId) => isNodeAncestor(parentId, childId);
+  // Moves selection one level up the tree. Returns false when there is no
+  // parent (the node already sits at the document root).
+  const selectParent = () => {
+    const parent = findParentInDocument(selectedNodeId.value);
+    if (!parent) return false;
+    selectedNodeId.value = parent.id;
+    return true;
+  };
+  // Moves selection into the first child of the current selection.
+  const selectChild = () => {
+    const node = selectedNodeId.value ? findNodeInDocument(selectedNodeId.value) : null;
+    const firstChild = node?.children?.[0];
+    if (!firstChild) return false;
+    selectedNodeId.value = firstChild.id;
+    return true;
+  };
   const isNodeAncestor = (ancestorId, descendantId) => {
     if (!ancestorId || !descendantId || ancestorId === descendantId) return false;
     let parent = findParentInDocument(descendantId);
@@ -349,7 +414,11 @@ export function useEditor() {
 
   function deleteNode(id) {
     if (!removeNode(document.children, id) && !removeNode(document.componentChildren, id)) return false;
-    if (selectedNodeId.value === id) selectedNodeId.value = null;
+    // The deleted subtree may contain the selected/hovered node. Any id that
+    // no longer resolves against the live tree is cleared, so selection never
+    // points at a node that does not exist.
+    if (selectedNodeId.value && !findNodeInDocument(selectedNodeId.value)) selectedNodeId.value = null;
+    if (hoveredNodeId.value && !findNodeInDocument(hoveredNodeId.value)) hoveredNodeId.value = null;
     markDirty();
     return true;
   }
@@ -396,15 +465,28 @@ export function useEditor() {
     document,
     selectedNodeId,
     hoveredNodeId,
+    draggingNodeId,
+    viewportTick,
     selectedNode,
     setHoveredNode,
+    startDragging,
+    endDragging,
     getNodeParentId,
+    getNodeById,
+    getNodeParent,
+    getNodeAncestors,
+    getNodeDepth,
+    isContainerNode,
+    isDescendantOf,
     isNodeAncestor,
     activeComponentId,
     setActiveComponent,
     resetActiveComponent,
     clearActiveComponent,
     selectNode,
+    clearSelection,
+    selectParent,
+    selectChild,
     addSection,
     addSectionAfter,
     addStandaloneSectionAfter,
