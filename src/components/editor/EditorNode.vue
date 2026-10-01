@@ -44,6 +44,7 @@ const leafToolbarStyle = ref({});
 const dragDepth = ref(0);
 const isDropTarget = ref(false);
 
+const isContainer = computed(() => props.node.type === "container");
 const isSelected = computed(() => selectedNodeId.value === props.node.id);
 const isSelectionAncestor = computed(() => isNodeAncestor(props.node.id, selectedNodeId.value));
 const isDirectChildOfSelectedContainer = computed(
@@ -52,7 +53,6 @@ const isDirectChildOfSelectedContainer = computed(
 const isNestedContainer = computed(() => isContainer.value && !!props.parentId);
 const isHovered = computed(() => hoveredNodeId.value === props.node.id);
 const isAncestorHovered = computed(() => isNodeAncestor(props.node.id, hoveredNodeId.value));
-const isContainer = computed(() => props.node.type === "container");
 const isEmptyContainer = computed(() => isContainer.value && !props.node.children?.length);
 const isLastRootNode = computed(() => props.rootNode && document.children.at(-1)?.id === props.node.id);
 const componentEntry = computed(() => componentRegistry[props.node.props?.componentId] || null);
