@@ -1,7 +1,8 @@
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { Copy, FolderOpen, GripVertical, Plus, Sparkles, Trash2, X } from "@lucide/vue";
+import { computed, nextTick, ref, watch } from "vue";
+import { ChevronUp, Copy, FolderOpen, GripVertical, Plus, Sparkles, Trash2, X } from "@lucide/vue";
 import { useEditor } from "@/composables/useEditor";
+import { useComponentEditor } from "@/composables/useComponentEditor";
 import { componentRegistry } from "@/config/componentRegistry";
 import { editorRegistry } from "@/config/editorRegistry";
 import { resolveIcon } from "@/config/iconLibrary";
@@ -21,8 +22,12 @@ const {
   document,
   selectedNodeId,
   hoveredNodeId,
+  draggingNodeId,
+  viewportTick,
   selectNode,
   setHoveredNode,
+  startDragging,
+  endDragging,
   isNodeAncestor,
   getNodeParentId,
   addNode,
@@ -34,6 +39,7 @@ const {
   updateNode,
   moveNode,
 } = useEditor();
+const { clearElement } = useComponentEditor();
 
 const addTrigger = ref(null);
 const showAdd = ref(false);
@@ -52,7 +58,7 @@ const isDirectChildOfSelectedContainer = computed(
 );
 const isNestedContainer = computed(() => isContainer.value && !!props.parentId);
 const isHovered = computed(() => hoveredNodeId.value === props.node.id);
-const isAncestorHovered = computed(() => isNodeAncestor(props.node.id, hoveredNodeId.value));
+const hasParentNode = computed(() => !!props.parentId);
 const isEmptyContainer = computed(() => isContainer.value && !props.node.children?.length);
 const isLastRootNode = computed(() => props.rootNode && document.children.at(-1)?.id === props.node.id);
 const componentEntry = computed(() => componentRegistry[props.node.props?.componentId] || null);
@@ -63,8 +69,8 @@ const resolvedIcon = computed(() => resolveIcon(props.node.props?.icon));
 const isLeaf = computed(() => ["heading", "text", "button", "image", "icon"].includes(props.node.type));
 const canAcceptChildren = computed(() => ["container", "column", "section"].includes(props.node.type));
 
-watch(selectedNodeId, id => {
-  if (id === props.node.id) nextTick(updateLeafToolbarPosition);
+watch([selectedNodeId, viewportTick], () => {
+  if (selectedNodeId.value === props.node.id) nextTick(updateLeafToolbarPosition);
 });
 
 function closeMenus() {
@@ -72,21 +78,40 @@ function closeMenus() {
   showContainerPicker.value = false;
 }
 
+// Selection is a click-level, intentional action. The deepest node under the
+// cursor handles the click and stops propagation, so parents are never
+// selected by accident when a child is clicked.
 function select(event) {
   event?.preventDefault?.();
   event?.stopPropagation?.();
+  clearElement();
   selectNode(props.node.id);
   closeMenus();
 }
 
-function selectOnPointerDown(event) {
+// Deterministic parent selection: the parent id comes from the component
+// tree (prop), never from DOM traversal.
+function selectParentNode(event) {
+  event?.preventDefault?.();
   event?.stopPropagation?.();
-  if (event?.button !== undefined && event.button !== 0) return;
-  selectNode(props.node.id);
+  if (!props.parentId) return;
+  clearElement();
+  selectNode(props.parentId);
+  closeMenus();
 }
 
-function setHover(value) {
-  setHoveredNode(value ? props.node.id : null);
+// Hover semantics: entering a node marks it hovered; leaving a node means the
+// pointer is still inside its parent (mouseleave does not fire when moving
+// into a child), so hover deterministically moves one level up instead of
+// disappearing.
+function handleMouseEnter() {
+  if (draggingNodeId.value) return;
+  setHoveredNode(props.node.id);
+}
+
+function handleMouseLeave() {
+  if (draggingNodeId.value) return;
+  setHoveredNode(props.parentId || null);
 }
 
 function openInsertion(event) { openAdd(event, "after"); }
@@ -164,10 +189,6 @@ function cancelInlineEdit(event) {
   }
 }
 
-function updateOnViewportChange() {
-  nextTick(updateLeafToolbarPosition);
-}
-
 function resetDropState() {
   dragDepth.value = 0;
   isDropTarget.value = false;
@@ -176,9 +197,14 @@ function resetDropState() {
 function startNodeDrag(event) {
   event.stopPropagation();
   if (!event.dataTransfer) return;
+  startDragging(props.node.id);
   event.dataTransfer.effectAllowed = "move";
   event.dataTransfer.setData("application/x-editor-node-id", props.node.id);
   event.dataTransfer.setData("text/plain", props.node.id);
+}
+
+function endNodeDrag() {
+  endDragging();
 }
 
 function handleDragEnter(event) {
@@ -277,35 +303,25 @@ function openDropAi(event) {
   event.stopPropagation();
   openAdd(event, "inside");
 }
-
-onMounted(() => {
-  window.addEventListener("resize", updateOnViewportChange);
-  window.addEventListener("scroll", updateOnViewportChange, true);
-});
-
-onBeforeUnmount(() => {
-  window.removeEventListener("resize", updateOnViewportChange);
-  window.removeEventListener("scroll", updateOnViewportChange, true);
-});
 </script>
 
 <template>
   <div
     v-if="node.type === 'container'"
     class="editor-node editor-node--container"
+    :data-editor-node-id="node.id"
+    data-editor-node-type="container"
     :class="{
       'editor-node--selected': isSelected,
       'editor-node--selection-ancestor': isSelectionAncestor,
       'editor-node--direct-child-container': isDirectChildOfSelectedContainer,
       'editor-node--nested-container': isNestedContainer,
       'editor-node--hovered': isHovered,
-      'editor-node--ancestor-hovered': isAncestorHovered,
       'editor-node--drop-target': isDropTarget,
     }"
-    @pointerdown.stop="selectOnPointerDown"
     @click.stop="select"
-    @mouseenter="setHover(true)"
-    @mouseleave="setHover(false)"
+    @mouseenter="handleMouseEnter"
+    @mouseleave="handleMouseLeave"
     @dragenter="handleDragEnter"
     @dragover="handleDragOver"
     @dragleave="handleDragLeave"
@@ -352,12 +368,23 @@ onBeforeUnmount(() => {
 
     <div v-if="isSelected" class="container-handle" @click.stop>
       <button
+        v-if="hasParentNode"
+        type="button"
+        class="container-handle__button"
+        title="Select parent container"
+        aria-label="Select parent container"
+        @click="selectParentNode"
+      >
+        <ChevronUp :size="16" />
+      </button>
+      <button
         type="button"
         class="container-handle__button container-handle__drag"
         draggable="true"
         title="Drag container"
         aria-label="Drag container"
         @dragstart="startNodeDrag"
+        @dragend="endNodeDrag"
       >
         <GripVertical :size="15" />
       </button>
@@ -398,10 +425,12 @@ onBeforeUnmount(() => {
   <div
     v-else-if="node.type === 'section' || node.type === 'column'"
     class="editor-node editor-node--legacy"
-    :class="{ 'editor-node--selected': isSelected, 'editor-node--hovered': isHovered, 'editor-node--ancestor-hovered': isAncestorHovered }"
+    :data-editor-node-id="node.id"
+    :data-editor-node-type="node.type"
+    :class="{ 'editor-node--selected': isSelected, 'editor-node--hovered': isHovered }"
     @click.stop="select"
-    @mouseenter="setHover(true)"
-    @mouseleave="setHover(false)"
+    @mouseenter="handleMouseEnter"
+    @mouseleave="handleMouseLeave"
   >
     <div class="editor-legacy-layout" :style="renderedStyles">
       <EditorNode
@@ -413,6 +442,7 @@ onBeforeUnmount(() => {
       />
     </div>
     <div v-if="isSelected" class="node-toolbar legacy-toolbar" @click.stop>
+      <button v-if="hasParentNode" type="button" @click="selectParentNode" title="Select parent" aria-label="Select parent"><ChevronUp :size="15" /></button>
       <span>{{ nodeLabel }}</span>
       <button type="button" @click="openAdd($event, 'inside')" title="Add inside"><Plus :size="15" /></button>
       <button type="button" @click="duplicateNode(node.id)" title="Duplicate"><Copy :size="15" /></button>
@@ -423,10 +453,12 @@ onBeforeUnmount(() => {
   <div
     v-else-if="node.type === 'component'"
     class="editor-node editor-node--component"
-    :class="{ 'editor-node--selected': isSelected, 'editor-node--hovered': isHovered, 'editor-node--ancestor-hovered': isAncestorHovered }"
+    :data-editor-node-id="node.id"
+    data-editor-node-type="component"
+    :class="{ 'editor-node--selected': isSelected, 'editor-node--hovered': isHovered }"
     @click.stop="select"
-    @mouseenter="setHover(true)"
-    @mouseleave="setHover(false)"
+    @mouseenter="handleMouseEnter"
+    @mouseleave="handleMouseLeave"
   >
     <div class="component-node" :style="renderedStyles">
       <div class="component-node-label">{{ componentLabel }}</div>
@@ -434,8 +466,9 @@ onBeforeUnmount(() => {
       <div v-else class="component-missing">Component unavailable</div>
     </div>
     <div v-if="isSelected" class="node-toolbar" @click.stop>
+      <button v-if="hasParentNode" type="button" class="toolbar-icon-button" aria-label="Select parent" title="Select parent" @click="selectParentNode"><ChevronUp :size="15" /></button>
       <span class="node-toolbar-label">{{ nodeLabel }}</span>
-      <GripVertical :size="15" class="drag-grip" draggable="true" @dragstart="startNodeDrag" />
+      <GripVertical :size="15" class="drag-grip" draggable="true" @dragstart="startNodeDrag" @dragend="endNodeDrag" />
       <button type="button" class="toolbar-icon-button" aria-label="Add after component" @click="openAdd($event, 'after')"><Plus :size="15" /></button>
       <button type="button" class="toolbar-icon-button" aria-label="Duplicate component" @click="duplicateNode(node.id)"><Copy :size="15" /></button>
       <button type="button" class="toolbar-icon-button toolbar-icon-danger" aria-label="Delete component" @click="removeNode"><Trash2 :size="15" /></button>
@@ -445,10 +478,12 @@ onBeforeUnmount(() => {
   <div
     v-else-if="isLeaf"
     class="editor-node editor-node--leaf"
-    :class="{ 'editor-node--selected': isSelected, 'editor-node--hovered': isHovered, 'editor-node--ancestor-hovered': isAncestorHovered }"
+    :data-editor-node-id="node.id"
+    :data-editor-node-type="node.type"
+    :class="{ 'editor-node--selected': isSelected, 'editor-node--hovered': isHovered }"
     @click.stop="select"
-    @mouseenter="setHover(true)"
-    @mouseleave="setHover(false)"
+    @mouseenter="handleMouseEnter"
+    @mouseleave="handleMouseLeave"
   >
     <component
       v-if="node.type === 'heading'"
@@ -529,8 +564,9 @@ onBeforeUnmount(() => {
     </div>
 
     <div v-if="isSelected" class="node-toolbar node-toolbar--leaf" :style="leafToolbarStyle" @click.stop>
+      <button v-if="hasParentNode" type="button" class="toolbar-icon-button" aria-label="Select parent" title="Select parent" @click="selectParentNode"><ChevronUp :size="15" /></button>
       <span class="node-toolbar-label">{{ nodeLabel }}</span>
-      <GripVertical :size="15" class="drag-grip" draggable="true" @dragstart="startNodeDrag" />
+      <GripVertical :size="15" class="drag-grip" draggable="true" @dragstart="startNodeDrag" @dragend="endNodeDrag" />
       <button type="button" class="toolbar-icon-button" aria-label="Add after element" @click="openAdd($event, 'after')"><Plus :size="15" /></button>
       <button type="button" class="toolbar-icon-button" aria-label="Duplicate" @click="duplicateNode(node.id)"><Copy :size="15" /></button>
       <button type="button" class="toolbar-icon-button toolbar-icon-danger" aria-label="Delete" @click="removeNode"><Trash2 :size="15" /></button>
@@ -538,8 +574,10 @@ onBeforeUnmount(() => {
   </div>
 
   <div v-else class="editor-node editor-node--leaf editor-node--unknown"
-    :class="{ 'editor-node--selected': isSelected, 'editor-node--hovered': isHovered, 'editor-node--ancestor-hovered': isAncestorHovered }"
-    @click.stop="select" @mouseenter="setHover(true)" @mouseleave="setHover(false)">
+    :data-editor-node-id="node.id"
+    :data-editor-node-type="node.type"
+    :class="{ 'editor-node--selected': isSelected, 'editor-node--hovered': isHovered }"
+    @click.stop="select" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave">
     <div class="builder-element" :style="renderedStyles">{{ nodeLabel }}</div>
   </div>
 
@@ -598,12 +636,6 @@ onBeforeUnmount(() => {
 .editor-node--container.editor-node--hovered > .editor-container {
   border-color: rgba(71, 145, 255, .72);
   border-style: dashed;
-}
-
-.editor-node--container.editor-node--ancestor-hovered > .editor-container {
-  border-color: rgba(198, 164, 247, .8);
-  border-style: solid;
-  background: rgba(250, 246, 255, .52);
 }
 
 .editor-node--container.editor-node--selected > .editor-container {
@@ -823,11 +855,6 @@ onBeforeUnmount(() => {
   box-shadow: 0 0 0 2px rgba(232, 175, 244, .24);
 }
 
-.editor-node--leaf.editor-node--ancestor-hovered > .builder-element {
-  outline: 1px solid rgba(198, 164, 247, .72) !important;
-  outline-offset: 2px;
-}
-
 .builder-element {
   box-sizing: border-box;
   min-width: 0;
@@ -945,9 +972,24 @@ onBeforeUnmount(() => {
   box-sizing: border-box;
 }
 
-.editor-node--component.editor-node--hovered > .component-node,
-.editor-node--component.editor-node--ancestor-hovered > .component-node {
-  outline: 1px solid rgba(198, 164, 247, .72);
+.editor-node--component.editor-node--hovered > .component-node {
+  outline: 1px dashed #4791ff;
+  outline-offset: 2px;
+}
+
+.editor-node--component.editor-node--selected > .component-node {
+  outline: 1px solid #c028b3;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px rgba(232, 175, 244, .24);
+}
+
+.editor-node--legacy.editor-node--hovered > .editor-legacy-layout {
+  outline: 1px dashed #4791ff;
+  outline-offset: 2px;
+}
+
+.editor-node--legacy.editor-node--selected > .editor-legacy-layout {
+  outline: 1px solid #c028b3;
   outline-offset: 2px;
 }
 

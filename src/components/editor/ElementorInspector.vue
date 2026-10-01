@@ -5,9 +5,27 @@ import { useEditor } from "@/composables/useEditor";
 import { useComponentEditor } from "@/composables/useComponentEditor";
 import IconPicker from "./IconPicker.vue";
 import { readableIconName, resolveIcon } from "@/config/iconLibrary";
+import { componentRegistry } from "@/config/componentRegistry";
+import { editorRegistry } from "@/config/editorRegistry";
 
-const { selectedNode, updateNode } = useEditor();
+const { selectedNode, updateNode, selectNode, getNodeAncestors } = useEditor();
 const { selectedElement, getStyles, setStyle, getContent, getContentEntry, setContent, setImage, getImage, resetContent } = useComponentEditor();
+// Elementor-style breadcrumb: full ancestor chain of the selected builder
+// node. Clicking a crumb selects that exact ancestor — this doubles as the
+// deterministic "select parent" navigation.
+const nodeCrumbs = computed(() => {
+  if (!selectedNode.value) return [];
+  const chain = [...getNodeAncestors(selectedNode.value.id), selectedNode.value];
+  return chain.map((node) => ({
+    id: node.id,
+    label: node.type === "component"
+      ? (componentRegistry[node.props?.componentId]?.name || "Component")
+      : (editorRegistry[node.type]?.label || node.type),
+  }));
+});
+function selectCrumb(id) {
+  if (id !== selectedNode.value?.id) selectNode(id);
+}
 const activeTab = ref("layout");
 const uploadingImage = ref(false);
 const imageUploadError = ref("");
@@ -243,7 +261,15 @@ const isGrid = computed(() => current("display") === "grid");
 <template>
   <aside class="elementor-inspector" aria-label="Element settings">
     <header class="inspector-title">
-      <span class="title-crumbs"><em>{{ isNode ? 'Builder node' : 'Component element' }}</em></span>
+      <span v-if="isNode && nodeCrumbs.length" class="title-crumbs" aria-label="Selection path">
+        <template v-for="(crumb, index) in nodeCrumbs" :key="crumb.id">
+          <button type="button" class="crumb" :class="{ current: index === nodeCrumbs.length - 1 }"
+            :disabled="index === nodeCrumbs.length - 1" :title="`Select ${crumb.label}`"
+            @click="selectCrumb(crumb.id)">{{ crumb.label }}</button>
+          <span v-if="index < nodeCrumbs.length - 1" class="crumb-separator" aria-hidden="true">›</span>
+        </template>
+      </span>
+      <span v-else class="title-crumbs"><em>Component element</em></span>
       <strong>{{ normalizedName }}</strong>
     </header>
     <nav class="inspector-tabs" aria-label="Settings categories">
@@ -524,6 +550,14 @@ const isGrid = computed(() => current("display") === "grid");
   color: var(--ink);
 }
 
+.title-crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+  min-height: 14px;
+}
+
 .title-crumbs em {
   font-style: normal;
   font-size: 10px;
@@ -531,6 +565,33 @@ const isGrid = computed(() => current("display") === "grid");
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--faint);
+}
+
+.title-crumbs .crumb {
+  padding: 0 2px;
+  border: 0;
+  background: transparent;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--faint);
+  cursor: pointer;
+}
+
+.title-crumbs .crumb:hover:not(:disabled) {
+  color: #93003f;
+}
+
+.title-crumbs .crumb.current {
+  color: var(--ink, #20252b);
+  font-weight: 700;
+  cursor: default;
+}
+
+.title-crumbs .crumb-separator {
+  color: var(--faint);
+  font-size: 10px;
 }
 
 /* Tabs */
