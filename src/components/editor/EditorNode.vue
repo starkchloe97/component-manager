@@ -208,7 +208,6 @@ function endNodeDrag() {
 }
 
 function handleDragEnter(event) {
-  if (!canAcceptChildren.value) return;
   event.preventDefault();
   event.stopPropagation();
   dragDepth.value += 1;
@@ -216,7 +215,6 @@ function handleDragEnter(event) {
 }
 
 function handleDragOver(event) {
-  if (!canAcceptChildren.value) return;
   event.preventDefault();
   event.stopPropagation();
   isDropTarget.value = true;
@@ -224,7 +222,6 @@ function handleDragOver(event) {
 }
 
 function handleDragLeave(event) {
-  if (!canAcceptChildren.value) return;
   event.preventDefault();
   event.stopPropagation();
   dragDepth.value = Math.max(0, dragDepth.value - 1);
@@ -232,7 +229,6 @@ function handleDragLeave(event) {
 }
 
 function handleDrop(event) {
-  if (!canAcceptChildren.value) return;
   event.preventDefault();
   event.stopPropagation();
 
@@ -243,38 +239,39 @@ function handleDrop(event) {
     const targetParentId = getNodeParentId(props.node.id);
     const sourceParentId = getNodeParentId(nodeId);
 
-    // Dropping a node onto a sibling reorders it before/after that sibling.
-    // Dropping onto a container from a different parent nests it instead.
-    if (nodeId !== props.node.id && sourceParentId === targetParentId) {
+    if (nodeId !== props.node.id) {
       const rect = event.currentTarget?.getBoundingClientRect?.();
       const insertAfter = rect ? event.clientY >= rect.top + rect.height / 2 : true;
-      // For root and nested sibling lists, use the target node's current
-      // position through the document snapshot exposed by moveNode's list.
-      // A drop immediately before/after the target is represented by the
-      // target's current sibling index and adjusted for source removal.
-      const targetList = targetParentId
-        ? findSiblingList(targetParentId)
-        : document.children;
-      const targetIndex = targetList.findIndex((item) => item.id === props.node.id);
-      const sourceIndex = targetList.findIndex((item) => item.id === nodeId);
-      if (targetIndex >= 0) {
-        let insertionIndex = targetIndex + (insertAfter ? 1 : 0);
-        if (sourceIndex >= 0 && sourceIndex < insertionIndex) insertionIndex -= 1;
-        moveNode(nodeId, targetParentId, insertionIndex);
+
+      // Containers accept cross-parent drops as nested children. Leaves and
+      // components are reorder targets, so cross-parent drops become siblings.
+      if (canAcceptChildren.value && sourceParentId !== targetParentId) {
+        moveNode(nodeId, props.node.id, props.node.children?.length || 0);
+      } else {
+        const targetList = findSiblingListForNode(props.node.id);
+        const targetIndex = targetList.findIndex((item) => item.id === props.node.id);
+        const sourceIndex = targetList.findIndex((item) => item.id === nodeId);
+
+        if (targetIndex >= 0) {
+          let insertionIndex = targetIndex + (insertAfter ? 1 : 0);
+          if (sourceIndex >= 0 && sourceIndex < insertionIndex) insertionIndex -= 1;
+          moveNode(nodeId, targetParentId, insertionIndex);
+        }
       }
-    } else {
-      moveNode(nodeId, props.node.id, props.node.children?.length || 0);
     }
-  } else if (type && editorRegistry[type]) {
+  } else if (type && editorRegistry[type] && canAcceptChildren.value) {
     addNode(type, props.node.id);
   }
 
   resetDropState();
 }
 
-function findSiblingList(parentId) {
-  const parent = findNodeInEditorDocument(parentId);
-  return parent?.children || [];
+function findSiblingListForNode(nodeId) {
+  const parentId = getNodeParentId(nodeId);
+  if (parentId) return findNodeInEditorDocument(parentId)?.children || [];
+
+  const rootNodeExists = document.children.some((node) => node.id === nodeId);
+  return rootNodeExists ? document.children : document.componentChildren;
 }
 
 function findNodeInEditorDocument(id) {
@@ -431,6 +428,10 @@ function openDropAi(event) {
     @click.stop="select"
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
+    @dragenter="handleDragEnter"
+    @dragover="handleDragOver"
+    @dragleave="handleDragLeave"
+    @drop="handleDrop"
   >
     <div class="editor-legacy-layout" :style="renderedStyles">
       <EditorNode
@@ -459,6 +460,10 @@ function openDropAi(event) {
     @click.stop="select"
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
+    @dragenter="handleDragEnter"
+    @dragover="handleDragOver"
+    @dragleave="handleDragLeave"
+    @drop="handleDrop"
   >
     <div class="component-node" :style="renderedStyles">
       <div class="component-node-label">{{ componentLabel }}</div>
@@ -484,6 +489,10 @@ function openDropAi(event) {
     @click.stop="select"
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
+    @dragenter="handleDragEnter"
+    @dragover="handleDragOver"
+    @dragleave="handleDragLeave"
+    @drop="handleDrop"
   >
     <component
       v-if="node.type === 'heading'"
@@ -577,7 +586,13 @@ function openDropAi(event) {
     :data-editor-node-id="node.id"
     :data-editor-node-type="node.type"
     :class="{ 'editor-node--selected': isSelected, 'editor-node--hovered': isHovered }"
-    @click.stop="select" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave">
+    @click.stop="select"
+    @mouseenter="handleMouseEnter"
+    @mouseleave="handleMouseLeave"
+    @dragenter="handleDragEnter"
+    @dragover="handleDragOver"
+    @dragleave="handleDragLeave"
+    @drop="handleDrop">
     <div class="builder-element" :style="renderedStyles">{{ nodeLabel }}</div>
   </div>
 
