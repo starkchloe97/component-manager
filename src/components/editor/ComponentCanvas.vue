@@ -18,7 +18,7 @@ const hoveredElement = ref(null);
 const selectedDomElement = ref(null);
 const editingElement = ref(null);
 const { selectedElement, selectElement, clearElement, applyOverrides, getContent, setContent } = useComponentEditor();
-const { selectNode, selectedNodeId, document, addContainer, addNode } = useEditor();
+const { selectNode, selectedNodeId, document, setHoveredNode, addContainer, addNode } = useEditor();
 const pageAddTrigger = ref(null);
 const showPageAdd = ref(false);
 const showPageContainerPicker = ref(false);
@@ -42,7 +42,13 @@ const tagMap = {
   caption: "Caption", form: "Form", input: "Input", textarea: "Text area", select: "Select", label: "Label",
 };
 
-watch(selectedNodeId, () => { showPageAdd.value = false; });
+// Selecting a builder node is mutually exclusive with selecting a hit-layer
+// DOM element: the inspector shows exactly one entity, and stale DOM-side
+// selection visuals are removed.
+watch(selectedNodeId, (id) => {
+  showPageAdd.value = false;
+  if (id) clearVisualState();
+});
 
 function elementPath(element) {
   const parts = [];
@@ -269,12 +275,19 @@ function finishInlineEdit() {
   editingElement.value = null;
 }
 
-function handleStageClick(event) {
-  if (event.target === stage.value && !props.preview) {
-    clearVisualState();
-    clearElement();
-    selectNode(null);
-  }
+// Any click that reaches the stage did not hit a builder node (nodes stop
+// propagation), a hit-layer element (handleClick stops propagation), or an
+// insertion control — so it is an empty-canvas click and clears selection.
+function handleStageClick() {
+  if (props.preview) return;
+  clearVisualState();
+  clearElement();
+  selectNode(null);
+}
+
+function handleStageMouseLeave() {
+  if (props.preview) return;
+  setHoveredNode(null);
 }
 
 
@@ -315,14 +328,17 @@ onUnmounted(() => {
       <span v-if="selectedElement && !preview" class="selection-info">{{ selectedElement.label }}</span>
     </div>
 
-    <div ref="stage" class="component-stage" :data-editor-component-id="component.id" @click="handleStageClick">
+    <div ref="stage" class="component-stage" :data-editor-component-id="component.id" @click="handleStageClick"
+      @mouseleave="handleStageMouseLeave">
       <div class="component-hit-layer" :class="{ 'hit-layer--preview': preview }" @mouseover="handleMouseOver"
         @mouseout="handleMouseOut" @click="handleClick" @dblclick="startInlineEdit" @input="handleInlineInput"
         @blur="finishInlineEdit" @keydown.esc.prevent="finishInlineEdit">
         <component :is="component.component" />
       </div>
 
-      <div v-if="!preview" class="component-builder-extension" @click.stop>
+      <!-- Builder region. Clicks on empty space here bubble to the stage and
+           clear the selection; node clicks stop propagation at the node. -->
+      <div v-if="!preview" class="component-builder-extension">
         <div class="page-section-list">
           <div v-for="node in document.children" :key="node.id" class="page-section-node">
             <EditorNode :node="node" :root-node="true" />
@@ -392,6 +408,8 @@ onUnmounted(() => {
   position: relative;
   width: min(100%, 1600px);
   margin: 0 auto 48px;
+  padding-bottom: 96px;
+  box-sizing: border-box;
   background: #fff;
   box-shadow: none;
 }
