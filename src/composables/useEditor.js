@@ -595,7 +595,7 @@ function normalizePageStructure(nodes) {
   const source = Array.isArray(nodes) ? [...nodes] : [];
 
   function numericWidth(value) {
-    const match = /^(\\d+(?:\\.\\d+)?)%$/.exec(String(value || "").trim());
+    const match = /^(\d+(?:\.\d+)?)%$/.exec(String(value || "").trim());
     return match ? Number(match[1]) : null;
   }
 
