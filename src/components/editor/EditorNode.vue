@@ -303,7 +303,6 @@ onBeforeUnmount(() => {
       'editor-node--drop-target': isDropTarget,
     }"
     @pointerdown.stop="selectOnPointerDown"
-    @pointerdown.stop="selectOnPointerDown"
     @click.stop="select"
     @mouseenter="setHover(true)"
     @mouseleave="setHover(false)"
