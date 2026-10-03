@@ -9,12 +9,15 @@ import { resolveIcon } from "@/config/iconLibrary";
 import { resolveResponsiveNodeStyles } from "@/composables/useResponsiveNodeStyles";
 import AddMenu from "./AddMenu.vue";
 import InsertionPoint from "./InsertionPoint.vue";
-import ContainerDirectionModal from "./ContainerDirectionModal.vue";
+import ContainerStructurePicker from "./ContainerStructurePicker.vue";
+
+defineOptions({ name: "EditorNode" });
 
 const props = defineProps({
   node: { type: Object, required: true },
   parentId: { type: String, default: null },
   parentType: { type: String, default: null },
+  parentStyles: { type: Object, default: () => ({}) },
   rootNode: { type: Boolean, default: false },
 });
 
@@ -25,7 +28,6 @@ const {
   draggingNodeId,
   viewportTick,
   selectNode,
-  setHoveredNode,
   startDragging,
   endDragging,
   isNodeAncestor,
@@ -38,13 +40,17 @@ const {
   deleteNode,
   updateNode,
   moveNode,
+  containerDraft,
+  beginContainerDraft,
+  beginFillDraft,
+  cancelContainerDraft,
+  commitContainerDraft,
 } = useEditor();
 const { clearElement } = useComponentEditor();
 
 const addTrigger = ref(null);
 const showAdd = ref(false);
 const addMode = ref("inside");
-const showContainerPicker = ref(false);
 const leafElement = ref(null);
 const leafToolbarStyle = ref({});
 const dragDepth = ref(0);
@@ -60,11 +66,32 @@ const isNestedContainer = computed(() => isContainer.value && !!props.parentId);
 const isHovered = computed(() => hoveredNodeId.value === props.node.id);
 const hasParentNode = computed(() => !!props.parentId);
 const isEmptyContainer = computed(() => isContainer.value && !props.node.children?.length);
+const isFillDraftHost = computed(
+  () => containerDraft.value?.kind === "fill" && containerDraft.value.nodeId === props.node.id,
+);
 const isLastRootNode = computed(() => props.rootNode && document.children.at(-1)?.id === props.node.id);
 const componentEntry = computed(() => componentRegistry[props.node.props?.componentId] || null);
 const componentLabel = computed(() => componentEntry.value?.name || props.node.props?.componentId || "Component");
 const nodeLabel = computed(() => props.node.type === "component" ? componentLabel.value : (editorRegistry[props.node.type]?.label || props.node.type));
 const renderedStyles = resolveResponsiveNodeStyles(props.node);
+const isFlexRowItem = computed(() => props.parentStyles.display === "flex" && ["row", "row-reverse"].includes(props.parentStyles.flexDirection));
+const layoutItemStyles = computed(() => {
+  if (!isFlexRowItem.value) return null;
+  const styles = renderedStyles.value;
+  return {
+    width: styles.width || "auto",
+    minWidth: styles.minWidth || "0",
+    maxWidth: styles.maxWidth,
+    boxSizing: styles.boxSizing || "border-box",
+    flex: styles.flex,
+    flexGrow: styles.flexGrow,
+    flexShrink: styles.flexShrink,
+    flexBasis: styles.flexBasis,
+  };
+});
+const renderedContentStyles = computed(() => isFlexRowItem.value
+  ? { ...renderedStyles.value, width: "100%", minWidth: "0", maxWidth: "100%" }
+  : renderedStyles.value);
 const resolvedIcon = computed(() => resolveIcon(props.node.props?.icon));
 const isLeaf = computed(() => ["heading", "text", "button", "image", "icon"].includes(props.node.type));
 const canAcceptChildren = computed(() => ["container", "column", "section"].includes(props.node.type));
@@ -75,22 +102,8 @@ watch([selectedNodeId, viewportTick], () => {
 
 function closeMenus() {
   showAdd.value = false;
-  showContainerPicker.value = false;
 }
 
-// Selection is a click-level, intentional action. The deepest node under the
-// cursor handles the click and stops propagation, so parents are never
-// selected by accident when a child is clicked.
-function select(event) {
-  event?.preventDefault?.();
-  event?.stopPropagation?.();
-  clearElement();
-  selectNode(props.node.id);
-  closeMenus();
-}
-
-// Deterministic parent selection: the parent id comes from the component
-// tree (prop), never from DOM traversal.
 function selectParentNode(event) {
   event?.preventDefault?.();
   event?.stopPropagation?.();
@@ -98,20 +111,6 @@ function selectParentNode(event) {
   clearElement();
   selectNode(props.parentId);
   closeMenus();
-}
-
-// Hover semantics: entering a node marks it hovered; leaving a node means the
-// pointer is still inside its parent (mouseleave does not fire when moving
-// into a child), so hover deterministically moves one level up instead of
-// disappearing.
-function handleMouseEnter() {
-  if (draggingNodeId.value) return;
-  setHoveredNode(props.node.id);
-}
-
-function handleMouseLeave() {
-  if (draggingNodeId.value) return;
-  setHoveredNode(props.parentId || null);
 }
 
 function openInsertion(event) { openAdd(event, "after"); }
@@ -127,18 +126,22 @@ function openAdd(event, mode = "inside") {
 function handleAdd(type) {
   showAdd.value = false;
   if (type === "container") {
-    showContainerPicker.value = true;
+    if (addMode.value === "inside" && isEmptyContainer.value) {
+      beginContainerDraft({ kind: "fill", nodeId: props.node.id });
+      return;
+    }
+    const created = addMode.value === "inside"
+      ? addContainer("column", props.node.id)
+      : addContainerAfter(props.node.id, "column");
+    beginFillDraft(created);
     return;
   }
   if (addMode.value === "inside") addNode(type, props.node.id);
   else addNodeAfter(type, props.node.id);
 }
 
-function addContainerWithLayout(direction) {
-  const nextDirection = direction === "row" ? "row" : "column";
-  if (addMode.value === "inside") addContainer(nextDirection, props.node.id);
-  else addContainerAfter(props.node.id, nextDirection);
-  showContainerPicker.value = false;
+function commitFillDraft(payload) {
+  commitContainerDraft(payload);
 }
 
 function removeNode() {
@@ -260,7 +263,8 @@ function handleDrop(event) {
       }
     }
   } else if (type && editorRegistry[type] && canAcceptChildren.value) {
-    addNode(type, props.node.id);
+    const created = addNode(type, props.node.id);
+    if (created?.type === "container") beginFillDraft(created);
   }
 
   resetDropState();
@@ -306,6 +310,7 @@ function openDropAi(event) {
   <div
     v-if="node.type === 'container'"
     class="editor-node editor-node--container"
+    :style="layoutItemStyles"
     :data-editor-node-id="node.id"
     data-editor-node-type="container"
     :class="{
@@ -316,19 +321,22 @@ function openDropAi(event) {
       'editor-node--hovered': isHovered,
       'editor-node--drop-target': isDropTarget,
     }"
-    @click.stop="select"
-    @mouseenter="handleMouseEnter"
-    @mouseleave="handleMouseLeave"
     @dragenter="handleDragEnter"
     @dragover="handleDragOver"
     @dragleave="handleDragLeave"
     @drop="handleDrop"
   >
-    <div class="editor-container elementor-container" :style="renderedStyles">
-      <div v-if="isEmptyContainer" class="container-empty-state">
+    <div class="editor-container elementor-container" :style="renderedContentStyles">
+      <ContainerStructurePicker
+        v-if="isFillDraftHost"
+        @select="commitFillDraft"
+        @close="cancelContainerDraft"
+      />
+      <div v-else-if="isEmptyContainer" class="container-empty-state">
         <button
           type="button"
           class="container-quick-add"
+          data-editor-chrome="true"
           title="Add element"
           aria-label="Add element"
           @click.stop="openAdd($event, 'inside')"
@@ -344,9 +352,10 @@ function openDropAi(event) {
         :node="child"
         :parent-id="node.id"
         :parent-type="node.type"
+        :parent-styles="renderedStyles"
       />
 
-      <div v-if="isDropTarget" class="context-drop-zone" @click.stop>
+      <div v-if="isDropTarget" class="context-drop-zone" data-editor-chrome="true" @click.stop>
         <span class="context-drop-line" />
         <div class="context-drop-actions">
           <button type="button" title="Add element" aria-label="Add element" @click="openDropAdd">
@@ -363,7 +372,7 @@ function openDropAi(event) {
       </div>
     </div>
 
-    <div v-if="isSelected" class="container-handle" @click.stop>
+    <div v-if="isSelected" class="container-handle" data-editor-chrome="true" @click.stop>
       <button
         v-if="hasParentNode"
         type="button"
@@ -406,15 +415,10 @@ function openDropAi(event) {
     </div>
 
     <InsertionPoint
-      v-if="rootNode && !isLastRootNode"
-      label="Add after"
-      :visible="isSelected"
-      @activate="openInsertion"
-    />
-    <InsertionPoint
       v-if="!rootNode && isSelected"
       label="Add"
       :visible="true"
+      data-editor-chrome="true"
       @activate="openInsertion"
     />
   </div>
@@ -422,27 +426,26 @@ function openDropAi(event) {
   <div
     v-else-if="node.type === 'section' || node.type === 'column'"
     class="editor-node editor-node--legacy"
+    :style="layoutItemStyles"
     :data-editor-node-id="node.id"
     :data-editor-node-type="node.type"
     :class="{ 'editor-node--selected': isSelected, 'editor-node--hovered': isHovered }"
-    @click.stop="select"
-    @mouseenter="handleMouseEnter"
-    @mouseleave="handleMouseLeave"
     @dragenter="handleDragEnter"
     @dragover="handleDragOver"
     @dragleave="handleDragLeave"
     @drop="handleDrop"
   >
-    <div class="editor-legacy-layout" :style="renderedStyles">
+    <div class="editor-legacy-layout" :style="renderedContentStyles">
       <EditorNode
         v-for="child in node.children"
         :key="child.id"
         :node="child"
         :parent-id="node.id"
         :parent-type="node.type"
+        :parent-styles="renderedStyles"
       />
     </div>
-    <div v-if="isSelected" class="node-toolbar legacy-toolbar" @click.stop>
+    <div v-if="isSelected" class="node-toolbar legacy-toolbar" data-editor-chrome="true" @click.stop>
       <button v-if="hasParentNode" type="button" @click="selectParentNode" title="Select parent" aria-label="Select parent"><ChevronUp :size="15" /></button>
       <span>{{ nodeLabel }}</span>
       <button type="button" @click="openAdd($event, 'inside')" title="Add inside"><Plus :size="15" /></button>
@@ -454,23 +457,21 @@ function openDropAi(event) {
   <div
     v-else-if="node.type === 'component'"
     class="editor-node editor-node--component"
+    :style="layoutItemStyles"
     :data-editor-node-id="node.id"
     data-editor-node-type="component"
     :class="{ 'editor-node--selected': isSelected, 'editor-node--hovered': isHovered }"
-    @click.stop="select"
-    @mouseenter="handleMouseEnter"
-    @mouseleave="handleMouseLeave"
     @dragenter="handleDragEnter"
     @dragover="handleDragOver"
     @dragleave="handleDragLeave"
     @drop="handleDrop"
   >
-    <div class="component-node" :style="renderedStyles">
+    <div class="component-node" :style="renderedContentStyles">
       <div class="component-node-label">{{ componentLabel }}</div>
       <component v-if="componentEntry" :is="componentEntry.component" />
       <div v-else class="component-missing">Component unavailable</div>
     </div>
-    <div v-if="isSelected" class="node-toolbar" @click.stop>
+    <div v-if="isSelected" class="node-toolbar" data-editor-chrome="true" @click.stop>
       <button v-if="hasParentNode" type="button" class="toolbar-icon-button" aria-label="Select parent" title="Select parent" @click="selectParentNode"><ChevronUp :size="15" /></button>
       <span class="node-toolbar-label">{{ nodeLabel }}</span>
       <GripVertical :size="15" class="drag-grip" draggable="true" @dragstart="startNodeDrag" @dragend="endNodeDrag" />
@@ -483,12 +484,10 @@ function openDropAi(event) {
   <div
     v-else-if="isLeaf"
     class="editor-node editor-node--leaf"
+    :style="layoutItemStyles"
     :data-editor-node-id="node.id"
     :data-editor-node-type="node.type"
     :class="{ 'editor-node--selected': isSelected, 'editor-node--hovered': isHovered }"
-    @click.stop="select"
-    @mouseenter="handleMouseEnter"
-    @mouseleave="handleMouseLeave"
     @dragenter="handleDragEnter"
     @dragover="handleDragOver"
     @dragleave="handleDragLeave"
@@ -499,7 +498,7 @@ function openDropAi(event) {
       :is="node.props.tag || 'h2'"
       ref="leafElement"
       class="builder-element"
-      :style="renderedStyles"
+      :style="renderedContentStyles"
       @dblclick="beginInlineEdit"
       @input="syncInlineText"
       @blur="finishInlineEdit"
@@ -510,7 +509,7 @@ function openDropAi(event) {
       v-else-if="node.type === 'text'"
       ref="leafElement"
       class="builder-element"
-      :style="renderedStyles"
+      :style="renderedContentStyles"
       @dblclick="beginInlineEdit"
       @input="syncInlineText"
       @blur="finishInlineEdit"
@@ -522,8 +521,8 @@ function openDropAi(event) {
       ref="leafElement"
       class="builder-element"
       :href="node.props.href || '#'"
-      :style="renderedStyles"
-      @click.prevent.stop="select"
+      :style="renderedContentStyles"
+      @click.prevent
       @dblclick="beginInlineEdit"
       @input="syncInlineText"
       @blur="finishInlineEdit"
@@ -536,8 +535,8 @@ function openDropAi(event) {
       class="builder-element builder-image"
       :src="node.props.src"
       :alt="node.props.alt"
-      :style="renderedStyles"
-      @click.stop="select"
+      :style="renderedContentStyles"
+      @click.prevent
     />
 
     <div
@@ -549,30 +548,30 @@ function openDropAi(event) {
       <a
         v-if="node.props.href"
         class="builder-element builder-icon-element"
-        :style="renderedStyles"
+        :style="renderedContentStyles"
         :href="node.props.href"
         :target="node.props.newTab ? '_blank' : null"
         :rel="node.props.newTab ? 'noopener noreferrer' : null"
         :aria-label="node.props.decorative ? null : (node.props.ariaLabel || node.props.title || node.props.icon)"
         :title="node.props.title || null"
-        @click.prevent.stop="select"
+        @click.prevent
       >
         <component :is="resolvedIcon" :size="'100%'" :stroke-width="node.props.strokeWidth || 2" :aria-hidden="node.props.decorative ? 'true' : null" focusable="false" />
       </a>
       <span
         v-else
         class="builder-element builder-icon-element"
-        :style="renderedStyles"
+        :style="renderedContentStyles"
         :role="node.props.decorative ? null : 'img'"
         :aria-label="node.props.decorative ? null : (node.props.ariaLabel || node.props.title || node.props.icon)"
         :title="node.props.title || null"
-        @click.stop="select"
+        @click.prevent
       >
         <component :is="resolvedIcon" :size="'100%'" :stroke-width="node.props.strokeWidth || 2" :aria-hidden="node.props.decorative ? 'true' : null" focusable="false" />
       </span>
     </div>
 
-    <div v-if="isSelected" class="node-toolbar node-toolbar--leaf" :style="leafToolbarStyle" @click.stop>
+    <div v-if="isSelected" class="node-toolbar node-toolbar--leaf" data-editor-chrome="true" :style="leafToolbarStyle" @click.stop>
       <button v-if="hasParentNode" type="button" class="toolbar-icon-button" aria-label="Select parent" title="Select parent" @click="selectParentNode"><ChevronUp :size="15" /></button>
       <span class="node-toolbar-label">{{ nodeLabel }}</span>
       <GripVertical :size="15" class="drag-grip" draggable="true" @dragstart="startNodeDrag" @dragend="endNodeDrag" />
@@ -583,17 +582,15 @@ function openDropAi(event) {
   </div>
 
   <div v-else class="editor-node editor-node--leaf editor-node--unknown"
+    :style="layoutItemStyles"
     :data-editor-node-id="node.id"
     :data-editor-node-type="node.type"
     :class="{ 'editor-node--selected': isSelected, 'editor-node--hovered': isHovered }"
-    @click.stop="select"
-    @mouseenter="handleMouseEnter"
-    @mouseleave="handleMouseLeave"
     @dragenter="handleDragEnter"
     @dragover="handleDragOver"
     @dragleave="handleDragLeave"
     @drop="handleDrop">
-    <div class="builder-element" :style="renderedStyles">{{ nodeLabel }}</div>
+    <div class="builder-element" :style="renderedContentStyles">{{ nodeLabel }}</div>
   </div>
 
   <AddMenu
@@ -602,12 +599,6 @@ function openDropAi(event) {
     title="Add to page"
     @select="handleAdd"
     @close="showAdd = false"
-  />
-
-  <ContainerDirectionModal
-    :open="showContainerPicker"
-    @select="addContainerWithLayout"
-    @close="showContainerPicker = false"
   />
 </template>
 
@@ -623,6 +614,7 @@ function openDropAi(event) {
   width: 100%;
   min-height: 80px;
   z-index: 1;
+  overflow: visible;
 }
 
 .editor-node--container.editor-node--nested-container {
@@ -645,10 +637,9 @@ function openDropAi(event) {
   box-sizing: border-box;
   border: 1px solid transparent;
   background: rgba(255, 255, 255, .42);
-  transition: border-color .16s ease, background .16s ease, box-shadow .16s ease;
 }
 
-.editor-node--container.editor-node--hovered > .editor-container {
+.editor-node--container.editor-node--hovered:not(.editor-node--selected) > .editor-container {
   border-color: rgba(71, 145, 255, .72);
   border-style: dashed;
 }
@@ -667,6 +658,11 @@ function openDropAi(event) {
   background: rgba(255, 255, 255, .2);
 }
 
+.editor-node--container.editor-node--selection-ancestor.editor-node--hovered:not(.editor-node--selected) > .editor-container {
+  border-color: rgba(71, 145, 255, .72);
+  border-style: dashed;
+}
+
 .editor-node--container.editor-node--direct-child-container > .editor-container {
   border-color: rgba(160, 166, 176, .72);
   border-style: dashed;
@@ -674,7 +670,7 @@ function openDropAi(event) {
   background: rgba(249, 250, 251, .38);
 }
 
-.editor-node--container.editor-node--direct-child-container.editor-node--hovered > .editor-container {
+.editor-node--container.editor-node--direct-child-container.editor-node--hovered:not(.editor-node--selected) > .editor-container {
   border-color: rgba(71, 145, 255, .9);
   border-style: dashed;
   background: rgba(240, 248, 255, .5);
@@ -1051,7 +1047,13 @@ function openDropAi(event) {
   z-index: 1200;
 }
 
-.editor-node--container.editor-node--selected > .editor-container {
-  cursor: default;
+.editor-node--container > .insertion-point {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 30;
+  min-height: 0;
+  transform: translateY(50%);
 }
 </style>

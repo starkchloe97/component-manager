@@ -1,11 +1,11 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, onUpdated, ref, watch } from "vue";
 import EditorNode from "./EditorNode.vue";
-import ContainerDirectionModal from "./ContainerDirectionModal.vue";
 import AddMenu from "./AddMenu.vue";
 import InsertionPoint from "./InsertionPoint.vue";
 import { useComponentEditor } from "@/composables/useComponentEditor";
 import { useEditor } from "@/composables/useEditor";
+import { isEditorChrome, resolveEditorNodeId } from "@/components/editor/containerStructures";
 
 const props = defineProps({
   component: { type: Object, required: true },
@@ -14,14 +14,14 @@ const props = defineProps({
 const emit = defineEmits(["element-selected"]);
 const canvas = ref(null);
 const stage = ref(null);
+const builder = ref(null);
 const hoveredElement = ref(null);
 const selectedDomElement = ref(null);
 const editingElement = ref(null);
 const { selectedElement, selectElement, clearElement, applyOverrides, getContent, setContent } = useComponentEditor();
-const { selectNode, selectedNodeId, document, setHoveredNode, addContainer, addNode } = useEditor();
+const { selectNode, selectedNodeId, document, setHoveredNode, addContainer, addNode, beginFillDraft } = useEditor();
 const pageAddTrigger = ref(null);
 const showPageAdd = ref(false);
-const showPageContainerPicker = ref(false);
 const componentName = computed(() => props.component?.name || props.component?.id || "Component");
 const selectableTags = "section, div, main, header, footer, nav, aside, article, figure, figcaption, h1, h2, h3, h4, h5, h6, p, span, strong, em, small, mark, del, ins, code, pre, blockquote, time, address, a, button, img, ul, ol, li, dl, dt, dd, table, thead, tbody, tfoot, tr, th, td, caption, form, input, textarea, select, label";
 
@@ -200,12 +200,40 @@ function openPageAdd(event) {
 }
 function addPageItem(type) {
   showPageAdd.value = false;
-  if (type === "container") { showPageContainerPicker.value = true; return; }
+  if (type === "container") {
+    beginFillDraft(addContainer("column"));
+    return;
+  }
   addNode(type);
 }
-function addPageContainer(direction) {
-  addContainer(direction === "row" ? "row" : "column");
-  showPageContainerPicker.value = false;
+
+function handleBuilderPointerOver(event) {
+  if (props.preview || !(event.target instanceof Element)) return;
+  setHoveredNode(resolveEditorNodeId(event.target));
+}
+
+function handleBuilderPointerOut(event) {
+  if (props.preview) return;
+  const next = event.relatedTarget;
+  if (next instanceof Element && builder.value?.contains(next)) {
+    setHoveredNode(resolveEditorNodeId(next));
+    return;
+  }
+  setHoveredNode(null);
+}
+
+function handleBuilderClick(event) {
+  if (props.preview || !(event.target instanceof Element)) return;
+  if (isEditorChrome(event.target)) {
+    event.stopPropagation();
+    return;
+  }
+  const id = resolveEditorNodeId(event.target);
+  if (!id) return;
+  event.preventDefault();
+  event.stopPropagation();
+  clearElement();
+  selectNode(id);
 }
 
 function startInlineEdit(event) {
@@ -283,6 +311,7 @@ function handleStageClick() {
   clearVisualState();
   clearElement();
   selectNode(null);
+  setHoveredNode(null);
 }
 
 function handleStageMouseLeave() {
@@ -338,7 +367,14 @@ onUnmounted(() => {
 
       <!-- Builder region. Clicks on empty space here bubble to the stage and
            clear the selection; node clicks stop propagation at the node. -->
-      <div v-if="!preview" class="component-builder-extension">
+      <div
+        v-if="!preview"
+        ref="builder"
+        class="component-builder-extension"
+        @pointerover="handleBuilderPointerOver"
+        @pointerout="handleBuilderPointerOut"
+        @click="handleBuilderClick"
+      >
         <div class="page-section-list">
           <div v-for="node in document.children" :key="node.id" class="page-section-node">
             <EditorNode :node="node" :root-node="true" />
@@ -356,11 +392,6 @@ onUnmounted(() => {
 
         <AddMenu :open="showPageAdd" :anchor="pageAddTrigger" title="Add to page" @select="addPageItem"
           @close="showPageAdd = false" />
-        <ContainerDirectionModal
-          :open="showPageContainerPicker"
-          @select="addPageContainer"
-          @close="showPageContainerPicker = false"
-        />
 
         <EditorNode v-for="node in document.componentChildren" :key="node.id" :node="node" />
 
@@ -458,17 +489,21 @@ onUnmounted(() => {
 <style scoped>
 .component-builder-extension {
   position: relative;
+  overflow: visible;
   background: #fff
 }
 
 .page-section-list {
-  width: 100%
+  width: 100%;
+  padding-top: 32px;
+  box-sizing: border-box;
 }
 
 .page-section-node {
   position: relative;
   width: 100%;
-  margin: 0
+  margin: 0;
+  overflow: visible;
 }
 
 .empty-page-state {

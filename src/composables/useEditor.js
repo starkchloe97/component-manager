@@ -1,12 +1,14 @@
 import { computed, reactive, ref, watch } from "vue";
 import { createEditorDocument } from "@/components/editor/editorModel";
 import { createEditorNode } from "@/components/editor/nodeFactory";
+import { getContainerStructureSpec } from "@/components/editor/containerStructures";
 import { useEditorHistory } from "@/composables/useEditorHistory";
 
 const STORAGE_PREFIX = "component-manager:editor:";
 const document = reactive(createEditorDocument());
 const selectedNodeId = ref(null);
 const hoveredNodeId = ref(null);
+const containerDraft = ref(null);
 // Set while an HTML5 drag of a builder node is in progress. Hover updates are
 // ignored during a drag so the interaction layer stays stable.
 const draggingNodeId = ref(null);
@@ -123,6 +125,7 @@ function setActiveComponent(componentId) {
   activeComponentId.value = componentId;
   selectedNodeId.value = null;
   hoveredNodeId.value = null;
+  containerDraft.value = null;
   persistenceReady = true;
   // Persist the normalized tree immediately so old nested layouts cannot
   // reappear on the next editor open.
@@ -144,6 +147,7 @@ function resetActiveComponent() {
   replaceDocument(null);
   selectedNodeId.value = null;
   hoveredNodeId.value = null;
+  containerDraft.value = null;
   persistenceReady = true;
   return true;
 }
@@ -153,6 +157,7 @@ function clearActiveComponent() {
   replaceDocument(null);
   selectedNodeId.value = null;
   hoveredNodeId.value = null;
+  containerDraft.value = null;
   persistenceReady = false;
 }
 
@@ -179,6 +184,7 @@ export function useEditor() {
     }, { normalize: false });
     selectedNodeId.value = null;
     hoveredNodeId.value = null;
+    containerDraft.value = null;
     scheduleDocumentPersistence();
   };
 
@@ -186,14 +192,40 @@ export function useEditor() {
   // Selection only ever changes through an intentional action. The id is
   // validated against the live document so a stale id can never be selected.
   const selectNode = (id) => {
-    if (!id) { selectedNodeId.value = null; return; }
+    if (!id) {
+      selectedNodeId.value = null;
+      discardUnrelatedDraft(null);
+      return;
+    }
     if (!findNodeInDocument(id)) return;
     selectedNodeId.value = id;
+    discardUnrelatedDraft(id);
   };
-  const clearSelection = () => { selectedNodeId.value = null; };
+  const clearSelection = () => { selectNode(null); };
+
+  const beginContainerDraft = (draft) => {
+    containerDraft.value = draft ? { ...draft } : null;
+  };
+  const cancelContainerDraft = () => {
+    containerDraft.value = null;
+  };
+  const discardUnrelatedDraft = (id) => {
+    const draft = containerDraft.value;
+    if (!draft) return;
+    const ownerId = draft.nodeId || draft.parentId;
+    if (ownerId && ownerId !== id) containerDraft.value = null;
+  };
+  const beginFillDraft = (container) => {
+    if (container?.type === "container" && !container.children?.length) {
+      beginContainerDraft({ kind: "fill", nodeId: container.id });
+    }
+    return container;
+  };
   const setHoveredNode = (id) => {
     if (draggingNodeId.value) return;
-    hoveredNodeId.value = id || null;
+    const next = id && findNodeInDocument(id) ? id : null;
+    if (hoveredNodeId.value === next) return;
+    hoveredNodeId.value = next;
   };
   const startDragging = (id) => { draggingNodeId.value = id || null; };
   const endDragging = () => { draggingNodeId.value = null; };
@@ -286,6 +318,76 @@ export function useEditor() {
     return container;
   }
 
+  function createStructuredContainer(display, structureId) {
+    const spec = getContainerStructureSpec(display, structureId);
+    const container = createContainer(spec.parent.flexDirection === "row" ? "row" : "column");
+    container.styles = { ...container.styles, ...spec.parent };
+    container.children.push(...spec.children.map((childStyles) => {
+      const child = createContainer("column");
+      child.styles = { ...child.styles, ...childStyles };
+      return child;
+    }));
+    return container;
+  }
+
+  function applyContainerStructure(nodeId, display, structureId) {
+    const node = findNodeInDocument(nodeId);
+    if (!node || node.type !== "container") return null;
+    const spec = getContainerStructureSpec(display, structureId);
+    node.styles = { ...node.styles, ...spec.parent };
+    if (!node.children.length) {
+      node.children.push(...spec.children.map((childStyles) => {
+        const child = createContainer("column");
+        child.styles = { ...child.styles, ...childStyles };
+        return child;
+      }));
+    }
+    selectNode(node.id);
+    markDirty();
+    return node;
+  }
+
+  function addStructuredContainer({ display = "flex", structure = "row-2", parentId = null, afterNodeId = null } = {}) {
+    if (afterNodeId) {
+      const container = createStructuredContainer(display, structure);
+      const parent = findParentInDocument(afterNodeId);
+      const list = parent ? parent.children : rootListFor(afterNodeId);
+      const index = list.findIndex((node) => node.id === afterNodeId);
+      list.splice(index >= 0 ? index + 1 : list.length, 0, container);
+      selectNode(container.id);
+      markDirty();
+      return container;
+    }
+
+    const parent = parentId ? findNodeInDocument(parentId) : null;
+    if (parent?.type === "container" && !parent.children?.length) {
+      return applyContainerStructure(parent.id, display, structure);
+    }
+
+    const container = createStructuredContainer(display, structure);
+    if (parent && Array.isArray(parent.children) && ["container", "column", "section"].includes(parent.type)) {
+      parent.children.push(container);
+    } else {
+      document.children.push(container);
+    }
+    selectNode(container.id);
+    markDirty();
+    return container;
+  }
+
+  function commitContainerDraft({ display, structure } = {}) {
+    const draft = containerDraft.value;
+    if (!draft) return null;
+    containerDraft.value = null;
+    if (draft.kind === "fill" && draft.nodeId) {
+      return applyContainerStructure(draft.nodeId, display, structure);
+    }
+    if (draft.kind === "after" && draft.nodeId) {
+      return addStructuredContainer({ display, structure, afterNodeId: draft.nodeId });
+    }
+    return addStructuredContainer({ display, structure, parentId: draft.parentId || null });
+  }
+
   function addSection(layout = "100", index = document.children.length, list = document.children) {
     const section = createSection(layout);
     list.splice(Math.max(0, Math.min(index, list.length)), 0, section);
@@ -346,6 +448,16 @@ export function useEditor() {
   // a container/column context puts it directly at the page root.
   function addContainer(direction = "column", parentId = null) {
     const parent = parentId ? findNodeInDocument(parentId) : null;
+    if (parent?.type === "container" && !parent.children?.length) {
+      parent.styles = {
+        ...parent.styles,
+        display: "flex",
+        flexDirection: direction === "row" ? "row" : "column",
+      };
+      selectNode(parent.id);
+      markDirty();
+      return parent;
+    }
     if (parent?.type === "column" || parent?.type === "container") {
       const container = createContainer(direction);
       parent.children.push(container);
@@ -404,7 +516,16 @@ export function useEditor() {
     const node = findNodeInDocument(id);
     if (!node) return null;
     if (patch.props) node.props = { ...node.props, ...patch.props };
-    if (patch.styles) node.styles = { ...node.styles, ...patch.styles };
+    if (patch.styles) {
+      node.styles = { ...node.styles, ...patch.styles };
+      if (Object.prototype.hasOwnProperty.call(patch.styles, "width")) {
+        const width = String(node.styles.width ?? "").trim();
+        node.styles.flexBasis = width || "auto";
+        node.styles.flexGrow = "0";
+        node.styles.flexShrink = node.styles.flexShrink ?? "1";
+        delete node.styles.flex;
+      }
+    }
     const updatedColumnWidth = node.type === "column" && Object.prototype.hasOwnProperty.call(patch.styles || {}, "width");
     if (updatedColumnWidth) syncSectionColumnWidths(id);
     Object.entries(patch).forEach(([key, value]) => { if (key !== "props" && key !== "styles") node[key] = value; });
@@ -465,6 +586,7 @@ export function useEditor() {
     document,
     selectedNodeId,
     hoveredNodeId,
+    containerDraft,
     draggingNodeId,
     viewportTick,
     selectedNode,
@@ -494,6 +616,12 @@ export function useEditor() {
     addSectionToParent,
     addContainer,
     addContainerAfter,
+    addStructuredContainer,
+    applyContainerStructure,
+    beginContainerDraft,
+    beginFillDraft,
+    cancelContainerDraft,
+    commitContainerDraft,
     addComponentElement,
     addContainerToComponent,
     addNode,
@@ -678,9 +806,16 @@ function normalizePageStructure(nodes) {
     const oldChildren = Array.isArray(node.children) ? node.children : [];
     const columns = oldChildren.filter((child) => child?.type === "column");
     const otherChildren = oldChildren.filter((child) => child?.type !== "column");
+    const isGrid = node.styles?.display === "grid";
     const direction = columns.length > 1
       ? "row"
       : node.styles?.flexDirection || "column";
+
+    if (isGrid && !columns.length) {
+      node.styles.minHeight = node.styles.minHeight || "80px";
+      node.children = oldChildren.map(convertNode);
+      return node;
+    }
 
     node.styles = flexDefaults(node.styles, direction);
     node.styles.minHeight = node.styles.minHeight || "80px";

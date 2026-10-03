@@ -10,8 +10,20 @@ export function resolveResponsiveNodeStyles(node) {
   return computed(() => {
     const baseStyles = node.styles || {};
     const responsiveStyles = node.responsiveStyles || {};
-    if (viewportWidth.value <= 767) return { ...baseStyles, ...(responsiveStyles.mobile || {}) };
-    if (viewportWidth.value <= 1024) return { ...baseStyles, ...(responsiveStyles.tablet || {}) };
-    return baseStyles;
+    const overrides = viewportWidth.value <= 767
+      ? responsiveStyles.mobile
+      : viewportWidth.value <= 1024
+        ? responsiveStyles.tablet
+        : null;
+    const styles = { ...baseStyles, ...(overrides || {}) };
+
+    if (overrides && Object.prototype.hasOwnProperty.call(overrides, "width")) {
+      styles.flexBasis = String(styles.width ?? "").trim() || "auto";
+      styles.flexGrow = "0";
+      styles.flexShrink = styles.flexShrink ?? "1";
+      delete styles.flex;
+    }
+
+    return styles;
   });
 }

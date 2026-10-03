@@ -5,7 +5,7 @@ const emit = defineEmits(["activate"]);
 </script>
 
 <template>
-  <div class="insertion-point" :class="{ 'insertion-point--visible': visible, 'insertion-point--compact': compact }">
+  <div class="insertion-point" data-editor-chrome="true" :class="{ 'insertion-point--visible': visible, 'insertion-point--compact': compact }">
     <span class="insertion-line" aria-hidden="true" />
     <button type="button" :aria-label="label" @click="emit('activate', $event.currentTarget)">
       <Plus :size="14" /><span>{{ label }}</span>
