@@ -7,6 +7,7 @@ import { useEditorHistory } from "@/composables/useEditorHistory";
 const STORAGE_PREFIX = "component-manager:editor:";
 const document = reactive(createEditorDocument());
 const selectedNodeId = ref(null);
+const selectionRevision = ref(0);
 const hoveredNodeId = ref(null);
 const containerDraft = ref(null);
 // Set while an HTML5 drag of a builder node is in progress. Hover updates are
@@ -177,12 +178,18 @@ export function useEditor() {
   });
 
   const restoreDocumentSnapshot = (snapshot = {}) => {
+    const selectionBeforeRestore = selectedNodeId.value;
+    const selectionAncestorsBeforeRestore = getNodeAncestors(selectionBeforeRestore).map((node) => node.id);
     replaceDocument({
       children: cloneState(snapshot.children || []),
       componentChildren: cloneState(snapshot.componentChildren || []),
       version: document.version,
     }, { normalize: false });
-    selectedNodeId.value = null;
+    const restoredSelectionId = selectionBeforeRestore && findNodeInDocument(selectionBeforeRestore)
+      ? selectionBeforeRestore
+      : selectionAncestorsBeforeRestore.reverse().find((id) => findNodeInDocument(id));
+    selectedNodeId.value = restoredSelectionId || null;
+    selectionRevision.value += 1;
     hoveredNodeId.value = null;
     containerDraft.value = null;
     scheduleDocumentPersistence();
@@ -194,11 +201,13 @@ export function useEditor() {
   const selectNode = (id) => {
     if (!id) {
       selectedNodeId.value = null;
+      selectionRevision.value += 1;
       discardUnrelatedDraft(null);
       return;
     }
     if (!findNodeInDocument(id)) return;
     selectedNodeId.value = id;
+    selectionRevision.value += 1;
     discardUnrelatedDraft(id);
   };
   const clearSelection = () => { selectNode(null); };
@@ -250,6 +259,7 @@ export function useEditor() {
     const parent = findParentInDocument(selectedNodeId.value);
     if (!parent) return false;
     selectedNodeId.value = parent.id;
+    selectionRevision.value += 1;
     return true;
   };
   // Moves selection into the first child of the current selection.
@@ -258,6 +268,7 @@ export function useEditor() {
     const firstChild = node?.children?.[0];
     if (!firstChild) return false;
     selectedNodeId.value = firstChild.id;
+    selectionRevision.value += 1;
     return true;
   };
   const isNodeAncestor = (ancestorId, descendantId) => {
@@ -534,11 +545,12 @@ export function useEditor() {
   }
 
   function deleteNode(id) {
+    const parentId = findParentInDocument(id)?.id || null;
     if (!removeNode(document.children, id) && !removeNode(document.componentChildren, id)) return false;
-    // The deleted subtree may contain the selected/hovered node. Any id that
-    // no longer resolves against the live tree is cleared, so selection never
-    // points at a node that does not exist.
-    if (selectedNodeId.value && !findNodeInDocument(selectedNodeId.value)) selectedNodeId.value = null;
+    // Keep selection useful when deleting the selected node or one of its ancestors.
+    if (selectedNodeId.value && !findNodeInDocument(selectedNodeId.value)) {
+      selectNode(parentId && findNodeInDocument(parentId) ? parentId : null);
+    }
     if (hoveredNodeId.value && !findNodeInDocument(hoveredNodeId.value)) hoveredNodeId.value = null;
     markDirty();
     return true;
@@ -558,7 +570,7 @@ export function useEditor() {
     return clone;
   }
 
-  function moveNode(id, targetParentId, index = 0) {
+  function moveNode(id, targetParentId, index = 0, targetRoot = "children") {
     const sourceNode = findNodeInDocument(id);
     if (!sourceNode) return false;
 
@@ -574,9 +586,14 @@ export function useEditor() {
     if (targetParentId === id || isNodeAncestor(id, targetParentId)) return false;
     if (targetParentId && !["section", "column", "container"].includes(target.type)) return false;
 
+    const targetList = targetParentId
+      ? target.children
+      : targetRoot === "componentChildren"
+        ? document.componentChildren
+        : document.children;
     const [node] = sourceList.splice(sourceIndex, 1);
-    const targetIndex = Math.max(0, Math.min(Number(index) || 0, target.children.length));
-    target.children.splice(targetIndex, 0, node);
+    const targetIndex = Math.max(0, Math.min(Number(index) || 0, targetList.length));
+    targetList.splice(targetIndex, 0, node);
     selectNode(id);
     markDirty();
     return true;
@@ -585,6 +602,7 @@ export function useEditor() {
   return {
     document,
     selectedNodeId,
+    selectionRevision,
     hoveredNodeId,
     containerDraft,
     draggingNodeId,

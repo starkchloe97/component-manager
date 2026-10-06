@@ -3,6 +3,7 @@ import { computed, nextTick, ref, watch } from "vue";
 import { Box, Check, Copy, Eye, EyeOff, Menu, Redo2, RotateCcw, Undo2, X } from "@lucide/vue";
 import ComponentCanvas from "./ComponentCanvas.vue";
 import ElementorInspector from "./ElementorInspector.vue";
+import NavigatorPanel from "./NavigatorPanel.vue";
 import { componentRegistry } from "@/config/componentRegistry";
 import { useComponentEditor } from "@/composables/useComponentEditor";
 import { useComponentManager } from "@/composables/useComponentManager";
@@ -18,6 +19,7 @@ const registry = Object.values(componentRegistry);
 const activeId = ref(props.initialComponentId || registry[0]?.id || null);
 const preview = ref(false);
 const inspectorOpen = ref(true);
+const navigatorOpen = ref(false);
 const copyState = ref("idle");
 const { clearElement, getComponentState, restoreComponentState, resetComponentState } = useComponentEditor();
 const { registerComponent } = useComponentManager();
@@ -120,6 +122,13 @@ async function copyComponent() {
                 <Menu class="toggle-menu-icon" :size="18" />
                 <X class="toggle-close-icon" :size="18" />
               </span></button>
+            <button class="navigator-toggle" :class="{ active: navigatorOpen }" type="button"
+              :title="navigatorOpen ? 'Close Structure' : 'Open Structure'"
+              :aria-label="navigatorOpen ? 'Close Structure' : 'Open Structure'"
+              :aria-pressed="navigatorOpen"
+              @click="navigatorOpen = !navigatorOpen">
+              <Menu :size="17" />
+            </button>
             <button type="button" title="Undo" aria-label="Undo" :disabled="preview || !history.canUndo.value" @click="history.undo">
               <Undo2 :size="18" />
             </button>
@@ -142,6 +151,8 @@ async function copyComponent() {
             </button>
           </div>
         </header>
+        <NavigatorPanel v-if="navigatorOpen && !preview" :inspector-open="inspectorOpen"
+          @close="navigatorOpen = false" />
         <ComponentCanvas v-if="activeComponent" :component="activeComponent" :preview="preview"
           @element-selected="handleElementSelected" />
       </main>
