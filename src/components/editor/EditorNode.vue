@@ -57,6 +57,7 @@ const leafElement = ref(null);
 const leafToolbarStyle = ref({});
 const dragDepth = ref(0);
 const isDropTarget = ref(false);
+const dropPosition = ref(null);
 
 const isContainer = computed(() => props.node.type === "container");
 const isSelected = computed(() => selectedNodeId.value === props.node.id);
@@ -197,6 +198,7 @@ function cancelInlineEdit(event) {
 function resetDropState() {
   dragDepth.value = 0;
   isDropTarget.value = false;
+  dropPosition.value = null;
 }
 
 function getDragPayload(event) {
@@ -236,6 +238,7 @@ function handleDragEnter(event) {
   event.stopPropagation();
   dragDepth.value += 1;
   isDropTarget.value = true;
+  dropPosition.value = getDropPosition(event);
   if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
 }
 
@@ -247,6 +250,7 @@ function handleDragOver(event) {
   event.preventDefault();
   event.stopPropagation();
   isDropTarget.value = true;
+  dropPosition.value = getDropPosition(event);
   if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
 }
 
@@ -361,6 +365,9 @@ function openDropAi(event) {
       'editor-node--nested-container': isNestedContainer,
       'editor-node--hovered': isHovered,
       'editor-node--drop-target': isDropTarget,
+      'editor-node--drop-before': dropPosition === 'before',
+      'editor-node--drop-after': dropPosition === 'after',
+      'editor-node--drop-inside': dropPosition === 'inside',
     }"
     @dragenter="handleDragEnter"
     @dragover="handleDragOver"
@@ -470,7 +477,7 @@ function openDropAi(event) {
     :style="layoutItemStyles"
     :data-editor-node-id="node.id"
     :data-editor-node-type="node.type"
-    :class="{ 'editor-node--selected': isSelected, 'editor-node--hovered': isHovered }"
+    :class="{ 'editor-node--selected': isSelected, 'editor-node--hovered': isHovered, 'editor-node--drop-target': isDropTarget, 'editor-node--drop-before': dropPosition === 'before', 'editor-node--drop-after': dropPosition === 'after', 'editor-node--drop-inside': dropPosition === 'inside' }"
     @dragenter="handleDragEnter"
     @dragover="handleDragOver"
     @dragleave="handleDragLeave"
@@ -502,7 +509,7 @@ function openDropAi(event) {
     :style="layoutItemStyles"
     :data-editor-node-id="node.id"
     data-editor-node-type="component"
-    :class="{ 'editor-node--selected': isSelected, 'editor-node--hovered': isHovered }"
+    :class="{ 'editor-node--selected': isSelected, 'editor-node--hovered': isHovered, 'editor-node--drop-target': isDropTarget, 'editor-node--drop-before': dropPosition === 'before', 'editor-node--drop-after': dropPosition === 'after', 'editor-node--drop-inside': dropPosition === 'inside' }"
     @dragenter="handleDragEnter"
     @dragover="handleDragOver"
     @dragleave="handleDragLeave"
@@ -529,7 +536,7 @@ function openDropAi(event) {
     :style="layoutItemStyles"
     :data-editor-node-id="node.id"
     :data-editor-node-type="node.type"
-    :class="{ 'editor-node--selected': isSelected, 'editor-node--hovered': isHovered }"
+    :class="{ 'editor-node--selected': isSelected, 'editor-node--hovered': isHovered, 'editor-node--drop-target': isDropTarget, 'editor-node--drop-before': dropPosition === 'before', 'editor-node--drop-after': dropPosition === 'after', 'editor-node--drop-inside': dropPosition === 'inside' }"
     @dragenter="handleDragEnter"
     @dragover="handleDragOver"
     @dragleave="handleDragLeave"
@@ -728,6 +735,41 @@ function openDropAi(event) {
   border-color: #55a2ff;
   border-style: dashed;
   background: rgba(236, 247, 255, .7);
+}
+
+.editor-node--drop-before,
+.editor-node--drop-after {
+  z-index: 25;
+}
+
+.editor-node--drop-before::before,
+.editor-node--drop-after::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  height: 3px;
+  border-radius: 999px;
+  background: #4b9cfb;
+  box-shadow: 0 0 0 2px rgba(75, 156, 251, .12);
+  pointer-events: none;
+  z-index: 80;
+}
+
+.editor-node--drop-before::before {
+  top: -2px;
+}
+
+.editor-node--drop-after::after {
+  bottom: -2px;
+}
+
+.editor-node--drop-inside > .editor-container,
+.editor-node--drop-inside > .editor-legacy-layout,
+.editor-node--drop-inside > .component-node {
+  outline: 2px solid rgba(75, 156, 251, .72);
+  outline-offset: -2px;
+  background: rgba(236, 247, 255, .38);
 }
 
 .container-empty-state {
