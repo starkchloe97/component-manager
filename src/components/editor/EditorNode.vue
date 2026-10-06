@@ -26,6 +26,7 @@ const {
   selectedNodeId,
   hoveredNodeId,
   draggingNodeId,
+  draggingNodeType,
   viewportTick,
   selectNode,
   startDragging,
@@ -202,7 +203,9 @@ function getDragPayload(event) {
   const nodeId = draggingNodeId.value
     || event.dataTransfer?.getData("application/x-editor-node-id")
     || null;
-  const type = event.dataTransfer?.getData("application/x-editor-node-type") || null;
+  const type = draggingNodeType.value
+    || event.dataTransfer?.getData("application/x-editor-node-type")
+    || null;
   return { nodeId, type };
 }
 
