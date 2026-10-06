@@ -197,6 +197,16 @@ function resetDropState() {
   isDropTarget.value = false;
 }
 
+function canAcceptDrag(event) {
+  const nodeId = event.dataTransfer?.getData("application/x-editor-node-id");
+  if (nodeId) {
+    return nodeId !== props.node.id && !isNodeAncestor(nodeId, props.node.id);
+  }
+
+  const type = event.dataTransfer?.getData("application/x-editor-node-type");
+  return Boolean(type && editorRegistry[type] && canAcceptChildren.value);
+}
+
 function startNodeDrag(event) {
   event.stopPropagation();
   if (!event.dataTransfer) return;
@@ -211,13 +221,19 @@ function endNodeDrag() {
 }
 
 function handleDragEnter(event) {
+  if (!canAcceptDrag(event)) return;
   event.preventDefault();
   event.stopPropagation();
   dragDepth.value += 1;
   isDropTarget.value = true;
+  if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
 }
 
 function handleDragOver(event) {
+  if (!canAcceptDrag(event)) {
+    if (event.dataTransfer) event.dataTransfer.dropEffect = "none";
+    return;
+  }
   event.preventDefault();
   event.stopPropagation();
   isDropTarget.value = true;
@@ -225,6 +241,7 @@ function handleDragOver(event) {
 }
 
 function handleDragLeave(event) {
+  if (!isDropTarget.value) return;
   event.preventDefault();
   event.stopPropagation();
   dragDepth.value = Math.max(0, dragDepth.value - 1);
