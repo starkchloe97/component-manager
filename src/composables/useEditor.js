@@ -13,6 +13,7 @@ const containerDraft = ref(null);
 // Set while an HTML5 drag of a builder node is in progress. Hover updates are
 // ignored during a drag so the interaction layer stays stable.
 const draggingNodeId = ref(null);
+const draggingNodeType = ref(null);
 // Shared, rAF-throttled viewport tick. Replaces per-node window scroll/resize
 // listeners (2N listeners for N nodes) with exactly two global listeners.
 const viewportTick = ref(0);
@@ -236,8 +237,18 @@ export function useEditor() {
     if (hoveredNodeId.value === next) return;
     hoveredNodeId.value = next;
   };
-  const startDragging = (id) => { draggingNodeId.value = id || null; };
-  const endDragging = () => { draggingNodeId.value = null; };
+  const startDragging = (id) => {
+    draggingNodeId.value = id || null;
+    draggingNodeType.value = null;
+  };
+  const startWidgetDragging = (type) => {
+    draggingNodeId.value = null;
+    draggingNodeType.value = type || null;
+  };
+  const endDragging = () => {
+    draggingNodeId.value = null;
+    draggingNodeType.value = null;
+  };
   const getNodeParentId = (id) => findParentInDocument(id)?.id || null;
   const getNodeById = (id) => (id ? findNodeInDocument(id) : null);
   const getNodeParent = (id) => (id ? findParentInDocument(id) : null);
@@ -617,6 +628,8 @@ export function useEditor() {
     hoveredNodeId,
     containerDraft,
     draggingNodeId,
+    draggingNodeType,
+    startWidgetDragging,
     viewportTick,
     selectedNode,
     setHoveredNode,
