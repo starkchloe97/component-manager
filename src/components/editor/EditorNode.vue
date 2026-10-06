@@ -198,13 +198,15 @@ function resetDropState() {
 }
 
 function canAcceptDrag(event) {
-  const nodeId = event.dataTransfer?.getData("application/x-editor-node-id");
+  const nodeId = draggingNodeId.value
+    || (!event.dataTransfer?.types?.length ? event.dataTransfer?.getData("application/x-editor-node-id") : null);
   if (nodeId) {
     return nodeId !== props.node.id && !isNodeAncestor(nodeId, props.node.id);
   }
 
-  const type = event.dataTransfer?.getData("application/x-editor-node-type");
-  return Boolean(type && editorRegistry[type] && canAcceptChildren.value);
+  const hasWidgetPayload = event.dataTransfer?.types?.includes("application/x-editor-node-type")
+    || (!event.dataTransfer?.types?.length && event.dataTransfer?.getData("application/x-editor-node-type"));
+  return Boolean(hasWidgetPayload && canAcceptChildren.value);
 }
 
 function startNodeDrag(event) {
