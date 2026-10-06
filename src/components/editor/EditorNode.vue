@@ -403,7 +403,7 @@ function openDropAi(event) {
         :parent-styles="renderedStyles"
       />
 
-      <div v-if="isDropTarget" class="context-drop-zone" data-editor-chrome="true" @click.stop>
+      <div v-if="isDropTarget && dropPosition === 'inside'" class="context-drop-zone" data-editor-chrome="true" @click.stop>
         <span class="context-drop-line" />
         <div class="context-drop-actions">
           <button type="button" title="Add element" aria-label="Add element" @click="openDropAdd">
