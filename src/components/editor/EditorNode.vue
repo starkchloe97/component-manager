@@ -231,6 +231,15 @@ function handleDragLeave(event) {
   if (dragDepth.value === 0) isDropTarget.value = false;
 }
 
+function getDropPosition(event) {
+  const rect = event.currentTarget?.getBoundingClientRect?.();
+  if (!rect || !rect.height) return canAcceptChildren.value ? "inside" : "after";
+  const ratio = (event.clientY - rect.top) / rect.height;
+  if (ratio < 0.25) return "before";
+  if (ratio > 0.75) return "after";
+  return canAcceptChildren.value ? "inside" : ratio < 0.5 ? "before" : "after";
+}
+
 function handleDrop(event) {
   event.preventDefault();
   event.stopPropagation();
@@ -239,26 +248,27 @@ function handleDrop(event) {
   const type = event.dataTransfer?.getData("application/x-editor-node-type");
 
   if (nodeId) {
-    const targetParentId = getNodeParentId(props.node.id);
-    const sourceParentId = getNodeParentId(nodeId);
-
     if (nodeId !== props.node.id) {
-      const rect = event.currentTarget?.getBoundingClientRect?.();
-      const insertAfter = rect ? event.clientY >= rect.top + rect.height / 2 : true;
+      const position = getDropPosition(event);
 
-      // Containers accept cross-parent drops as nested children. Leaves and
-      // components are reorder targets, so cross-parent drops become siblings.
-      if (canAcceptChildren.value && sourceParentId !== targetParentId) {
+      if (position === "inside" && canAcceptChildren.value) {
         moveNode(nodeId, props.node.id, props.node.children?.length || 0);
       } else {
+        const targetParentId = getNodeParentId(props.node.id);
         const targetList = findSiblingListForNode(props.node.id);
         const targetIndex = targetList.findIndex((item) => item.id === props.node.id);
-        const sourceIndex = targetList.findIndex((item) => item.id === nodeId);
+        const sourceParentId = getNodeParentId(nodeId);
+        const sourceList = findSiblingListForNode(nodeId);
+        const sourceIndex = sourceList.findIndex((item) => item.id === nodeId);
+        const sameList = sourceParentId === targetParentId
+          && (targetParentId || sourceList === targetList);
 
         if (targetIndex >= 0) {
-          let insertionIndex = targetIndex + (insertAfter ? 1 : 0);
-          if (sourceIndex >= 0 && sourceIndex < insertionIndex) insertionIndex -= 1;
-          moveNode(nodeId, targetParentId, insertionIndex);
+          let insertionIndex = targetIndex + (position === "after" ? 1 : 0);
+          if (sameList && sourceIndex >= 0 && sourceIndex < insertionIndex) insertionIndex -= 1;
+
+          const targetRoot = targetList === document.componentChildren ? "componentChildren" : "children";
+          moveNode(nodeId, targetParentId, insertionIndex, targetRoot);
         }
       }
     }
@@ -448,6 +458,7 @@ function openDropAi(event) {
     <div v-if="isSelected" class="node-toolbar legacy-toolbar" data-editor-chrome="true" @click.stop>
       <button v-if="hasParentNode" type="button" @click="selectParentNode" title="Select parent" aria-label="Select parent"><ChevronUp :size="15" /></button>
       <span>{{ nodeLabel }}</span>
+      <GripVertical class="drag-grip" :size="15" draggable="true" title="Drag to move" aria-label="Drag to move" @dragstart="startNodeDrag" @dragend="endNodeDrag" />
       <button type="button" @click="openAdd($event, 'inside')" title="Add inside"><Plus :size="15" /></button>
       <button type="button" @click="duplicateNode(node.id)" title="Duplicate"><Copy :size="15" /></button>
       <button type="button" class="toolbar-icon-danger" @click="removeNode" title="Delete"><Trash2 :size="15" /></button>
