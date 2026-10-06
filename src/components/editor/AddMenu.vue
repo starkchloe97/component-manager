@@ -2,6 +2,9 @@
 import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
 import { Box, Heart, Image, Minus, MousePointer2, Pilcrow, Type } from "@lucide/vue";
 import { editorRegistry } from "@/config/editorRegistry";
+import { useEditor } from "@/composables/useEditor";
+
+const { startWidgetDragging, endDragging } = useEditor();
 
 const props = defineProps({
   open: { type: Boolean, default: false },
@@ -33,10 +36,15 @@ function close() { emit("close"); }
 function select(type) { emit("select", type); }
 function startDrag(type, event) {
   if (!event.dataTransfer) return;
+  startWidgetDragging(type);
   event.dataTransfer.effectAllowed = "copy";
   event.dataTransfer.setData("application/x-editor-node-type", type);
   event.dataTransfer.setData("text/plain", type);
 }
+function handleDragEnd() {
+  endDragging();
+}
+
 function handleKeydown(event) {
   if (event.key === "Escape") {
     event.preventDefault();
@@ -76,11 +84,11 @@ onBeforeUnmount(() => {
       <p class="add-menu-title">{{ title }}</p>
       <p class="add-menu-group">Elements</p>
       <button v-for="item in elementTypes" :key="item.type" type="button" role="menuitem" draggable="true"
-        @dragstart="startDrag(item.type, $event)" @click="select(item.type)">
+        @dragstart="startDrag(item.type, $event)" @dragend="handleDragEnd" @click="select(item.type)">
         <component :is="iconFor[item.type] || Type" :size="15" />{{ item.label }}
       </button>
       <p class="add-menu-group">Layout</p>
-      <button type="button" role="menuitem" draggable="true" @dragstart="startDrag('container', $event)" @click="select('container')">
+      <button type="button" role="menuitem" draggable="true" @dragstart="startDrag('container', $event)" @dragend="handleDragEnd" @click="select('container')">
         <Box :size="15" />Flexbox Container
       </button>
     </section>
