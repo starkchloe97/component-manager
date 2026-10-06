@@ -196,4 +196,32 @@ describe("editor tree selection and history", () => {
     expect(editor.moveNode("first-section", "heading", 0)).toBe(false);
     expect(editor.moveNode("container", "container", 0)).toBe(false);
   });
+
+  it("supports intentional cross-parent nesting and sibling rearrangement", () => {
+    const secondContainer = createNode("second-container", "container", [
+      createNode("second-text", "text"),
+    ]);
+    editor.getNodeById("container").children.push(secondContainer);
+
+    expect(editor.moveNode("heading", "second-container", 1)).toBe(true);
+    expect(editor.getNodeParentId("heading")).toBe("second-container");
+    expect(editor.getNodeById("second-container").children.map((node) => node.id))
+      .toEqual(["second-text", "heading"]);
+
+    expect(editor.moveNode("heading", "container", 0)).toBe(true);
+    expect(editor.getNodeParentId("heading")).toBe("container");
+    expect(editor.getNodeById("container").children[0].id).toBe("heading");
+  });
+
+  it("preserves component-root moves separately from page-root moves", () => {
+    const pageNode = createNode("page-node", "text");
+    const componentNode = createNode("component-node", "text");
+    editor.document.children.push(pageNode);
+    editor.document.componentChildren.push(componentNode);
+
+    expect(editor.moveNode("component-node", null, 0, "componentChildren")).toBe(true);
+    expect(editor.document.componentChildren[0].id).toBe("component-node");
+    expect(editor.document.children.map((node) => node.id)).toContain("page-node");
+  });
+
 });
