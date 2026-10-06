@@ -33,6 +33,7 @@ const {
   isNodeAncestor,
   getNodeParentId,
   addNode,
+  addNodeBefore,
   addNodeAfter,
   addContainer,
   addContainerAfter,
@@ -197,16 +198,20 @@ function resetDropState() {
   isDropTarget.value = false;
 }
 
-function canAcceptDrag(event) {
+function getDragPayload(event) {
   const nodeId = draggingNodeId.value
-    || (!event.dataTransfer?.types?.length ? event.dataTransfer?.getData("application/x-editor-node-id") : null);
+    || event.dataTransfer?.getData("application/x-editor-node-id")
+    || null;
+  const type = event.dataTransfer?.getData("application/x-editor-node-type") || null;
+  return { nodeId, type };
+}
+
+function canAcceptDrag(event) {
+  const { nodeId, type } = getDragPayload(event);
   if (nodeId) {
     return nodeId !== props.node.id && !isNodeAncestor(nodeId, props.node.id);
   }
-
-  const hasWidgetPayload = event.dataTransfer?.types?.includes("application/x-editor-node-type")
-    || (!event.dataTransfer?.types?.length && event.dataTransfer?.getData("application/x-editor-node-type"));
-  return Boolean(hasWidgetPayload && canAcceptChildren.value);
+  return Boolean(type && editorRegistry[type] && (canAcceptChildren.value || !!props.parentId));
 }
 
 function startNodeDrag(event) {
@@ -260,40 +265,44 @@ function getDropPosition(event) {
 }
 
 function handleDrop(event) {
+  if (!canAcceptDrag(event)) return;
   event.preventDefault();
   event.stopPropagation();
 
-  const nodeId = event.dataTransfer?.getData("application/x-editor-node-id");
-  const type = event.dataTransfer?.getData("application/x-editor-node-type");
+  const { nodeId, type } = getDragPayload(event);
+  const position = getDropPosition(event);
 
-  if (nodeId) {
-    if (nodeId !== props.node.id) {
-      const position = getDropPosition(event);
+  if (nodeId && nodeId !== props.node.id) {
+    if (position === "inside" && canAcceptChildren.value) {
+      moveNode(nodeId, props.node.id, props.node.children?.length || 0);
+    } else {
+      const targetParentId = getNodeParentId(props.node.id);
+      const targetList = findSiblingListForNode(props.node.id);
+      const targetIndex = targetList.findIndex((item) => item.id === props.node.id);
+      const sourceParentId = getNodeParentId(nodeId);
+      const sourceList = findSiblingListForNode(nodeId);
+      const sourceIndex = sourceList.findIndex((item) => item.id === nodeId);
+      const sameList = sourceParentId === targetParentId
+        && (targetParentId || sourceList === targetList);
 
-      if (position === "inside" && canAcceptChildren.value) {
-        moveNode(nodeId, props.node.id, props.node.children?.length || 0);
-      } else {
-        const targetParentId = getNodeParentId(props.node.id);
-        const targetList = findSiblingListForNode(props.node.id);
-        const targetIndex = targetList.findIndex((item) => item.id === props.node.id);
-        const sourceParentId = getNodeParentId(nodeId);
-        const sourceList = findSiblingListForNode(nodeId);
-        const sourceIndex = sourceList.findIndex((item) => item.id === nodeId);
-        const sameList = sourceParentId === targetParentId
-          && (targetParentId || sourceList === targetList);
-
-        if (targetIndex >= 0) {
-          let insertionIndex = targetIndex + (position === "after" ? 1 : 0);
-          if (sameList && sourceIndex >= 0 && sourceIndex < insertionIndex) insertionIndex -= 1;
-
-          const targetRoot = targetList === document.componentChildren ? "componentChildren" : "children";
-          moveNode(nodeId, targetParentId, insertionIndex, targetRoot);
-        }
+      if (targetIndex >= 0) {
+        let insertionIndex = targetIndex + (position === "after" ? 1 : 0);
+        if (sameList && sourceIndex >= 0 && sourceIndex < insertionIndex) insertionIndex -= 1;
+        const targetRoot = targetList === document.componentChildren ? "componentChildren" : "children";
+        moveNode(nodeId, targetParentId, insertionIndex, targetRoot);
       }
     }
-  } else if (type && editorRegistry[type] && canAcceptChildren.value) {
-    const created = addNode(type, props.node.id);
-    if (created?.type === "container") beginFillDraft(created);
+  } else if (type && editorRegistry[type]) {
+    if (position === "inside" && canAcceptChildren.value) {
+      const created = addNode(type, props.node.id);
+      if (created?.type === "container") beginFillDraft(created);
+    } else if (position === "before" && props.parentId) {
+      const created = addNodeBefore(type, props.node.id);
+      if (created?.type === "container") beginFillDraft(created);
+    } else if (position === "after" && props.parentId) {
+      const created = addNodeAfter(type, props.node.id);
+      if (created?.type === "container") beginFillDraft(created);
+    }
   }
 
   resetDropState();
