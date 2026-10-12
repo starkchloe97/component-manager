@@ -103,6 +103,12 @@ watch([selectedNodeId, viewportTick], () => {
   if (selectedNodeId.value === props.node.id) nextTick(updateLeafToolbarPosition);
 });
 
+// A widget drag can end outside the canvas (or be cancelled). Clear per-node
+// drop feedback when the shared drag session ends so stale targets never remain.
+watch([draggingNodeId, draggingNodeType], ([nodeId, type]) => {
+  if (!nodeId && !type) resetDropState();
+});
+
 function closeMenus() {
   showAdd.value = false;
 }
@@ -218,7 +224,6 @@ function canAcceptDrag(event) {
   }
   return Boolean(type && editorRegistry[type] && (canAcceptChildren.value || !!props.parentId));
 }
-
 function startNodeDrag(event) {
   event.stopPropagation();
   if (!event.dataTransfer) return;
@@ -256,10 +261,11 @@ function handleDragOver(event) {
 
 function handleDragLeave(event) {
   if (!isDropTarget.value) return;
-  event.preventDefault();
+  // dragleave fires while crossing descendants too; only clear the target
+  // when the pointer actually leaves this node's rendered subtree.
+  if (event.currentTarget?.contains?.(event.relatedTarget)) return;
   event.stopPropagation();
-  dragDepth.value = Math.max(0, dragDepth.value - 1);
-  if (dragDepth.value === 0) isDropTarget.value = false;
+  resetDropState();
 }
 
 function getDropPosition(event) {
@@ -303,10 +309,12 @@ function handleDrop(event) {
     if (position === "inside" && canAcceptChildren.value) {
       const created = addNode(type, props.node.id);
       if (created?.type === "container") beginFillDraft(created);
-    } else if (position === "before" && props.parentId) {
+    } else if (position === "before") {
+      // Root-level nodes are valid siblings too; the insertion helpers resolve
+      // the correct page/component root list when parentId is null.
       const created = addNodeBefore(type, props.node.id);
       if (created?.type === "container") beginFillDraft(created);
-    } else if (position === "after" && props.parentId) {
+    } else if (position === "after") {
       const created = addNodeAfter(type, props.node.id);
       if (created?.type === "container") beginFillDraft(created);
     }
@@ -437,8 +445,7 @@ function openDropAi(event) {
         draggable="true"
         title="Drag container"
         aria-label="Drag container"
-        @dragstart="startNodeDrag"
-        @dragend="endNodeDrag"
+        @dragstart="startNodeDrag"        @dragend="endNodeDrag"
       >
         <GripVertical :size="15" />
       </button>
@@ -657,7 +664,6 @@ function openDropAi(event) {
   min-width: 0;
   box-sizing: border-box;
 }
-
 .editor-node--container {
   position: relative;
   width: 100%;
@@ -877,8 +883,7 @@ function openDropAi(event) {
   gap: 4px;
   min-height: 76px;
   margin: 10px 12px 4px;
-  border: 1px dashed #c7cdd5;
-  background: rgba(255,255,255,.78);
+  border: 1px dashed #c7cdd5;  background: rgba(255,255,255,.78);
   pointer-events: auto;
 }
 
@@ -1095,49 +1100,5 @@ function openDropAi(event) {
   .context-drop-actions button {
     transition: none;
   }
-}
-</style>
-
-
-<style scoped>
-/* Nested empty containers deliberately use a compact interaction target so
-   several levels can be inspected without consuming the whole canvas. */
-.editor-node--container.editor-node--nested-container > .editor-container > .container-empty-state {
-  min-height: 54px;
-  gap: 4px;
-  font-size: 9px;
-  line-height: 1.25;
-}
-
-.editor-node--container.editor-node--nested-container > .editor-container > .container-empty-state .container-quick-add {
-  width: 28px;
-  height: 28px;
-}
-
-.editor-node--container.editor-node--nested-container > .editor-container > .container-empty-state .container-quick-add svg {
-  width: 16px;
-  height: 16px;
-}
-
-.editor-node--container.editor-node--nested-container > .container-handle {
-  z-index: 1000;
-}
-
-.editor-node--container.editor-node--selection-ancestor > .container-handle {
-  display: none;
-}
-
-.editor-node--container.editor-node--selected > .container-handle {
-  z-index: 1200;
-}
-
-.editor-node--container > .insertion-point {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 30;
-  min-height: 0;
-  transform: translateY(50%);
 }
 </style>
