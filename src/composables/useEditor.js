@@ -341,6 +341,8 @@ export function useEditor() {
   }
 
   function createStructuredContainer(display, structureId) {
+    // An empty container is one flex container with no generated child containers.
+    if (structureId === "empty") return createContainer("column");
     const spec = getContainerStructureSpec(display, structureId);
     const container = createContainer(spec.parent.flexDirection === "row" ? "row" : "column");
     container.styles = { ...container.styles, ...spec.parent };
@@ -355,6 +357,12 @@ export function useEditor() {
   function applyContainerStructure(nodeId, display, structureId) {
     const node = findNodeInDocument(nodeId);
     if (!node || node.type !== "container") return null;
+    if (structureId === "empty") {
+      node.styles = { ...node.styles, display: "flex", flexDirection: "column", flexWrap: "nowrap", alignItems: "stretch", justifyContent: "flex-start" };
+      selectNode(node.id);
+      markDirty();
+      return node;
+    }
     const spec = getContainerStructureSpec(display, structureId);
     node.styles = { ...node.styles, ...spec.parent };
     if (!node.children.length) {
