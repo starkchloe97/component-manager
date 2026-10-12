@@ -222,7 +222,9 @@ function canAcceptDrag(event) {
   if (nodeId) {
     return nodeId !== props.node.id && !isNodeAncestor(nodeId, props.node.id);
   }
-  return Boolean(type && editorRegistry[type] && (canAcceptChildren.value || !!props.parentId));
+  // Every node can be a sibling insertion target, including root-level leaves.
+  // Whether the drop goes inside is decided separately by getDropPosition().
+  return Boolean(type && editorRegistry[type]);
 }
 function startNodeDrag(event) {
   event.stopPropagation();
