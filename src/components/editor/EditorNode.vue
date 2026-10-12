@@ -226,6 +226,7 @@ function canAcceptDrag(event) {
   // Whether the drop goes inside is decided separately by getDropPosition().
   return Boolean(type && editorRegistry[type]);
 }
+
 function startNodeDrag(event) {
   event.stopPropagation();
   if (!event.dataTransfer) return;
@@ -447,7 +448,8 @@ function openDropAi(event) {
         draggable="true"
         title="Drag container"
         aria-label="Drag container"
-        @dragstart="startNodeDrag"        @dragend="endNodeDrag"
+        @dragstart="startNodeDrag"
+        @dragend="endNodeDrag"
       >
         <GripVertical :size="15" />
       </button>
@@ -666,6 +668,7 @@ function openDropAi(event) {
   min-width: 0;
   box-sizing: border-box;
 }
+
 .editor-node--container {
   position: relative;
   width: 100%;
@@ -885,7 +888,8 @@ function openDropAi(event) {
   gap: 4px;
   min-height: 76px;
   margin: 10px 12px 4px;
-  border: 1px dashed #c7cdd5;  background: rgba(255,255,255,.78);
+  border: 1px dashed #c7cdd5;
+  background: rgba(255,255,255,.78);
   pointer-events: auto;
 }
 
@@ -1102,5 +1106,49 @@ function openDropAi(event) {
   .context-drop-actions button {
     transition: none;
   }
+}
+</style>
+
+
+<style scoped>
+/* Nested empty containers deliberately use a compact interaction target so
+   several levels can be inspected without consuming the whole canvas. */
+.editor-node--container.editor-node--nested-container > .editor-container > .container-empty-state {
+  min-height: 54px;
+  gap: 4px;
+  font-size: 9px;
+  line-height: 1.25;
+}
+
+.editor-node--container.editor-node--nested-container > .editor-container > .container-empty-state .container-quick-add {
+  width: 28px;
+  height: 28px;
+}
+
+.editor-node--container.editor-node--nested-container > .editor-container > .container-empty-state .container-quick-add svg {
+  width: 16px;
+  height: 16px;
+}
+
+.editor-node--container.editor-node--nested-container > .container-handle {
+  z-index: 1000;
+}
+
+.editor-node--container.editor-node--selection-ancestor > .container-handle {
+  display: none;
+}
+
+.editor-node--container.editor-node--selected > .container-handle {
+  z-index: 1200;
+}
+
+.editor-node--container > .insertion-point {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 30;
+  min-height: 0;
+  transform: translateY(50%);
 }
 </style>
