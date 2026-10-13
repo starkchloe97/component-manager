@@ -34,6 +34,8 @@ const dropClass = computed(() => {
 });
 
 function handleDragStart(event) {
+  // Nested rows are DOM descendants of parent rows; handle the drag only once.
+  event.stopPropagation();
   if (!event.dataTransfer) return;
   event.dataTransfer.effectAllowed = "move";
   event.dataTransfer.setData("application/x-editor-node-id", props.node.id);
@@ -42,7 +44,9 @@ function handleDragStart(event) {
 }
 
 function handleDragOver(event) {
+  // The row under the pointer alone should decide the drop target.
   event.preventDefault();
+  event.stopPropagation();
   const bounds = event.currentTarget.getBoundingClientRect();
   const ratio = bounds.height ? (event.clientY - bounds.top) / bounds.height : 0.5;
   const position = ratio < 0.25
@@ -53,6 +57,13 @@ function handleDragOver(event) {
         ? "inside"
         : ratio < 0.5 ? "before" : "after";
   emit("drag-over", { nodeId: props.node.id, position });
+}
+
+function handleDragLeave(event) {
+  event.stopPropagation();
+  const treeItem = event.currentTarget.closest(".navigator-tree-item");
+  if (treeItem?.contains(event.relatedTarget)) return;
+  emit("drag-leave", props.node.id);
 }
 
 function handleDrop(event) {
@@ -89,7 +100,7 @@ function handleDrop(event) {
       @dragstart="handleDragStart"
       @dragend="emit('drag-end')"
       @dragover="handleDragOver"
-      @dragleave="emit('drag-leave', node.id)"
+      @dragleave="handleDragLeave"
       @drop="handleDrop"
     >
       <button
