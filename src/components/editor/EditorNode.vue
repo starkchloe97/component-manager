@@ -129,10 +129,9 @@ function openAdd(event, mode = "inside") {
 function handleAdd(type) {
   showAdd.value = false;
   if (type === "container") {
-    if (addMode.value === "inside" && isEmptyContainer.value) {
-      beginContainerDraft({ kind: "fill", nodeId: props.node.id });
-      return;
-    }
+    // Adding a container inside an empty container must create a child node.
+    // Do not turn the parent into a fill draft: that makes the requested
+    // nested container appear only after another widget is inserted.
     const created = addMode.value === "inside"
       ? addContainer("column", props.node.id)
       : addContainerAfter(props.node.id, "column");
