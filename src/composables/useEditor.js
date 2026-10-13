@@ -478,26 +478,16 @@ export function useEditor() {
   // a container/column context puts it directly at the page root.
   function addContainer(direction = "column", parentId = null) {
     const parent = parentId ? findNodeInDocument(parentId) : null;
-    if (parent?.type === "container" && !parent.children?.length) {
-      parent.styles = {
-        ...parent.styles,
-        display: "flex",
-        flexDirection: direction === "row" ? "row" : "column",
-      };
-      selectNode(parent.id);
-      markDirty();
-      return parent;
-    }
-    if (parent?.type === "column" || parent?.type === "container") {
-      const container = createContainer(direction);
+    const container = createContainer(direction);
+
+    // Adding a container inside an empty container must still create a child.
+    // Never reinterpret this operation as configuring the existing parent.
+    if (parent && ["column", "container", "section"].includes(parent.type)) {
       parent.children.push(container);
-      selectNode(container.id);
-      markDirty();
-      return container;
+    } else {
+      document.children.push(container);
     }
 
-    const container = createContainer(direction);
-    document.children.push(container);
     selectNode(container.id);
     markDirty();
     return container;
