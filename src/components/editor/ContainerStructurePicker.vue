@@ -30,6 +30,10 @@ function chooseStructure(structure) {
   });
 }
 
+function chooseEmptyContainer() {
+  emit("select", { display: "flex", structure: "empty" });
+}
+
 function goBack() {
   if (step.value === "structure") {
     step.value = "type";
@@ -69,6 +73,10 @@ function goBack() {
           <i /><i /><i /><i />
         </span>
         <span>Grid</span>
+      </button>
+      <button type="button" class="layout-type layout-type--empty" @click="chooseEmptyContainer">
+        <span class="layout-type__preview layout-type__preview--empty" aria-hidden="true"><i /></span>
+        <span>Empty container</span>
       </button>
     </div>
 
@@ -195,6 +203,9 @@ function goBack() {
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr;
 }
+
+.layout-type__preview--empty { display: flex; align-items: center; justify-content: center; }
+.layout-type__preview--empty i { width: 10px; height: 10px; border-radius: 50%; }
 
 .layout-type:hover .layout-type__preview,
 .layout-type:focus-visible .layout-type__preview {
