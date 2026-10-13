@@ -215,7 +215,10 @@ function canAcceptDrag(event) {
   if (nodeId) {
     return nodeId !== props.node.id && !isNodeAncestor(nodeId, props.node.id);
   }
-  return Boolean(type && editorRegistry[type] && (canAcceptChildren.value || !!props.parentId));
+  // Any existing node can be a sibling insertion target, including a
+  // top-level node with no parent. Drop position decides whether a widget is
+  // inserted before/after it or inside a child-capable node.
+  return Boolean(type && editorRegistry[type]);
 }
 
 function startNodeDrag(event) {
@@ -302,10 +305,10 @@ function handleDrop(event) {
     if (position === "inside" && canAcceptChildren.value) {
       const created = addNode(type, props.node.id);
       if (created?.type === "container") beginFillDraft(created);
-    } else if (position === "before" && props.parentId) {
+    } else if (position === "before") {
       const created = addNodeBefore(type, props.node.id);
       if (created?.type === "container") beginFillDraft(created);
-    } else if (position === "after" && props.parentId) {
+    } else if (position === "after") {
       const created = addNodeAfter(type, props.node.id);
       if (created?.type === "container") beginFillDraft(created);
     }
