@@ -2,7 +2,6 @@
 import { useRouter } from 'vue-router'
 import { SITE_NAME, SITE_EMAIL, SITE_PHONE_RAW, SITE_DOMAIN } from '@/config/siteInfo'
 import { componentRegistry } from '@/config/componentRegistry'
-import { useRouter } from 'vue-router'
 
 const router = useRouter()
 function createNewComponent() {
