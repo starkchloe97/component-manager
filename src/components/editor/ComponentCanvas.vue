@@ -10,6 +10,7 @@ import { isEditorChrome, resolveEditorNodeId } from "@/components/editor/contain
 const props = defineProps({
   component: { type: Object, required: true },
   preview: { type: Boolean, default: false },
+  enableBuilder: { type: Boolean, default: false },
 });
 const emit = defineEmits(["element-selected"]);
 const canvas = ref(null);
@@ -195,6 +196,8 @@ function handleClick(event) {
 }
 
 function openPageAdd(event) {
+  event?.preventDefault?.();
+  event?.stopPropagation?.();
   pageAddTrigger.value = event?.currentTarget || event;
   showPageAdd.value = !showPageAdd.value;
 }
@@ -368,7 +371,7 @@ onUnmounted(() => {
       <!-- Builder region. Clicks on empty space here bubble to the stage and
            clear the selection; node clicks stop propagation at the node. -->
       <div
-        v-if="!preview"
+        v-if="enableBuilder && !preview"
         ref="builder"
         class="component-builder-extension"
         @pointerover="handleBuilderPointerOver"
@@ -380,7 +383,7 @@ onUnmounted(() => {
             <div class="empty-page-icon" aria-hidden="true">＋</div>
             <div class="empty-page-title">Start building your component</div>
             <p>Add a container or an element to begin designing.</p>
-            <button type="button" class="empty-page-add" @click="openPageAdd($event.currentTarget)">
+            <button type="button" class="empty-page-add" @click="openPageAdd">
               <span aria-hidden="true">＋</span> Add element
             </button>
           </div>

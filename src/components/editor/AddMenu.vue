@@ -98,7 +98,7 @@ onBeforeUnmount(() => {
 <style scoped>
 .add-menu {
   position: fixed;
-  z-index: 1600;
+  z-index: 10030;
   width: min(244px, calc(100vw - 16px));
   max-height: calc(100vh - 16px);
   overflow: auto;

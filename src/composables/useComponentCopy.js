@@ -13,18 +13,22 @@ export function useComponentCopy() {
     // lag behind the canvas when component switching happens elsewhere.
     const component = componentId
       ? components[componentId] || componentRegistry[componentId]
+        || (componentId.startsWith("playground-") ? { id: componentId, styles: {} } : null)
       : selectedComponent.value;
     if (!component) return { ok: false, error: "No component is selected." };
 
+    const isPlayground = component.id.startsWith("playground-");
     const registryEntry = componentRegistry[component.id];
-    if (!registryEntry?.source) {
+    if (!registryEntry?.source && !isPlayground) {
       return { ok: false, error: "The selected component source is unavailable." };
     }
 
     try {
-      const response = typeof registryEntry.source === "function"
-        ? await registryEntry.source()
-        : registryEntry.source;
+      const response = isPlayground
+        ? "<template>\n</template>"
+        : typeof registryEntry.source === "function"
+          ? await registryEntry.source()
+          : registryEntry.source;
       const source = typeof response === "string" ? response : response?.default;
       if (typeof source !== "string" || !source.trim()) {
         return { ok: false, error: "The component source is empty." };
@@ -42,7 +46,8 @@ export function useComponentCopy() {
       const finalSource = appendBuilderContent(
         withContent,
         document.componentChildren,
-        document.children
+        document.children,
+        isPlayground
       );
 
       await writeClipboard(finalSource);
@@ -235,9 +240,11 @@ function replaceTextOccurrence(source, original, replacement, occurrence) {
   }
 }
 
-function appendBuilderContent(source, componentChildren, sections) {
+function appendBuilderContent(source, componentChildren, sections, includeAllPageNodes = false) {
   const children = Array.isArray(componentChildren) ? componentChildren : [];
-  const pageSections = Array.isArray(sections) ? sections.filter((node) => node?.type === "section") : [];
+  const pageSections = Array.isArray(sections)
+    ? sections.filter((node) => includeAllPageNodes || node?.type === "section")
+    : [];
   const nodes = [...children, ...pageSections];
   if (!nodes.length) return source;
 

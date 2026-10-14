@@ -13,7 +13,10 @@ import { useEditorHistory } from "@/composables/useEditorHistory";
 
 defineOptions({ name: "ComponentEditor" });
 
-const props = defineProps({ initialComponentId: { type: String, default: null } });
+const props = defineProps({
+  initialComponentId: { type: String, default: null },
+  enableBuilder: { type: Boolean, default: false },
+});
 const emit = defineEmits(["close"]);
 const registry = Object.values(componentRegistry);
 const activeId = ref(props.initialComponentId || registry[0]?.id || null);
@@ -139,7 +142,7 @@ async function copyComponent() {
                 <Menu class="toggle-menu-icon" :size="18" />
                 <X class="toggle-close-icon" :size="18" />
               </span></button>
-            <button class="navigator-toggle" :class="{ active: navigatorOpen }" type="button"
+            <button v-if="enableBuilder" class="navigator-toggle" :class="{ active: navigatorOpen }" type="button"
               :title="navigatorOpen ? 'Close Structure' : 'Open Structure'"
               :aria-label="navigatorOpen ? 'Close Structure' : 'Open Structure'"
               :aria-pressed="navigatorOpen"
@@ -168,9 +171,10 @@ async function copyComponent() {
             </button>
           </div>
         </header>
-        <NavigatorPanel v-if="navigatorOpen && !preview" :inspector-open="inspectorOpen"
+        <NavigatorPanel v-if="enableBuilder && navigatorOpen && !preview" :inspector-open="inspectorOpen"
           @close="navigatorOpen = false" />
         <ComponentCanvas v-if="activeComponent" :component="activeComponent" :preview="preview"
+          :enable-builder="enableBuilder"
           @element-selected="handleElementSelected" />
       </main>
     </section>
