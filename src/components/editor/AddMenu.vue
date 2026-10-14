@@ -1,6 +1,6 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
-import { Box, Check, Heart, Image, List, Minus, MousePointer2, Pilcrow, Type } from "@lucide/vue";
+import { Box, Heart, Image, List, Minus, MousePointer2, Pilcrow, Type } from "@lucide/vue";
 import { editorRegistry } from "@/config/editorRegistry";
 import { useEditor } from "@/composables/useEditor";
 
