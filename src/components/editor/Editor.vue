@@ -22,7 +22,7 @@ const inspectorOpen = ref(true);
 const navigatorOpen = ref(false);
 const copyState = ref("idle");
 const { clearElement, getComponentState, restoreComponentState, resetComponentState } = useComponentEditor();
-const { registerComponent } = useComponentManager();
+const { registerComponent, selectComponent } = useComponentManager();
 const { copySelectedComponent } = useComponentCopy();
 const { document, activeComponentId, setActiveComponent, resetActiveComponent, clearActiveComponent, getDocumentSnapshot, restoreDocumentSnapshot } = useEditor();
 
@@ -31,6 +31,7 @@ registry.forEach((entry) => {
   registerComponent(entry.id, config);
 });
 setActiveComponent(activeId.value);
+selectComponent(activeId.value);
 
 const history = useEditorHistory();
 const activeComponent = computed(() => componentRegistry[activeId.value] || null);
@@ -84,6 +85,11 @@ async function resetComponent() {
 }
 
 watch(activeComponentId, configureHistory, { flush: "post" });
+watch(activeId, (id) => {
+  if (!id) return;
+  setActiveComponent(id);
+  selectComponent(id);
+}, { flush: "sync" });
 configureHistory();
 
 function closeEditor() { clearElement(); history.clear(); clearActiveComponent(); emit("close"); }
@@ -92,7 +98,7 @@ function handleElementSelected() { /* Selection must not change inspector visibi
 async function copyComponent() {
   if (copyState.value === "copying") return;
   copyState.value = "copying";
-  const result = await copySelectedComponent();
+  const result = await copySelectedComponent(activeId.value);
   copyState.value = result.ok ? "copied" : "error";
   window.setTimeout(() => { copyState.value = "idle"; }, 1800);
 }
