@@ -239,6 +239,34 @@ function handleBuilderClick(event) {
   selectNode(id);
 }
 
+function handleBuilderDragOver(event) {
+  if (props.preview || !event.dataTransfer) return;
+  // Existing nodes own their own drop positions (inside/before/after).
+  // The canvas itself is the root drop target when the pointer is over blank
+  // space, especially important for a brand-new playground with no nodes yet.
+  if (event.target instanceof Element && event.target.closest(".editor-node")) return;
+  const type = event.dataTransfer.getData("application/x-editor-node-type");
+  if (!type) return;
+  event.preventDefault();
+  event.dataTransfer.dropEffect = "copy";
+}
+
+function handleBuilderDrop(event) {
+  if (props.preview || !event.dataTransfer) return;
+  if (event.target instanceof Element && event.target.closest(".editor-node")) return;
+  const type = event.dataTransfer.getData("application/x-editor-node-type")
+    || event.dataTransfer.getData("text/plain");
+  if (!type || !["heading", "text", "image", "button", "icon", "divider", "container"].includes(type)) return;
+  event.preventDefault();
+  event.stopPropagation();
+  showPageAdd.value = false;
+  if (type === "container") {
+    beginFillDraft(addContainer("column"));
+  } else {
+    addNode(type);
+  }
+}
+
 function startInlineEdit(event) {
   if (props.preview || !(event.target instanceof Element)) return;
   const target = event.target.closest(selectableTags);
@@ -377,6 +405,8 @@ onUnmounted(() => {
         @pointerover="handleBuilderPointerOver"
         @pointerout="handleBuilderPointerOut"
         @click="handleBuilderClick"
+        @dragover="handleBuilderDragOver"
+        @drop="handleBuilderDrop"
       >
         <div class="page-section-list">
           <div v-if="!document.children.length" class="empty-page-state">
