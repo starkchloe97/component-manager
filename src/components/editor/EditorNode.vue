@@ -633,7 +633,7 @@ function openDropAi(event) {
     />
 
     <div
-      v-else-if="node.type === 'icon'
+      v-else-if="node.type === 'icon'"
       ref="leafElement"
       class="builder-icon-alignment"
       :style="{ textAlign: renderedStyles.textAlign || 'left' }"
