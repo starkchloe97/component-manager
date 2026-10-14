@@ -1,6 +1,6 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
-import { Box, Heart, Image, Minus, MousePointer2, Pilcrow, Type } from "@lucide/vue";
+import { Box, Check, Heart, Image, List, Minus, MousePointer2, Pilcrow, Type } from "@lucide/vue";
 import { editorRegistry } from "@/config/editorRegistry";
 import { useEditor } from "@/composables/useEditor";
 
@@ -17,7 +17,7 @@ const position = ref({ top: "8px", left: "8px" });
 const elementTypes = computed(() => Object.entries(editorRegistry)
   .filter(([, definition]) => definition.category === "Basic")
   .map(([type, definition]) => ({ type, label: definition.label })));
-const iconFor = { heading: Type, text: Pilcrow, image: Image, button: MousePointer2, icon: Heart, divider: Minus };
+const iconFor = { heading: Type, text: Pilcrow, image: Image, button: MousePointer2, icon: Heart, "icon-list": List, divider: Minus };
 
 function updatePosition() {
   const anchor = props.anchor;
