@@ -4,12 +4,16 @@ import { componentRegistry } from "@/config/componentRegistry";
 import { useEditor } from "./useEditor";
 
 export function useComponentCopy() {
-  const { selectedComponent } = useComponentManager();
+  const { components, selectedComponent } = useComponentManager();
   const { overrides, contentOverrides } = useComponentEditor();
   const { document } = useEditor();
 
-  const copySelectedComponent = async () => {
-    const component = selectedComponent.value;
+  const copySelectedComponent = async (componentId = null) => {
+    // Prefer the editor's explicit active ID. The global selectedComponent can
+    // lag behind the canvas when component switching happens elsewhere.
+    const component = componentId
+      ? components[componentId] || componentRegistry[componentId]
+      : selectedComponent.value;
     if (!component) return { ok: false, error: "No component is selected." };
 
     const registryEntry = componentRegistry[component.id];
