@@ -256,7 +256,7 @@ function handleBuilderDrop(event) {
   if (event.target instanceof Element && event.target.closest(".editor-node")) return;
   const type = event.dataTransfer.getData("application/x-editor-node-type")
     || event.dataTransfer.getData("text/plain");
-  if (!type || !["heading", "text", "image", "button", "icon", "divider", "container"].includes(type)) return;
+  if (!type || !["heading", "text", "image", "button", "icon", "icon-list", "divider", "container"].includes(type)) return;
   event.preventDefault();
   event.stopPropagation();
   showPageAdd.value = false;
