@@ -241,7 +241,8 @@ function handleDragEnter(event) {
   dragDepth.value += 1;
   isDropTarget.value = true;
   dropPosition.value = getDropPosition(event);
-  if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
+  const { nodeId } = getDragPayload(event);
+  if (event.dataTransfer) event.dataTransfer.dropEffect = nodeId ? "move" : "copy";
 }
 
 function handleDragOver(event) {
@@ -249,11 +250,15 @@ function handleDragOver(event) {
     if (event.dataTransfer) event.dataTransfer.dropEffect = "none";
     return;
   }
+  // Match the operation allowed by the source. Add-menu widgets use "copy";
+  // existing canvas nodes use "move". A mismatched dropEffect can make a
+  // browser show the drag preview while refusing to complete the drop.
   event.preventDefault();
   event.stopPropagation();
   isDropTarget.value = true;
   dropPosition.value = getDropPosition(event);
-  if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
+  const { nodeId } = getDragPayload(event);
+  if (event.dataTransfer) event.dataTransfer.dropEffect = nodeId ? "move" : "copy";
 }
 
 function handleDragLeave(event) {
