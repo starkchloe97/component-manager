@@ -382,12 +382,7 @@ onUnmounted(() => {
           <div v-if="document.children.length" class="bottom-insert-area" @click.stop>
             <InsertionPoint label="Add" :visible="true" @activate="openPageAdd" />
           </div>
-          <div v-if="!document.children.length" class="empty-page-state" @click.stop>
-            <span class="empty-page-title">Build your page</span>
-            <span>Start with a section, container, or element.</span>
-            <button ref="pageAddTrigger" type="button" class="empty-page-add"
-              @click="openPageAdd"><span>+</span>Add</button>
-          </div>
+
         </div>
 
         <AddMenu :open="showPageAdd" :anchor="pageAddTrigger" title="Add to page" @select="addPageItem"
