@@ -168,6 +168,9 @@ function updateStyle(key, value) {
 function resetStyle(key) { updateStyle(key, ""); }
 function updateProp(key, value) { if (selectedNode.value) updateNode(selectedNode.value.id, { props: { [key]: value } }); }
 function selectIcon(icon) { updateProp("icon", icon); showIconPicker.value = false; }
+function updateIconListItems(raw) {
+  updateProp("items", String(raw ?? "").split("\\n").map((item) => item.trim()).filter(Boolean));
+}
 function iconSize() { return numberOf("width"); }
 function setIconSize(value) { setNumber("width", value); setNumber("height", value); }
 function iconSizeUnit() { return unitOf("width"); }
@@ -288,6 +291,19 @@ const isGrid = computed(() => current("display") === "grid");
         </div>
       </div>
       <template v-if="activeTab === 'content'">
+        <section v-if="isNode && selectedNode.type === 'icon-list'" class="control-group">
+          <h3>Icon List</h3>
+          <label>List items<textarea rows="5" :value="(selectedNode.props.items || []).join('\\n')"
+            placeholder="One item per line" @input="updateIconListItems($event.target.value)" /></label>
+          <label>Icon<input :value="selectedNode.props.icon || 'Check'"
+            @input="updateProp('icon', $event.target.value)" placeholder="Check" /></label>
+        </section>
+        <section v-if="isNode && selectedNode.type === 'divider'" class="control-group">
+          <h3>Divider</h3>
+          <label>Style<select :value="selectedNode.props.style || 'solid'" @change="updateProp('style', $event.target.value)">
+            <option value="solid">Solid</option><option value="dashed">Dashed</option><option value="dotted">Dotted</option>
+          </select></label>
+        </section>
         <section v-if="isIconNode" class="control-group icon-content">
           <h3>Icon</h3>
           <div class="icon-current-preview"><component :is="resolveIcon(selectedNode.props.icon)" :size="34"
