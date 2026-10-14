@@ -34,7 +34,18 @@ setActiveComponent(activeId.value);
 selectComponent(activeId.value);
 
 const history = useEditorHistory();
-const activeComponent = computed(() => componentRegistry[activeId.value] || null);
+const activeComponent = computed(() => {
+  if (componentRegistry[activeId.value]) return componentRegistry[activeId.value];
+  if (String(activeId.value || "").startsWith("playground-")) {
+    return {
+      id: activeId.value,
+      name: "Untitled component",
+      component: { render: () => null },
+      styles: {},
+    };
+  }
+  return null;
+});
 
 function createSnapshot() {
   const componentId = activeComponentId.value || activeId.value;
