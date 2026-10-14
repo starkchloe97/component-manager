@@ -628,12 +628,12 @@ function openDropAi(event) {
       v-else-if="node.type === 'divider'"
       ref="leafElement"
       class="builder-element builder-divider"
-      :style="renderedContentStyles"
+      :style="{ ...renderedContentStyles, borderTopStyle: node.props.style || 'solid' }"
       aria-hidden="true"
     />
 
     <div
-      v-else-if="node.type === 'icon'"
+      v-else-if="node.type === 'icon'
       ref="leafElement"
       class="builder-icon-alignment"
       :style="{ textAlign: renderedStyles.textAlign || 'left' }"
