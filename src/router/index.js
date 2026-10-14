@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '@/pages/Home.vue'
+import Playground from '@/pages/Playground.vue'
 import TextImagesSectionView from '@/pages/TextImage.vue'
 import CTA from '@/pages/CTA.vue'
 import FAQ from '@/pages/FAQ.vue'
@@ -28,6 +29,12 @@ const router = createRouter({
       path: '/',
       name: 'Home',
       component: Home,
+    },
+    {
+      path: '/playground/:componentId',
+      name: 'Playground',
+      component: Playground,
+      props: true,
     },
     
     {
