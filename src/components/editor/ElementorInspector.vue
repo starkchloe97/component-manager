@@ -1,6 +1,6 @@
 <script setup>
 import { computed, reactive, ref, watch } from "vue";
-import { Box, Link2, Monitor, Paintbrush, Smartphone, SlidersHorizontal, Tablet, Type } from "@lucide/vue";
+import { Box, Check, Image, Link2, List, Minus, Monitor, MousePointer2, Paintbrush, Pilcrow, Smartphone, SlidersHorizontal, Tablet, Type } from "@lucide/vue";
 import { useEditor } from "@/composables/useEditor";
 import { useComponentEditor } from "@/composables/useComponentEditor";
 import IconPicker from "./IconPicker.vue";
@@ -8,7 +8,8 @@ import { readableIconName, resolveIcon } from "@/config/iconLibrary";
 import { componentRegistry } from "@/config/componentRegistry";
 import { editorRegistry } from "@/config/editorRegistry";
 
-const { selectedNode, updateNode, selectNode, getNodeAncestors } = useEditor();
+const { selectedNode, updateNode, selectNode, getNodeAncestors, startWidgetDragging, endDragging, addNode, addContainer, beginFillDraft } = useEditor();
+const props = defineProps({ enableBuilder: { type: Boolean, default: false } });
 const { selectedElement, getStyles, setStyle, getContent, getContentEntry, setContent, setImage, getImage, resetContent } = useComponentEditor();
 // Elementor-style breadcrumb: full ancestor chain of the selected builder
 // node. Clicking a crumb selects that exact ancestor — this doubles as the
@@ -26,7 +27,7 @@ const nodeCrumbs = computed(() => {
 function selectCrumb(id) {
   if (id !== selectedNode.value?.id) selectNode(id);
 }
-const activeTab = ref("layout");
+const activeTab = ref(props.enableBuilder ? "widgets" : "layout");
 const uploadingImage = ref(false);
 const imageUploadError = ref("");
 const showIconPicker = ref(false);
@@ -40,9 +41,30 @@ const isLayout = computed(() => isNode.value && nodeTypes.has(selectedNode.value
 const isIconNode = computed(() => isNode.value && selectedNode.value.type === "icon");
 const entityName = computed(() => selectedNode.value?.type || selectedElement.value?.label || "Element");
 const normalizedName = computed(() => entityName.value.replace(/\b\w/g, (letter) => letter.toUpperCase()));
-const tabs = computed(() => isLayout.value
-  ? [{ id: "layout", label: "Layout", icon: Box }, { id: "style", label: "Style", icon: Paintbrush }, { id: "advanced", label: "Advanced", icon: SlidersHorizontal }]
-  : [{ id: "content", label: "Content", icon: Type }, { id: "style", label: "Style", icon: Paintbrush }, { id: "advanced", label: "Advanced", icon: SlidersHorizontal }]);
+const tabs = computed(() => [
+  ...(props.enableBuilder ? [{ id: "widgets", label: "Widgets", icon: Box }] : []),
+  ...(isLayout.value
+    ? [{ id: "layout", label: "Layout", icon: Box }]
+    : [{ id: "content", label: "Content", icon: Type }]),
+  { id: "style", label: "Style", icon: Paintbrush },
+  { id: "advanced", label: "Advanced", icon: SlidersHorizontal },
+]);
+const widgetItems = computed(() => Object.entries(editorRegistry)
+  .filter(([, definition]) => definition.category === "Basic")
+  .map(([type, definition]) => ({ type, label: definition.label })));
+const widgetIcons = { heading: Type, text: Pilcrow, image: Image, button: MousePointer2, icon: Check, "icon-list": List, divider: Minus };
+function startWidgetDrag(type, event) {
+  if (!event.dataTransfer) return;
+  startWidgetDragging(type);
+  event.dataTransfer.effectAllowed = "copy";
+  event.dataTransfer.setData("application/x-editor-node-type", type);
+  event.dataTransfer.setData("text/plain", type);
+}
+function finishWidgetDrag() { endDragging(); }
+function addWidget(type) {
+  if (type === "container") beginFillDraft(addContainer("column"));
+  else addNode(type);
+}
 watch(tabs, (nextTabs) => { if (!nextTabs.some((tab) => tab.id === activeTab.value)) activeTab.value = nextTabs[0].id; }, { immediate: true });
 
 const layoutFields = [
@@ -281,7 +303,7 @@ const isGrid = computed(() => current("display") === "grid");
         <component :is="tab.icon" :size="16" stroke-width="1.75" /><span>{{ tab.label }}</span>
       </button>
     </nav>
-    <div v-if="entity" class="inspector-body">
+    <div v-if="entity || activeTab === 'widgets'" class="inspector-body">
       <div v-if="isIconNode" class="responsive-switcher" aria-label="Responsive editing mode">
         <span>Responsive</span>
         <div>
@@ -290,7 +312,24 @@ const isGrid = computed(() => current("display") === "grid");
             :aria-label="device.label" @click="responsiveDevice = device.id"><component :is="device.icon" :size="14" /></button>
         </div>
       </div>
-      <template v-if="activeTab === 'content'">
+      <template v-if="activeTab === 'widgets' && enableBuilder">
+        <section class="widget-library">
+          <div class="widget-library-heading"><strong>Basic</strong><span>Drag onto the canvas</span></div>
+          <div class="widget-grid">
+            <button v-for="item in widgetItems" :key="item.type" type="button" class="widget-tile" draggable="true"
+              @dragstart="startWidgetDrag(item.type, $event)" @dragend="finishWidgetDrag" @click="addWidget(item.type)">
+              <component :is="widgetIcons[item.type] || Type" :size="21" stroke-width="1.7" />
+              <span>{{ item.label }}</span>
+            </button>
+          </div>
+          <div class="widget-library-heading widget-layout-heading"><strong>Layout</strong></div>
+          <button type="button" class="widget-layout-tile" draggable="true"
+            @dragstart="startWidgetDrag('container', $event)" @dragend="finishWidgetDrag" @click="addWidget('container')">
+            <Box :size="21" stroke-width="1.7" /><span><strong>Flexbox Container</strong><small>Group and arrange elements</small></span>
+          </button>
+        </section>
+      </template>
+      <template v-else-if="activeTab === 'content'">
         <section v-if="isNode && selectedNode.type === 'icon-list'" class="control-group">
           <h3>Icon List</h3>
           <label>List items<textarea rows="5" :value="(selectedNode.props.items || []).join('\\n')"
@@ -524,6 +563,20 @@ const isGrid = computed(() => current("display") === "grid");
 </template>
 
 <style scoped>
+.widget-library { padding: 14px 12px 20px; }
+.widget-library-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 2px 10px; color: #343a40; font-size: 12px; }
+.widget-library-heading span { color: #8b949e; font-size: 10px; font-weight: 400; }
+.widget-layout-heading { margin-top: 20px; }
+.widget-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.widget-tile { display: flex; min-width: 0; min-height: 76px; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 10px 4px; border: 1px solid #e3e6e9; border-radius: 4px; background: #fff; color: #454c54; font: inherit; font-size: 11px; cursor: grab; }
+.widget-tile svg, .widget-layout-tile svg { color: #727c87; }
+.widget-tile:hover, .widget-layout-tile:hover { border-color: #93003f; background: #fff8fb; color: #93003f; }
+.widget-tile:active, .widget-layout-tile:active { cursor: grabbing; }
+.widget-tile span { overflow-wrap: anywhere; text-align: center; }
+.widget-layout-tile { display: flex; width: 100%; align-items: center; gap: 12px; padding: 12px; border: 1px solid #e3e6e9; border-radius: 4px; background: #fff; color: #454c54; text-align: left; font: inherit; cursor: grab; }
+.widget-layout-tile span { display: flex; flex-direction: column; gap: 2px; }
+.widget-layout-tile strong { font-size: 12px; font-weight: 600; }
+.widget-layout-tile small { color: #818b96; font-size: 10px; }
 .elementor-inspector {
   --ink: #32373c;
   --label: #515962;
