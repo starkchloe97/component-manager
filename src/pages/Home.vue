@@ -1,28 +1,13 @@
 <script setup>
-import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { SITE_NAME, SITE_EMAIL, SITE_PHONE_RAW, SITE_DOMAIN } from '@/config/siteInfo'
 import { componentRegistry } from '@/config/componentRegistry'
-import EditorNode from '@/components/editor/EditorNode.vue'
-import AddMenu from '@/components/editor/AddMenu.vue'
-import { useEditor } from '@/composables/useEditor'
+import { useRouter } from 'vue-router'
 
-const { document, setActiveComponent, addNode, addContainer, beginFillDraft } = useEditor()
-setActiveComponent('home-page')
-const pageAddTrigger = ref(null)
-const showPageAdd = ref(false)
-
-function openPageAdd(event) {
-  pageAddTrigger.value = event?.currentTarget || event
-  showPageAdd.value = !showPageAdd.value
-}
-
-function addPageItem(type) {
-  showPageAdd.value = false
-  if (type === 'container') {
-    beginFillDraft(addContainer('column'))
-    return
-  }
-  addNode(type)
+const router = useRouter()
+function createNewComponent() {
+  const id = `playground-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+  router.push({ name: 'Playground', params: { componentId: id }, query: { name: 'Untitled component' } })
 }
 
 const sections = [
@@ -48,33 +33,15 @@ const totalComponents = sections.reduce((sum, s) => sum + s.count, 0)
         </p>
       </section>
 
-      <section class="home__builder" aria-label="Build your page">
-        <div class="home__builder-heading">
-          <div>
-            <p class="eyebrow">PAGE BUILDER</p>
-            <h2 class="home__builder-title">Build your page</h2>
-            <p class="home__builder-subtitle">Start with a section, container, or element.</p>
-          </div>
-          <button ref="pageAddTrigger" type="button" class="home__builder-add"
-            @click="openPageAdd"><span aria-hidden="true">+</span>Add</button>
+      <section class="home__builder home__create-component" aria-label="Create a component">
+        <div>
+          <p class="eyebrow">PLAYGROUND</p>
+          <h2 class="home__builder-title">Create something new</h2>
+          <p class="home__builder-subtitle">Start with a blank canvas and build a component from scratch.</p>
         </div>
-
-        <div class="home__builder-canvas" @click.stop>
-          <div v-if="!document.children.length && !document.componentChildren.length" class="home__builder-empty">
-            <span class="home__builder-empty-title">Build your page</span>
-            <span>Start with a section, container, or element.</span>
-            <button type="button" class="home__builder-empty-add" @click="openPageAdd">
-              <span aria-hidden="true">+</span>Add
-            </button>
-          </div>
-          <div v-for="node in document.children" :key="node.id" class="home__builder-node">
-            <EditorNode :node="node" :root-node="true" />
-          </div>
-          <EditorNode v-for="node in document.componentChildren" :key="node.id" :node="node" />
-        </div>
-
-        <AddMenu :open="showPageAdd" :anchor="pageAddTrigger" title="Add to page"
-          @select="addPageItem" @close="showPageAdd = false" />
+        <button type="button" class="home__builder-add" @click="createNewComponent">
+          <span aria-hidden="true">+</span> Create New Component
+        </button>
       </section>
 
       <section class="home__summary" aria-label="System overview">
@@ -188,12 +155,11 @@ const totalComponents = sections.reduce((sum, s) => sum + s.count, 0)
   border-radius: 14px;
   background: #ffffff;
 }
-.home__builder-heading {
+.home__create-component {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 20px;
+  gap: 24px;
 }
 .home__builder-title {
   margin: 0 0 6px;
@@ -205,59 +171,26 @@ const totalComponents = sections.reduce((sum, s) => sum + s.count, 0)
   color: #64748b;
   font-size: 14px;
 }
-.home__builder-add,
-.home__builder-empty-add {
+.home__builder-add {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  min-height: 36px;
-  padding: 0 16px;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 18px;
   border: 1px solid #dfc1e7;
-  border-radius: 18px;
-  background: #fff;
-  color: #8f0070;
-  font-size: 12px;
+  border-radius: 9px;
+  background: #8f0070;
+  color: #fff;
+  font-size: 13px;
   font-weight: 700;
+  white-space: nowrap;
   cursor: pointer;
 }
-.home__builder-add span,
-.home__builder-empty-add span {
-  font-size: 18px;
-  line-height: 1;
-}
-.home__builder-add:hover,
-.home__builder-empty-add:hover {
-  border-color: #b9159d;
-  background: #fff4fe;
-}
-.home__builder-canvas {
-  min-height: 188px;
-  padding: 16px;
-  border: 1px dashed #cbd0d7;
-  background: #fff;
-}
-.home__builder-empty {
-  min-height: 150px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  color: #6b7280;
-  font-size: 12px;
-  text-align: center;
-}
-.home__builder-empty-title {
-  color: #30343a;
-  font-size: 14px;
-  font-weight: 700;
-}
-.home__builder-empty-add { margin-top: 8px; }
-.home__builder-node { width: 100%; }
+.home__builder-add:hover { background: #72005a; }
+.home__builder-add span { font-size: 19px; line-height: 1; }
 @media (max-width: 600px) {
-  .home__builder { padding: 16px; }
-  .home__builder-heading { align-items: flex-start; }
+  .home__create-component { align-items: flex-start; flex-direction: column; }
   .home__builder-title { font-size: 21px; }
 }
 
