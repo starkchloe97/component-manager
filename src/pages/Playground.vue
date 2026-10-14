@@ -12,7 +12,7 @@ const componentId = computed(() => String(route.params.componentId || 'playgroun
 const componentName = computed(() => String(route.query.name || 'Untitled component'))
 const {
   document, selectedNodeId, setActiveComponent, selectNode,
-  duplicateNode, resetActiveComponent, moveNode,
+  duplicateNode, resetActiveComponent, moveNode, getNodeParentId,
   addNode, addContainer, beginFillDraft,
 } = useEditor()
 
@@ -76,7 +76,9 @@ function handleDrop(row, event) {
   const siblings = targetParentId
     ? (document.children.find(n => n.id === targetParentId)?.children || findNode(targetParentId)?.children || [])
     : document.children
-  const targetIndex = siblings.findIndex(n => n.id === row.node.id)
+  let targetIndex = siblings.findIndex(n => n.id === row.node.id)
+  const sourceIndex = siblings.findIndex(n => n.id === id)
+  if (getNodeParentId(id) === targetParentId && sourceIndex >= 0 && sourceIndex < targetIndex) targetIndex -= 1
   if (targetIndex >= 0) moveNode(id, targetParentId, targetIndex)
   draggingId.value = null
 }
