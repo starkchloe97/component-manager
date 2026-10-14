@@ -13,5 +13,15 @@ function closePlayground() {
 </script>
 
 <template>
-  <Editor :key="componentId" :initial-component-id="componentId" @close="closePlayground" />
+  <div class="playground-editor">
+    <Editor :key="componentId" :initial-component-id="componentId" enable-builder @close="closePlayground" />
+  </div>
 </template>
+
+<style scoped>
+@media (max-width: 900px) {
+  .playground-editor :deep(.navigator-toggle) {
+    display: grid;
+  }
+}
+</style>
