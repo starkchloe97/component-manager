@@ -11,8 +11,8 @@ const router = useRouter()
 const componentId = computed(() => String(route.params.componentId || 'playground-default'))
 const componentName = computed(() => String(route.query.name || 'Untitled component'))
 const {
-  document, selectedNodeId, selectedNode, setActiveComponent, selectNode,
-  duplicateNode, resetActiveComponent, moveNode, getNodeParentId,
+  document, selectedNodeId, setActiveComponent, selectNode,
+  duplicateNode, resetActiveComponent, moveNode,
   addNode, addContainer, beginFillDraft,
 } = useEditor()
 
