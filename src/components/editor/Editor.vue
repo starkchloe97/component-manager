@@ -123,7 +123,7 @@ async function copyComponent() {
     <section class="editor-shell" role="dialog" aria-modal="true"
       :aria-label="`Edit ${activeComponent?.name || 'component'}`">
       <div v-if="!preview" class="editor-inspector" :class="{ closed: !inspectorOpen }">
-        <ElementorInspector />
+        <ElementorInspector :enable-builder="enableBuilder" />
       </div>
       <main class="editor-workspace">
         <header class="workspace-bar">
