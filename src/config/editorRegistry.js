@@ -112,6 +112,22 @@ export const editorRegistry = {
       styles: { width: "100%", height: "auto", display: "block" },
     },
   },
+  "icon-list": {
+    label: "Icon List",
+    category: "Basic",
+    defaults: {
+      props: { items: ["First item", "Second item", "Third item"], icon: "Check", iconPosition: "left" },
+      styles: { display: "flex", flexDirection: "column", gap: "10px", color: "#374151", fontSize: "16px", lineHeight: "1.5" },
+    },
+  },
+  divider: {
+    label: "Divider",
+    category: "Basic",
+    defaults: {
+      props: { style: "solid" },
+      styles: { width: "100%", borderTop: "1px solid #d1d5db", marginTop: "12px", marginBottom: "12px" },
+    },
+  },
   icon: {
     label: "Icon",
     category: "Basic",
