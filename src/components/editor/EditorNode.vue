@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, ref, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { ChevronUp, Copy, FolderOpen, GripVertical, Plus, Sparkles, Trash2, X } from "@lucide/vue";
 import { useEditor } from "@/composables/useEditor";
 import { useComponentEditor } from "@/composables/useComponentEditor";
@@ -101,6 +101,23 @@ const canAcceptChildren = computed(() => ["container", "column", "section"].incl
 
 watch([selectedNodeId, viewportTick], () => {
   if (selectedNodeId.value === props.node.id) nextTick(updateLeafToolbarPosition);
+});
+
+// Drop indicators belong to the hovered target node, not the dragged source.
+// A successful drop often ends outside the target's DOM subtree, so clear
+// every mounted node's local indicator when the native drag operation ends.
+function clearDropIndicators() {
+  resetDropState();
+}
+
+onMounted(() => {
+  window.addEventListener("dragend", clearDropIndicators, true);
+  window.addEventListener("drop", clearDropIndicators, true);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("dragend", clearDropIndicators, true);
+  window.removeEventListener("drop", clearDropIndicators, true);
 });
 
 function closeMenus() {
