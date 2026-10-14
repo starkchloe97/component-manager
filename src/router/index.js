@@ -21,6 +21,7 @@ import ProcessSectionView from '@/pages/ProcessSectionView.vue'
 import TabSectionView from '@/pages/TabSectionView.vue'
 import WhyWorkWithUsView from '@/pages/WhyWorkWithUsView.vue'
 import WhyRegisterCopyRightView from '@/pages/WhyRegisterCopyRightView.vue'
+import Test from '@/pages/test.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -36,11 +37,16 @@ const router = createRouter({
       component: Playground,
       props: true,
     },
-    
+
     {
       path: '/TextImage',
       name: 'TextImage',
       component: TextImagesSectionView,
+    },
+    {
+      path: '/test',
+      name: 'Test',
+      component: Test,
     },
     {
       path: '/CTA',
@@ -95,32 +101,32 @@ const router = createRouter({
     {
       path: '/Marquee',
       name: 'MarqueeView',
-      component:MarqueeView   
+      component:MarqueeView
     },
     {
       path: '/ContentSection',
       name: 'ContentSectionViewContentSectionView',
-      component:ContentSectionView   
+      component:ContentSectionView
     },
     {
       path: '/BrandRegistration',
       name: 'BrandRegistrationView',
-      component:BrandRegistrationView 
+      component:BrandRegistrationView
     },
     {
       path: '/whyFile',
       name: 'whyFile',
-      component:whyFile 
+      component:whyFile
     },
     {
       path: '/ProcessSection',
       name: 'ProcessSectionView',
-      component:ProcessSectionView 
+      component:ProcessSectionView
     },
     {
       path: '/TabSection',
       name: 'TabSectionView',
-      component:TabSectionView 
+      component:TabSectionView
     },
     {
       path: '/WhyWorkWithUs',
