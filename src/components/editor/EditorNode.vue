@@ -96,7 +96,7 @@ const renderedContentStyles = computed(() => isFlexRowItem.value
   ? { ...renderedStyles.value, width: "100%", minWidth: "0", maxWidth: "100%" }
   : renderedStyles.value);
 const resolvedIcon = computed(() => resolveIcon(props.node.props?.icon));
-const isLeaf = computed(() => ["heading", "text", "button", "image", "icon"].includes(props.node.type));
+const isLeaf = computed(() => ["heading", "text", "button", "image", "icon", "icon-list", "divider"].includes(props.node.type));
 const canAcceptChildren = computed(() => ["container", "column", "section"].includes(props.node.type));
 
 watch([selectedNodeId, viewportTick], () => {
@@ -613,6 +613,26 @@ function openDropAi(event) {
     />
 
     <div
+      v-else-if="node.type === 'icon-list'"
+      ref="leafElement"
+      class="builder-icon-list"
+      :style="renderedContentStyles"
+    >
+      <div v-for="(item, index) in (node.props.items || [])" :key="index" class="builder-icon-list__item">
+        <component :is="resolveIcon(node.props.icon || 'Check')" :size="16" aria-hidden="true" />
+        <span>{{ item }}</span>
+      </div>
+    </div>
+
+    <hr
+      v-else-if="node.type === 'divider'"
+      ref="leafElement"
+      class="builder-element builder-divider"
+      :style="renderedContentStyles"
+      aria-hidden="true"
+    />
+
+    <div
       v-else-if="node.type === 'icon'"
       ref="leafElement"
       class="builder-icon-alignment"
@@ -680,6 +700,27 @@ function openDropAi(event) {
   position: relative;
   min-width: 0;
   box-sizing: border-box;
+}
+
+.builder-icon-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.builder-icon-list__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+}
+.builder-icon-list__item > svg {
+  flex: 0 0 auto;
+  margin-top: .25em;
+}
+.builder-divider {
+  box-sizing: border-box;
+  border: 0;
+  border-top: 1px solid #d1d5db;
+  height: 0;
 }
 
 .editor-node--container {
