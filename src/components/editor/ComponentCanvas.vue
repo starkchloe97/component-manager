@@ -376,10 +376,18 @@ onUnmounted(() => {
         @click="handleBuilderClick"
       >
         <div class="page-section-list">
+          <div v-if="!document.children.length" class="empty-page-state">
+            <div class="empty-page-icon" aria-hidden="true">＋</div>
+            <div class="empty-page-title">Start building your component</div>
+            <p>Add a container or an element to begin designing.</p>
+            <button type="button" class="empty-page-add" @click="openPageAdd($event.currentTarget)">
+              <span aria-hidden="true">＋</span> Add element
+            </button>
+          </div>
           <div v-for="node in document.children" :key="node.id" class="page-section-node">
             <EditorNode :node="node" :root-node="true" />
           </div>
-          <div v-if="document.children.length" class="bottom-insert-area" @click.stop>
+          <div class="bottom-insert-area" @click.stop>
             <InsertionPoint label="Add" :visible="true" @activate="openPageAdd" />
           </div>
 
@@ -503,16 +511,38 @@ onUnmounted(() => {
 
 .empty-page-state {
   position: relative;
-  min-height: 188px;
+  min-height: 260px;
+  margin: 12px 24px 0;
+  padding: 28px 16px;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 7px;
   border: 1px dashed #cbd0d7;
+  border-radius: 8px;
   background: #fff;
   color: #6b7280;
-  font-size: 12px
+  font-size: 12px;
+  text-align: center
+}
+.empty-page-state p {
+  max-width: 280px;
+  margin: 0;
+  line-height: 1.5;
+  color: #8a939f
+}
+.empty-page-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  margin-bottom: 5px;
+  border: 1px solid #ead2e7;
+  border-radius: 10px;
+  color: #93003f;
+  font-size: 25px
 }
 
 .empty-page-title {
