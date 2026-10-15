@@ -204,10 +204,11 @@ function openPageAdd(event) {
 function addPageItem(type) {
   showPageAdd.value = false;
   if (type === "container") {
-    beginFillDraft(addContainer("column"));
+    addContainer("column");
     return;
   }
-  addNode(type);
+  const container = addContainer("column");
+  if (container) addNode(type, container.id);
 }
 
 function handleBuilderPointerOver(event) {
@@ -261,10 +262,16 @@ function handleBuilderDrop(event) {
   event.stopPropagation();
   showPageAdd.value = false;
   if (type === "container") {
-    beginFillDraft(addContainer("column"));
-  } else {
-    addNode(type);
+    // A dropped Flexbox Container is created immediately, without opening the
+    // structure picker. This matches Elementor's empty-container workflow.
+    addContainer("column");
+    return;
   }
+
+  // Widgets dropped onto the page root are never left as ungrouped siblings.
+  // Create a flex container first, then insert the widget as its child.
+  const container = addContainer("column");
+  if (container) addNode(type, container.id);
 }
 
 function startInlineEdit(event) {
