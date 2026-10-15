@@ -1,28 +1,24 @@
-import { defineAsyncComponent } from "vue";
-import { Heart } from "@lucide/vue";
+import * as lucideLibrary from "@lucide/vue";
 
-// The full catalog stays behind a lazy import. The document stores only a
-// stable name; this adapter is the single place that resolves it to Vue.
-let iconLibraryPromise;
-const componentCache = new Map();
+// Built once at module init from a STATIC namespace import — the same
+// mechanism the inspector already uses for named icon imports. No runtime
+// dynamic import of the package, so there is no giant chunk for the dev
+// server to fail on and no async failure mode in the picker.
+const isIconComponent = ([name, value]) =>
+  /^[A-Z]/.test(name) &&
+  value != null &&
+  (typeof value === "object" || typeof value === "function");
 
-function loadLibrary() {
-  if (!iconLibraryPromise) {
-    iconLibraryPromise = import("@lucide/vue").catch((error) => {
-      // Allow a later attempt to succeed after a transient chunk/network failure.
-      iconLibraryPromise = undefined;
-      throw error;
-    });
-  }
-  return iconLibraryPromise;
-}
+const iconNames = Object.freeze(
+  Object.entries(lucideLibrary)
+    .filter(isIconComponent)
+    .map(([name]) => name)
+    .sort((left, right) => left.localeCompare(right)),
+);
 
 export async function loadIconNames() {
-  const library = await loadLibrary();
-  // Only expose actual named icon components, not package helpers or metadata.
-  return Object.keys(library)
-    .filter((name) => /^[A-Z]/.test(name) && library[name] != null)
-    .sort((left, right) => left.localeCompare(right));
+  // Kept async so IconPicker.vue's await still works — but it can't fail now.
+  return iconNames;
 }
 
 export const popularIconNames = [
@@ -33,16 +29,7 @@ export const popularIconNames = [
 
 export function resolveIcon(name) {
   const iconName = String(name || "Heart");
-  if (!componentCache.has(iconName)) {
-    componentCache.set(iconName, defineAsyncComponent({
-      loader: async () => {
-        const library = await loadLibrary();
-        return library[iconName] || library.Heart || Heart;
-      },
-      delay: 0,
-    }));
-  }
-  return componentCache.get(iconName);
+  return lucideLibrary[iconName] || lucideLibrary.Heart;
 }
 
 export function readableIconName(name) {
