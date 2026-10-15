@@ -14,6 +14,8 @@ const containerDraft = ref(null);
 // ignored during a drag so the interaction layer stays stable.
 const draggingNodeId = ref(null);
 const draggingNodeType = ref(null);
+// Exactly one canvas node owns the visible drop indicator at a time.
+const activeDropTargetId = ref(null);
 // Shared, rAF-throttled viewport tick. Replaces per-node window scroll/resize
 // listeners (2N listeners for N nodes) with exactly two global listeners.
 const viewportTick = ref(0);
@@ -248,6 +250,9 @@ export function useEditor() {
   const endDragging = () => {
     draggingNodeId.value = null;
     draggingNodeType.value = null;
+  };
+  const setActiveDropTarget = (id) => {
+    activeDropTargetId.value = id || null;
   };
   const getNodeParentId = (id) => findParentInDocument(id)?.id || null;
   const getNodeById = (id) => (id ? findNodeInDocument(id) : null);
@@ -627,6 +632,8 @@ export function useEditor() {
     containerDraft,
     draggingNodeId,
     draggingNodeType,
+    activeDropTargetId,
+    setActiveDropTarget,
     startWidgetDragging,
     viewportTick,
     selectedNode,
