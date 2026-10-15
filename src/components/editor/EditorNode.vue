@@ -27,6 +27,8 @@ const {
   hoveredNodeId,
   draggingNodeId,
   draggingNodeType,
+  activeDropTargetId,
+  setActiveDropTarget,
   viewportTick,
   selectNode,
   startDragging,
@@ -56,7 +58,7 @@ const addMode = ref("inside");
 const leafElement = ref(null);
 const leafToolbarStyle = ref({});
 const dragDepth = ref(0);
-const isDropTarget = ref(false);
+const isDropTarget = computed(() => activeDropTargetId.value === props.node.id);
 const dropPosition = ref(null);
 
 const isContainer = computed(() => props.node.type === "container");
@@ -213,7 +215,7 @@ function cancelInlineEdit(event) {
 
 function resetDropState() {
   dragDepth.value = 0;
-  isDropTarget.value = false;
+  if (activeDropTargetId.value === props.node.id) setActiveDropTarget(null);
   dropPosition.value = null;
 }
 
@@ -258,7 +260,7 @@ function handleDragEnter(event) {
   // This node is the current candidate only while the pointer is over it.
   // A single active indicator is preferable to accumulating nested targets.
   dragDepth.value = 1;
-  isDropTarget.value = true;
+  setActiveDropTarget(props.node.id);
   dropPosition.value = getDropPosition(event);
   const { nodeId } = getDragPayload(event);
   if (event.dataTransfer) event.dataTransfer.dropEffect = nodeId ? "move" : "copy";
@@ -274,7 +276,7 @@ function handleDragOver(event) {
   // browser show the drag preview while refusing to complete the drop.
   event.preventDefault();
   event.stopPropagation();
-  isDropTarget.value = true;
+  setActiveDropTarget(props.node.id);
   dropPosition.value = getDropPosition(event);
   const { nodeId } = getDragPayload(event);
   if (event.dataTransfer) event.dataTransfer.dropEffect = nodeId ? "move" : "copy";
