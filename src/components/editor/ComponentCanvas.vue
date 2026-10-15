@@ -205,7 +205,8 @@ function openPageAdd(event) {
 function addPageItem(type) {
   showPageAdd.value = false;
   if (type === "container") {
-    addContainer("column");
+    const created = addContainer("column");
+    beginFillDraft(created);
     return;
   }
   const container = addContainer("column");
@@ -268,9 +269,8 @@ function handleBuilderDrop(event) {
   event.stopPropagation();
   showPageAdd.value = false;
   if (type === "container") {
-    // A dropped Flexbox Container is created immediately, without opening the
-    // structure picker. This matches Elementor's empty-container workflow.
-    addContainer("column");
+    const created = addContainer("column");
+    beginFillDraft(created);
     endDragging();
     return;
   }
