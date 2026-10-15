@@ -13,7 +13,7 @@ export function useComponentCopy() {
     // lag behind the canvas when component switching happens elsewhere.
     const component = componentId
       ? components[componentId] || componentRegistry[componentId]
-        || (componentId.startsWith("playground-") ? { id: componentId, styles: {} } : null)
+      || (componentId.startsWith("playground-") ? { id: componentId, styles: {} } : null)
       : selectedComponent.value;
     if (!component) return { ok: false, error: "No component is selected." };
 
@@ -304,7 +304,8 @@ function serializeNode(node, depth = 0, iconNames = new Set()) {
       const aria = node.props?.decorative
         ? ' aria-hidden="true"'
         : ` role="img" aria-label="${escapeAttribute(node.props?.ariaLabel || node.props?.title || name)}"`;
-      const svg = `<component :is="resolveIcon(${JSON.stringify(name)})" :size="'100%'" :stroke-width="${Number(node.props?.strokeWidth) || 2}"${aria} focusable="false" />`;
+
+      const svg = `<component :is='resolveIcon(${JSON.stringify(name)})' :size="'100%'" :stroke-width="${Number(node.props?.strokeWidth) || 2}"${aria} focusable="false" />`;
       if (node.props?.href) {
         const target = node.props?.newTab ? ' target="_blank" rel="noopener noreferrer"' : "";
         return `${indent}<a href="${escapeAttribute(node.props.href)}"${target}${attrs}>${svg}</a>`;
@@ -319,12 +320,15 @@ function serializeNode(node, depth = 0, iconNames = new Set()) {
       const listAttrs = styleValue ? ` style="${escapeAttribute(styleValue)}"` : "";
       const itemStyle = "display: flex; align-items: flex-start; gap: 9px;";
       const iconStyle = "flex: 0 0 auto; margin-top: .25em;";
-      const rows = items.map((item) => {
-        const safeItem = escapeHtml(item);
-        const icon = `<component :is="resolveIcon(${JSON.stringify(name)})" :size="16" aria-hidden="true" />`;
-        return `${" ".repeat(depth + 2)}<div style="${itemStyle}">\\n${" ".repeat(depth + 4)}${icon.replace(" aria-hidden=", ` style="${iconStyle}" aria-hidden=`)}\\n${" ".repeat(depth + 4)}<span>${safeItem}</span>\\n${" ".repeat(depth + 2)}</div>`;
-      }).join("\\n");
-      return `${indent}<div${listAttrs}>${rows ? "\\n" + rows + "\\n" + indent : ""}</div>`;
+
+const rows = items.map((item) => {
+  const safeItem = escapeHtml(item);
+  const icon = `<component :is='resolveIcon(${JSON.stringify(name)})' :size="16" aria-hidden="true" />`;
+  return `${" ".repeat(depth + 2)}<div style="${itemStyle}">\n${" ".repeat(depth + 4)}${icon.replace(" aria-hidden=", ` style="${iconStyle}" aria-hidden=`)}\n${" ".repeat(depth + 4)}<span>${safeItem}</span>\n${" ".repeat(depth + 2)}</div>`;
+}).join("\n");
+
+return `${indent}<div${listAttrs}>${rows ? "\n" + rows + "\n" + indent : ""}</div>`;
+
     }
     case "component": {
       const children = (node.children || [])
