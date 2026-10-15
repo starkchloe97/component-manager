@@ -249,16 +249,33 @@ function appendBuilderContent(source, componentChildren, sections, includeAllPag
   if (!nodes.length) return source;
 
   const iconNames = new Set();
+  iconNames.cssRules = [];
+  iconNames.nextClassId = 0;
   const markup = nodes.map((node) => serializeNode(node, 2, iconNames)).join("\n\n");
   const withIcons = ensureIconResolver(source, iconNames);
 
-  if (/<\/template>/i.test(withIcons)) {
-    return withIcons.replace(/<\/template>/i, "\n\n" + markup + "\n</template>");
-  }
-
-  return "<template>\n" + markup + "\n</template>\n\n" + withIcons;
+  let output = /<\/template>/i.test(withIcons)
+    ? withIcons.replace(/<\/template>/i, "\n\n" + markup + "\n</template>")
+    : "<template>\n" + markup + "\n</template>\n\n" + withIcons;
+  return iconNames.cssRules.length ? appendGeneratedStyles(output, iconNames.cssRules) : output;
 }
 
+function addNodeStyles(styles, context) {
+  const declarations = styleAttribute(styles);
+  if (!declarations) return "";
+  context.cssRules = context.cssRules || [];
+  context.nextClassId = context.nextClassId || 0;
+  const className = "builder-node-" + (++context.nextClassId);
+  context.cssRules.push("." + className + " {\n" + declarations.replace(/;\s*/g, ";\n  ") + "\n}");
+  return className;
+}
+
+function appendGeneratedStyles(source, rules) {
+  const css = rules.join("\n\n");
+  const match = source.match(/<style\b([^>]*)>([\s\S]*?)<\/style>/i);
+  if (match) return source.replace(match[0], "<style" + match[1] + ">\n" + [match[2].trim(), css].filter(Boolean).join("\n\n") + "\n</style>");
+  return source + "\n\n<style scoped>\n" + css + "\n</style>";
+}
 function ensureIconResolver(source, iconNames) {
   if (!iconNames.size) return source;
   const imports = 'import { resolveIcon } from "@/config/iconLibrary";';
@@ -273,8 +290,8 @@ function ensureIconResolver(source, iconNames) {
 
 function serializeNode(node, depth = 0, iconNames = new Set()) {
   const indent = " ".repeat(depth);
-  const style = styleAttribute(node.styles);
-  const attrs = style ? ` style="${escapeAttribute(style)}"` : "";
+  const className = addNodeStyles(node.styles, iconNames);
+  const attrs = className ? ` class="${className}"` : "";
 
   switch (node.type) {
     case "section":
