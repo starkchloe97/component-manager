@@ -260,6 +260,14 @@ function appendBuilderContent(source, componentChildren, sections, includeAllPag
   return iconNames.cssRules.length ? appendGeneratedStyles(output, iconNames.cssRules) : output;
 }
 
+function addGeneratedRule(context, baseName, declarations) {
+  context.cssRules = context.cssRules || [];
+  context.nextClassId = context.nextClassId || 0;
+  const className = baseName + "-" + (++context.nextClassId);
+  if (declarations) context.cssRules.push("." + className + " {\n  " + declarations + "\n}");
+  return className;
+}
+
 function addNodeStyles(styles, context) {
   const declarations = styleAttribute(styles);
   if (!declarations) return "";
@@ -333,19 +341,16 @@ function serializeNode(node, depth = 0, iconNames = new Set()) {
       const name = String(node.props?.icon || "Check");
       iconNames.add(name);
       const items = Array.isArray(node.props?.items) ? node.props.items : [];
-      const styleValue = styleAttribute(node.styles);
-      const listAttrs = styleValue ? ` style="${escapeAttribute(styleValue)}"` : "";
-      const itemStyle = "display: flex; align-items: flex-start; gap: 9px;";
-      const iconStyle = "flex: 0 0 auto; margin-top: .25em;";
-
-const rows = items.map((item) => {
-  const safeItem = escapeHtml(item);
-  const icon = `<component :is='resolveIcon(${JSON.stringify(name)})' :size="16" aria-hidden="true" />`;
-  return `${" ".repeat(depth + 2)}<div style="${itemStyle}">\n${" ".repeat(depth + 4)}${icon.replace(" aria-hidden=", ` style="${iconStyle}" aria-hidden=`)}\n${" ".repeat(depth + 4)}<span>${safeItem}</span>\n${" ".repeat(depth + 2)}</div>`;
-}).join("\n");
-
-return `${indent}<div${listAttrs}>${rows ? "\n" + rows + "\n" + indent : ""}</div>`;
-
+      const listClass = addGeneratedRule(iconNames, "builder-icon-list", "");
+      const itemClass = addGeneratedRule(iconNames, "builder-icon-list__item", "display: flex; align-items: flex-start; gap: 9px;");
+      const iconClass = addGeneratedRule(iconNames, "builder-icon-list__icon", "flex: 0 0 auto; margin-top: .25em;");
+      const textClass = addGeneratedRule(iconNames, "builder-icon-list__text", "min-width: 0;");
+      const rows = items.map((item) => {
+        const safeItem = escapeHtml(item);
+        const icon = "<component :is='resolveIcon(" + JSON.stringify(name) + ")' :size=\"16\" aria-hidden=\"true\" class=\"" + iconClass + "\" />";
+        return " ".repeat(depth + 2) + '<div class="' + itemClass + '">\n' + " ".repeat(depth + 4) + icon + "\n" + " ".repeat(depth + 4) + '<span class="' + textClass + '">' + safeItem + "</span>\n" + " ".repeat(depth + 2) + "</div>";
+      }).join("\n");
+      return indent + '<div class="' + listClass + (className ? " " + className : "") + '">' + (rows ? "\n" + rows + "\n" + indent : "") + "</div>";
     }
     case "component": {
       const children = (node.children || [])
