@@ -30,10 +30,41 @@ function saveRecent(name) {
     // Icon selection should still work when storage is unavailable.
   }
 }
-const searchedIcons = computed(() => searchIcons(availableIcons.value, query.value));
-const matchingIcons = computed(() => searchedIcons.value.slice(0, PAGE_SIZE));
+const iconCategories = [
+  { id: "all", label: "All" },
+  { id: "arrows", label: "Arrows", test: /^(arrow|chevron|chevrons|move|corner|undo|redo|rotate|refresh|repeat|shuffle|turn|merge|split|expand|collapse|switch|reply|forward|rewind|fastforward|signpost|route|navigation)/i },
+  { id: "media", label: "Media", test: /^(play|pause|stop|skip|volume|music|audio|video|film|camera|image|mic|microphone|headphones|speaker|radio|disc|clapperboard|podcast|cast|tv|monitor-play|screen-share|subtitles|captions)/i },
+  { id: "communication", label: "Communication", test: /^(mail|message|messages|send|inbox|phone|contact|at-sign|reply|forward|chat|speech|megaphone|bell|voicemail|mailbox|share|rss|webhook)/i },
+  { id: "people", label: "People", test: /^(user|users|contact|person-standing|baby|accessibility|hand|heart-handshake|smile|frown|meh|laugh|thumbs|fingerprint|id-card|badge-check|person)/i },
+  { id: "files", label: "Files", test: /^(file|folder|clipboard|notebook|book|archive|paperclip|files|download|upload|save|database|hard-drive|cloud)/i },
+  { id: "design", label: "Design", test: /^(palette|paint|brush|pen|pencil|eraser|ruler|crop|layers|frame|shapes|type|text|baseline|contrast|pipette|swatch|wand|sparkles|scan|focus|layout|grid|sliders)/i },
+  { id: "development", label: "Development", test: /^(code|terminal|bug|git|github|gitlab|braces|brackets|binary|command|variable|webhook|server|workflow|blocks|component|package|cpu|database|regex|bot|laptop|monitor|keyboard)/i },
+  { id: "business", label: "Business", test: /^(briefcase|building|chart|trending|bank|wallet|credit-card|receipt|calculator|coins|dollar|euro|pound|currency|shopping|store|truck|package|calendar|clock|timer|target|trophy|award|medal|flag|presentation)/i },
+  { id: "nature", label: "Nature", test: /^(sun|moon|cloud|snow|rain|wind|thermometer|leaf|flower|trees|tree|sprout|mountain|waves|droplet|flame|bird|bug|fish|cat|dog|paw|earth|globe|sunrise|sunset|cactus|recycle)/i },
+  { id: "shapes", label: "Shapes", test: /^(circle|square|triangle|hexagon|pentagon|octagon|diamond|heart|star|asterisk|plus|minus|x$|check|slash|equal|infinity|cross|badge|loader|dot|grip|ellipsis)/i },
+  { id: "navigation", label: "Navigation", test: /^(house|home|map|map-pin|compass|navigation|locate|map-pinned|signpost|milestone|plane|car|bus|train|bike|ship|anchor|rocket|parking|footprints|route|earth|globe|building)/i },
+  { id: "security", label: "Security", test: /^(lock|unlock|shield|key|eye|scan-eye|fingerprint|badge-check|user-check|shield-check|shield-alert|shield-x|verified|check-check|scan)/i },
+  { id: "ui", label: "Interface", test: /^(menu|panel|sidebar|settings|sliders|filter|search|plus|minus|x$|check|more|ellipsis|grip|maximize|minimize|external-link|link|unlink|toggle|switch|square|circle|list|table|columns|rows|align|sort|command|keyboard|mouse|pointer|cursor|bell|calendar|clock)/i },
+];
+const activeCategory = ref("all");
+const pageSize = ref(PAGE_SIZE);
 const showingSearch = computed(() => Boolean(query.value.trim()));
-const activeHeading = computed(() => showingSearch.value ? `Search results (${matchingIcons.value.length}${searchedIcons.value.length > PAGE_SIZE ? "+" : ""})` : "All icons");
+const categorizedIcons = computed(() => {
+  const names = searchIcons(availableIcons.value, query.value);
+  if (activeCategory.value === "all") return names;
+  const category = iconCategories.find((item) => item.id === activeCategory.value);
+  return category ? names.filter((name) => category.test.test(name)) : names;
+});
+const matchingIcons = computed(() => categorizedIcons.value.slice(0, pageSize.value));
+const hasMoreIcons = computed(() => matchingIcons.value.length < categorizedIcons.value.length);
+const activeHeading = computed(() => {
+  const category = iconCategories.find((item) => item.id === activeCategory.value);
+  return `${showingSearch.value ? "Search results" : category?.label || "All icons"} (${categorizedIcons.value.length})`;
+});
+function selectCategory(category) {
+  activeCategory.value = category;
+  pageSize.value = PAGE_SIZE;
+}
 
 function choose(name) { saveRecent(name); emit("select", name); }
 function close() { emit("close"); }
@@ -51,6 +82,8 @@ watch(() => props.open, async (isOpen) => {
   }
   recent.value = readRecent();
   query.value = "";
+  activeCategory.value = "all";
+  pageSize.value = PAGE_SIZE;
   loadingIcons.value = true;
   iconLoadError.value = "";
   try {
@@ -89,8 +122,14 @@ onBeforeUnmount(() => {
           <Search :size="16" /><input ref="searchInput" v-model="query" type="search" placeholder="Search 1,800+ icons"
             aria-label="Search icons" /><kbd>Esc</kbd>
         </label>
+        <nav class="icon-category-tabs" aria-label="Icon categories">
+          <button v-for="category in iconCategories" :key="category.id" type="button"
+            :class="{ active: activeCategory === category.id }" @click="selectCategory(category.id)">
+            {{ category.label }}
+          </button>
+        </nav>
         <div class="picker-scroll">
-          <section v-if="!showingSearch && recent.length" class="picker-section">
+          <section v-if="!showingSearch && activeCategory === 'all' && recent.length" class="picker-section">
             <h3>
               <Clock3 :size="14" />Recently used
             </h3>
@@ -100,7 +139,7 @@ onBeforeUnmount(() => {
                 <component :is="resolveIcon(name)" :size="22" />
               </button></div>
           </section>
-          <section v-if="!showingSearch" class="picker-section">
+          <section v-if="!showingSearch && activeCategory === 'all'" class="picker-section">
             <h3>Popular</h3>
             <div class="icon-grid icon-grid--compact"><button v-for="name in popularIconNames" :key="name" type="button"
                 :class="{ selected: selected === name }" :title="readableIconName(name)"
@@ -117,8 +156,9 @@ onBeforeUnmount(() => {
                 :aria-label="readableIconName(name)" @click="choose(name)">
                 <component :is="resolveIcon(name)" :size="22" /><span>{{ readableIconName(name) }}</span>
               </button></div>
-            <p v-else-if="!loadingIcons && !iconLoadError" class="no-icons">No icons match “{{ query }}”. Try a shorter
-              search.</p>
+            <p v-else-if="!loadingIcons && !iconLoadError" class="no-icons">No icons match this category and search. Try another category or search term.</p>
+            <button v-if="!loadingIcons && !iconLoadError && hasMoreIcons" type="button" class="load-more-icons"
+              @click="pageSize += PAGE_SIZE">Load more icons ({{ matchingIcons.length }} of {{ categorizedIcons.length }})</button>
           </section>
         </div>
       </section>
@@ -227,6 +267,12 @@ onBeforeUnmount(() => {
   font-size: 10px
 }
 
+.icon-category-tabs { display: flex; gap: 6px; overflow-x: auto; padding: 0 20px 12px; border-bottom: 1px solid #eef0f2; scrollbar-width: thin }
+.icon-category-tabs button { flex: 0 0 auto; padding: 7px 11px; border: 1px solid #e2e6e9; border-radius: 5px; background: #fff; color: #5f6b75; font-size: 11px; cursor: pointer }
+.icon-category-tabs button:hover { border-color: #bd4daa; color: #93003f }
+.icon-category-tabs button.active { border-color: #93003f; background: rgba(147,0,63,.08); color: #93003f; font-weight: 700 }
+.load-more-icons { display: block; width: 100%; margin-top: 12px; padding: 10px; border: 1px solid #e2e6e9; border-radius: 5px; background: #fff; color: #93003f; font-size: 12px; font-weight: 600; cursor: pointer }
+.load-more-icons:hover { border-color: #93003f; background: #fff4fe }
 .picker-scroll {
   overflow: auto;
   padding: 0 20px 20px
@@ -324,6 +370,7 @@ onBeforeUnmount(() => {
     max-height: calc(100vh - 16px)
   }
 
+  .icon-category-tabs { padding-left: 12px; padding-right: 12px }
   .picker-header,
   .icon-search,
   .picker-scroll {
