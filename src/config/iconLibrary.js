@@ -7,7 +7,7 @@ let iconLibraryPromise;
 const componentCache = new Map();
 
 function loadLibrary() {
-  if (!iconLibraryPromise) iconLibraryPromise = import("@lucide/vue/dist/esm/icons/index.mjs");
+  if (!iconLibraryPromise) iconLibraryPromise = import("@lucide/vue");
   return iconLibraryPromise;
 }
 
