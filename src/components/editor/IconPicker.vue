@@ -12,6 +12,7 @@ const recentKey = "component-manager:recent-icons";
 const recent = ref([]);
 const availableIcons = ref([]);
 const loadingIcons = ref(false);
+const iconLoadError = ref("");
 const PAGE_SIZE = 180;
 
 function readRecent() {
@@ -23,7 +24,11 @@ function readRecent() {
 }
 function saveRecent(name) {
   recent.value = [name, ...recent.value.filter((item) => item !== name)].slice(0, 12);
-  if (typeof window !== "undefined") window.localStorage.setItem(recentKey, JSON.stringify(recent.value));
+  try {
+    if (typeof window !== "undefined") window.localStorage.setItem(recentKey, JSON.stringify(recent.value));
+  } catch {
+    // Icon selection should still work when storage is unavailable.
+  }
 }
 const searchedIcons = computed(() => searchIcons(availableIcons.value, query.value));
 const matchingIcons = computed(() => searchedIcons.value.slice(0, PAGE_SIZE));
@@ -47,7 +52,17 @@ watch(() => props.open, async (isOpen) => {
   recent.value = readRecent();
   query.value = "";
   loadingIcons.value = true;
-  try { availableIcons.value = await loadIconNames(); } finally { loadingIcons.value = false; }
+  iconLoadError.value = "";
+  try {
+    const names = await loadIconNames();
+    availableIcons.value = names;
+    if (!names.length) iconLoadError.value = "The Lucide package did not return any icon components.";
+  } catch (error) {
+    console.error("Unable to load the Lucide icon library:", error);
+    iconLoadError.value = "Could not load the Lucide icon library. Check the browser console for the import error.";
+  } finally {
+    loadingIcons.value = false;
+  }
   if (!props.open) return;
   await nextTick();
   searchInput.value?.focus();
@@ -85,10 +100,11 @@ onBeforeUnmount(() => {
           </section>
           <section class="picker-section"><h3>{{ activeHeading }}</h3>
             <p v-if="loadingIcons" class="no-icons">Loading icon library…</p>
-            <div v-if="matchingIcons.length" class="icon-grid"><button v-for="name in matchingIcons" :key="name" type="button"
+            <p v-else-if="iconLoadError" class="no-icons">{{ iconLoadError }}</p>
+            <div v-else-if="matchingIcons.length" class="icon-grid"><button v-for="name in matchingIcons" :key="name" type="button"
               :class="{ selected: selected === name }" :title="readableIconName(name)" :aria-label="readableIconName(name)"
               @click="choose(name)"><component :is="resolveIcon(name)" :size="22" /><span>{{ readableIconName(name) }}</span></button></div>
-            <p v-else class="no-icons">No icons match “{{ query }}”. Try a shorter search.</p>
+            <p v-else-if="!loadingIcons && !iconLoadError" class="no-icons">No icons match “{{ query }}”. Try a shorter search.</p>
           </section>
         </div>
       </section>
