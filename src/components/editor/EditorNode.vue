@@ -255,7 +255,9 @@ function handleDragEnter(event) {
   if (!canAcceptDrag(event)) return;
   event.preventDefault();
   event.stopPropagation();
-  dragDepth.value += 1;
+  // This node is the current candidate only while the pointer is over it.
+  // A single active indicator is preferable to accumulating nested targets.
+  dragDepth.value = 1;
   isDropTarget.value = true;
   dropPosition.value = getDropPosition(event);
   const { nodeId } = getDragPayload(event);
@@ -280,10 +282,11 @@ function handleDragOver(event) {
 
 function handleDragLeave(event) {
   if (!isDropTarget.value) return;
-  event.preventDefault();
   event.stopPropagation();
-  dragDepth.value = Math.max(0, dragDepth.value - 1);
-  if (dragDepth.value === 0) isDropTarget.value = false;
+  // Nested editor nodes each own their drag handlers. Clear this node as soon
+  // as the pointer leaves it so its insertion bar cannot remain visible beside
+  // the more specific child target.
+  resetDropState();
 }
 
 function getDropPosition(event) {
@@ -413,9 +416,9 @@ function openDropAi(event) {
       'editor-node--nested-container': isNestedContainer,
       'editor-node--hovered': isHovered,
       'editor-node--drop-target': isDropTarget,
-      'editor-node--drop-before': dropPosition === 'before',
-      'editor-node--drop-after': dropPosition === 'after',
-      'editor-node--drop-inside': dropPosition === 'inside',
+      'editor-node--drop-before': isDropTarget && dropPosition === 'before',
+      'editor-node--drop-after': isDropTarget && dropPosition === 'after',
+      'editor-node--drop-inside': isDropTarget && dropPosition === 'inside',
     }"
     @dragenter="handleDragEnter"
     @dragover="handleDragOver"
@@ -525,7 +528,7 @@ function openDropAi(event) {
     :style="layoutItemStyles"
     :data-editor-node-id="node.id"
     :data-editor-node-type="node.type"
-    :class="{ 'editor-node--selected': isSelected, 'editor-node--hovered': isHovered, 'editor-node--drop-target': isDropTarget, 'editor-node--drop-before': dropPosition === 'before', 'editor-node--drop-after': dropPosition === 'after', 'editor-node--drop-inside': dropPosition === 'inside' }"
+    :class="{ 'editor-node--selected': isSelected, 'editor-node--hovered': isHovered, 'editor-node--drop-target': isDropTarget, 'editor-node--drop-before': isDropTarget && dropPosition === 'before', 'editor-node--drop-after': isDropTarget && dropPosition === 'after', 'editor-node--drop-inside': isDropTarget && dropPosition === 'inside' }"
     @dragenter="handleDragEnter"
     @dragover="handleDragOver"
     @dragleave="handleDragLeave"
@@ -835,22 +838,33 @@ function openDropAi(event) {
 .editor-node--drop-after::after {
   content: "";
   position: absolute;
-  left: 4px;
-  right: 4px;
-  height: 3px;
+  left: 0;
+  right: 0;
+  height: 6px;
   border-radius: 999px;
-  background: #4b9cfb;
-  box-shadow: 0 0 0 2px rgba(75, 156, 251, .12);
+  background: #398af5;
+  box-shadow: 0 0 0 3px rgba(57, 138, 245, .13), 0 2px 7px rgba(38, 117, 229, .2);
   pointer-events: none;
   z-index: 80;
+  opacity: 1;
+  transform: scaleX(1);
+  transform-origin: center;
+  transition: opacity .12s ease, transform .16s cubic-bezier(.2, .8, .2, 1);
 }
 
 .editor-node--drop-before::before {
-  top: -2px;
+  top: -3px;
 }
 
 .editor-node--drop-after::after {
-  bottom: -2px;
+  bottom: -3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .editor-node--drop-before::before,
+  .editor-node--drop-after::after {
+    transition: none;
+  }
 }
 
 .editor-node--drop-inside > .editor-container,
