@@ -62,8 +62,14 @@ function startWidgetDrag(type, event) {
 }
 function finishWidgetDrag() { endDragging(); }
 function addWidget(type) {
-  if (type === "container") beginFillDraft(addContainer("column"));
-  else addNode(type);
+  if (type === "container") {
+    addContainer("column");
+    return;
+  }
+  // Clicking a widget in the library follows the same root insertion rule as
+  // dropping it: automatically create a flex container and nest the widget.
+  const container = addContainer("column");
+  if (container) addNode(type, container.id);
 }
 watch(tabs, (nextTabs) => { if (!nextTabs.some((tab) => tab.id === activeTab.value)) activeTab.value = nextTabs[0].id; }, { immediate: true });
 
