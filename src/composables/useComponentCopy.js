@@ -282,7 +282,7 @@ function serializeNode(node, depth = 0, iconNames = new Set()) {
     case "column":
       return wrapNode("div", node, attrs, depth, iconNames);
     case "container":
-      return wrapNode("div", node, attrs, depth);
+      return wrapNode("div", node, attrs, depth, iconNames);
     case "heading": {
       const tag = /^h[1-6]$/i.test(node.props?.tag) ? node.props.tag : "h2";
       return `${indent}<${tag}${attrs}>${escapeHtml(node.props?.text || "")}</${tag}>`;
