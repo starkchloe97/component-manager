@@ -5,13 +5,39 @@ import EditorNode from "./EditorNode.vue";
 import SectionLayoutPicker from "./SectionLayoutPicker.vue";
 
 const props = defineProps({ component: { type: Object, required: true } });
-const { document, addSection } = useEditor();
+const { document, addSection, addContainer, beginFillDraft, draggingNodeType, endDragging } = useEditor();
 const showSectionPicker = ref(false);
+
+function getDraggedType(event) {
+  return draggingNodeType.value
+    || event.dataTransfer?.getData("application/x-editor-node-type")
+    || null;
+}
+
+function handleEmptyCanvasDragOver(event) {
+  if (getDraggedType(event) !== "container") return;
+  event.preventDefault();
+  if (event.dataTransfer) event.dataTransfer.dropEffect = "copy";
+}
+
+function handleEmptyCanvasDrop(event) {
+  if (getDraggedType(event) !== "container") return;
+  event.preventDefault();
+  event.stopPropagation();
+  const created = addContainer("column");
+  beginFillDraft(created);
+  endDragging();
+}
 </script>
 
 <template>
   <main class="editor-canvas" :data-editor-component-id="component.id">
-    <div v-if="!document.children.length" class="empty-canvas">
+    <div
+      v-if="!document.children.length"
+      class="empty-canvas"
+      @dragover="handleEmptyCanvasDragOver"
+      @drop="handleEmptyCanvasDrop"
+    >
       <p>Your page is empty.</p>
       <button type="button" @click="showSectionPicker = true">Add Section</button>
       <SectionLayoutPicker v-if="showSectionPicker"
