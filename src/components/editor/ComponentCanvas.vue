@@ -5,6 +5,7 @@ import AddMenu from "./AddMenu.vue";
 import InsertionPoint from "./InsertionPoint.vue";
 import { useComponentEditor } from "@/composables/useComponentEditor";
 import { useEditor } from "@/composables/useEditor";
+import { editorRegistry } from "@/config/editorRegistry";
 import { isEditorChrome, resolveEditorNodeId } from "@/components/editor/containerStructures";
 
 const props = defineProps({
@@ -20,7 +21,7 @@ const hoveredElement = ref(null);
 const selectedDomElement = ref(null);
 const editingElement = ref(null);
 const { selectedElement, selectElement, clearElement, applyOverrides, getContent, setContent } = useComponentEditor();
-const { selectNode, selectedNodeId, document, setHoveredNode, addContainer, addNode, beginFillDraft } = useEditor();
+const { selectNode, selectedNodeId, document, setHoveredNode, addContainer, addNode, beginFillDraft, draggingNodeType, endDragging } = useEditor();
 const pageAddTrigger = ref(null);
 const showPageAdd = ref(false);
 const componentName = computed(() => props.component?.name || props.component?.id || "Component");
@@ -246,8 +247,12 @@ function handleBuilderDragOver(event) {
   // The canvas itself is the root drop target when the pointer is over blank
   // space, especially important for a brand-new playground with no nodes yet.
   if (event.target instanceof Element && event.target.closest(".editor-node")) return;
-  const type = event.dataTransfer.getData("application/x-editor-node-type");
-  if (!type) return;
+  // Browsers may hide DataTransfer payloads until the drop event. The
+  // shared drag state is the reliable source while a widget is being dragged.
+  const type = draggingNodeType.value
+    || event.dataTransfer.getData("application/x-editor-node-type")
+    || null;
+  if (!type || !editorRegistry[type] && type !== "container") return;
   event.preventDefault();
   event.dataTransfer.dropEffect = "copy";
 }
@@ -255,9 +260,10 @@ function handleBuilderDragOver(event) {
 function handleBuilderDrop(event) {
   if (props.preview || !event.dataTransfer) return;
   if (event.target instanceof Element && event.target.closest(".editor-node")) return;
-  const type = event.dataTransfer.getData("application/x-editor-node-type")
+  const type = draggingNodeType.value
+    || event.dataTransfer.getData("application/x-editor-node-type")
     || event.dataTransfer.getData("text/plain");
-  if (!type || !["heading", "text", "image", "button", "icon", "icon-list", "divider", "container"].includes(type)) return;
+  if (!type || (type !== "container" && !editorRegistry[type])) return;
   event.preventDefault();
   event.stopPropagation();
   showPageAdd.value = false;
@@ -272,6 +278,7 @@ function handleBuilderDrop(event) {
   // Create a flex container first, then insert the widget as its child.
   const container = addContainer("column");
   if (container) addNode(type, container.id);
+  endDragging();
 }
 
 function startInlineEdit(event) {
