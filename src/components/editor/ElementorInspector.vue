@@ -63,7 +63,8 @@ function startWidgetDrag(type, event) {
 function finishWidgetDrag() { endDragging(); }
 function addWidget(type) {
   if (type === "container") {
-    addContainer("column");
+    const created = addContainer("column");
+    beginFillDraft(created);
     return;
   }
   // Clicking a widget in the library follows the same root insertion rule as
