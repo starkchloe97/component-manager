@@ -271,6 +271,7 @@ function handleBuilderDrop(event) {
     // A dropped Flexbox Container is created immediately, without opening the
     // structure picker. This matches Elementor's empty-container workflow.
     addContainer("column");
+    endDragging();
     return;
   }
 
