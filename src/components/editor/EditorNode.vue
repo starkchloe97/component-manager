@@ -330,7 +330,8 @@ function handleDrop(event) {
     }
   } else if (type && editorRegistry[type]) {
     if (position === "inside" && canAcceptChildren.value) {
-      addNode(type, props.node.id);
+      const created = addNode(type, props.node.id);
+      if (type === "container") beginFillDraft(created);
     } else if (position === "before" || position === "after") {
       // At page root, Elementor inserts ordinary widgets into a new flex
       // container rather than leaving them as ungrouped page-level elements.
@@ -342,8 +343,10 @@ function handleDrop(event) {
           : addContainerAfter(props.node.id, "column");
         if (container) addNode(type, container.id);
       } else if (type === "container") {
-        if (position === "before") addContainerBeforeRootNode(props.node.id);
-        else addContainerAfter(props.node.id, "column");
+        const created = position === "before"
+          ? addContainerBeforeRootNode(props.node.id)
+          : addContainerAfter(props.node.id, "column");
+        beginFillDraft(created);
       } else if (position === "before") {
         addNodeBefore(type, props.node.id);
       } else {
