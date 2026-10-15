@@ -327,16 +327,40 @@ function handleDrop(event) {
     if (position === "inside" && canAcceptChildren.value) {
       const created = addNode(type, props.node.id);
       if (created?.type === "container") beginFillDraft(created);
-    } else if (position === "before") {
-      const created = addNodeBefore(type, props.node.id);
-      if (created?.type === "container") beginFillDraft(created);
-    } else if (position === "after") {
-      const created = addNodeAfter(type, props.node.id);
-      if (created?.type === "container") beginFillDraft(created);
+    } else if (position === "before" || position === "after") {
+      // At page root, Elementor inserts ordinary widgets into a new flex
+      // container rather than leaving them as ungrouped page-level elements.
+      // Inside an existing layout parent, preserve the expected sibling drop.
+      const shouldWrapAtRoot = !props.parentId && type !== "container";
+      if (shouldWrapAtRoot) {
+        const container = position === "before"
+          ? addContainerBeforeRootNode(props.node.id)
+          : addContainerAfter(props.node.id, "column");
+        if (container) addNode(type, container.id);
+      } else if (type === "container") {
+        if (position === "before") addContainerBeforeRootNode(props.node.id);
+        else addContainerAfter(props.node.id, "column");
+      } else if (position === "before") {
+        addNodeBefore(type, props.node.id);
+      } else {
+        addNodeAfter(type, props.node.id);
+      }
     }
   }
 
   resetDropState();
+}
+
+function addContainerBeforeRootNode(nodeId) {
+  const container = addContainer("column");
+  const rootList = findSiblingListForNode(nodeId);
+  const createdIndex = rootList.findIndex((item) => item.id === container?.id);
+  const targetIndex = rootList.findIndex((item) => item.id === nodeId);
+  if (createdIndex >= 0 && targetIndex >= 0 && createdIndex !== targetIndex - 1) {
+    rootList.splice(createdIndex, 1);
+    rootList.splice(rootList.findIndex((item) => item.id === nodeId), 0, container);
+  }
+  return container;
 }
 
 function findSiblingListForNode(nodeId) {
