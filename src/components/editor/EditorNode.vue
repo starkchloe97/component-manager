@@ -330,8 +330,7 @@ function handleDrop(event) {
     }
   } else if (type && editorRegistry[type]) {
     if (position === "inside" && canAcceptChildren.value) {
-      const created = addNode(type, props.node.id);
-      if (created?.type === "container") beginFillDraft(created);
+      addNode(type, props.node.id);
     } else if (position === "before" || position === "after") {
       // At page root, Elementor inserts ordinary widgets into a new flex
       // container rather than leaving them as ungrouped page-level elements.
