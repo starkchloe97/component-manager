@@ -7,13 +7,22 @@ let iconLibraryPromise;
 const componentCache = new Map();
 
 function loadLibrary() {
-  if (!iconLibraryPromise) iconLibraryPromise = import("@lucide/vue");
+  if (!iconLibraryPromise) {
+    iconLibraryPromise = import("@lucide/vue").catch((error) => {
+      // Allow a later attempt to succeed after a transient chunk/network failure.
+      iconLibraryPromise = undefined;
+      throw error;
+    });
+  }
   return iconLibraryPromise;
 }
 
 export async function loadIconNames() {
   const library = await loadLibrary();
-  return Object.keys(library).sort((left, right) => left.localeCompare(right));
+  // Only expose actual named icon components, not package helpers or metadata.
+  return Object.keys(library)
+    .filter((name) => /^[A-Z]/.test(name) && library[name] != null)
+    .sort((left, right) => left.localeCompare(right));
 }
 
 export const popularIconNames = [
