@@ -250,6 +250,7 @@ export function useEditor() {
   const endDragging = () => {
     draggingNodeId.value = null;
     draggingNodeType.value = null;
+    activeDropTargetId.value = null;
   };
   const setActiveDropTarget = (id) => {
     activeDropTargetId.value = id || null;
