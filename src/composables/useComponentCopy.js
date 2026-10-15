@@ -262,13 +262,13 @@ function appendBuilderContent(source, componentChildren, sections, includeAllPag
 function ensureIconResolver(source, iconNames) {
   if (!iconNames.size) return source;
   const imports = 'import { resolveIcon } from "@/config/iconLibrary";';
-  const scriptMatch = source.match(/<script setup\\b[^>]*>[\\s\\S]*?<\\/script>/i);
+  const scriptMatch = source.match(/<script setup\b[^>]*>[\s\S]*?<\/script>/i);
   if (scriptMatch) {
-    if (/\\bresolveIcon\\b/.test(scriptMatch[0])) return source;
-    return source.replace(scriptMatch[0], scriptMatch[0].replace(/<script setup\\b([^>]*)>/i, `<script setup$1>\\n${imports}`));
+    if (/\bresolveIcon\b/.test(scriptMatch[0])) return source;
+    return source.replace(scriptMatch[0], scriptMatch[0].replace(/<script setup\b([^>]*)>/i, `<script setup$1>\n${imports}`));
   }
   const names = [...iconNames].map((name) => JSON.stringify(name)).join(", ");
-  return `<script setup>\\n${imports}\\n</script>\\n\\n${source}`;
+  return `<script setup>\n${imports}\n</script>\n\n${source}`;
 }
 
 function serializeNode(node, depth = 0, iconNames = new Set()) {
