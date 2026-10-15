@@ -196,8 +196,18 @@ function updateStyle(key, value) {
 function resetStyle(key) { updateStyle(key, ""); }
 function updateProp(key, value) { if (selectedNode.value) updateNode(selectedNode.value.id, { props: { [key]: value } }); }
 function selectIcon(icon) { updateProp("icon", icon); showIconPicker.value = false; }
-function updateIconListItems(raw) {
-  updateProp("items", String(raw ?? "").split("\\n").map((item) => item.trim()).filter(Boolean));
+function updateIconListItem(index, value) {
+  const items = [...(selectedNode.value?.props?.items || [])];
+  items[index] = value;
+  updateProp("items", items);
+}
+function addIconListItem() {
+  updateProp("items", [...(selectedNode.value?.props?.items || []), "New item"]);
+}
+function removeIconListItem(index) {
+  const items = [...(selectedNode.value?.props?.items || [])];
+  items.splice(index, 1);
+  updateProp("items", items);
 }
 function iconSize() { return numberOf("width"); }
 function setIconSize(value) { setNumber("width", value); setNumber("height", value); }
@@ -336,12 +346,24 @@ const isGrid = computed(() => current("display") === "grid");
         </section>
       </template>
       <template v-else-if="activeTab === 'content'">
-        <section v-if="isNode && selectedNode.type === 'icon-list'" class="control-group">
+        <section v-if="isNode && selectedNode.type === 'icon-list'" class="control-group icon-list-content">
           <h3>Icon List</h3>
-          <label>List items<textarea rows="5" :value="(selectedNode.props.items || []).join('\\n')"
-            placeholder="One item per line" @input="updateIconListItems($event.target.value)" /></label>
-          <label>Icon<input :value="selectedNode.props.icon || 'Check'"
-            @input="updateProp('icon', $event.target.value)" placeholder="Check" /></label>
+          <div class="icon-list-items">
+            <div v-for="(item, index) in (selectedNode.props.items || [])" :key="index" class="icon-list-item-field">
+              <label :for="`icon-list-item-${index}`">Item {{ index + 1 }}</label>
+              <input :id="`icon-list-item-${index}`" :value="item"
+                @input="updateIconListItem(index, $event.target.value)" placeholder="Enter list item" />
+              <button type="button" class="icon-list-remove" :aria-label="`Remove item ${index + 1}`"
+                title="Remove item" @click="removeIconListItem(index)">×</button>
+            </div>
+          </div>
+          <button type="button" class="icon-list-add" @click="addIconListItem">+ Add item</button>
+          <h3 class="icon-list-icon-heading">List icon</h3>
+          <div class="icon-current-preview">
+            <component :is="resolveIcon(selectedNode.props.icon || 'Check')" :size="28" />
+            <div><strong>{{ readableIconName(selectedNode.props.icon || 'Check') }}</strong><span>Lucide icon</span></div>
+            <button type="button" @click="showIconPicker = true">Change icon</button>
+          </div>
         </section>
         <section v-if="isNode && selectedNode.type === 'divider'" class="control-group">
           <h3>Divider</h3>
