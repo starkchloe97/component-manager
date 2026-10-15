@@ -1344,4 +1344,15 @@ const isGrid = computed(() => current("display") === "grid");
   line-height: 1.6;
   color: var(--faint);
 }
+
+.icon-list-items { display: grid; gap: 9px; margin-bottom: 10px; }
+.icon-list-item-field { display: grid; grid-template-columns: 1fr 30px; gap: 5px 7px; align-items: center; }
+.icon-list-item-field label { grid-column: 1 / -1; margin: 0; color: var(--label); font-size: 11px; font-weight: 500; }
+.icon-list-item-field input { width: 100%; min-width: 0; min-height: 32px; padding: 6px 9px; border: 1px solid var(--field-border); border-radius: 3px; background: #fff; color: var(--ink); font: 12px/1.4 "Roboto", Arial, sans-serif; }
+.icon-list-item-field input:focus { outline: 0; border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.icon-list-remove { height: 30px; border: 1px solid var(--field-border); border-radius: 3px; background: #fff; color: var(--muted); font-size: 18px; cursor: pointer; }
+.icon-list-remove:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.icon-list-add { width: 100%; min-height: 32px; border: 1px dashed var(--accent); border-radius: 3px; background: #fff; color: var(--accent); font-size: 12px; font-weight: 600; cursor: pointer; }
+.icon-list-add:hover { background: var(--accent-soft); }
+.icon-list-icon-heading { margin-top: 18px !important; }
 </style>
