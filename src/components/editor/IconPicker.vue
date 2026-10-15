@@ -156,9 +156,11 @@ onBeforeUnmount(() => {
                 :aria-label="readableIconName(name)" @click="choose(name)">
                 <component :is="resolveIcon(name)" :size="22" /><span>{{ readableIconName(name) }}</span>
               </button></div>
-            <p v-else-if="!loadingIcons && !iconLoadError" class="no-icons">No icons match this category and search. Try another category or search term.</p>
+            <p v-else-if="!loadingIcons && !iconLoadError" class="no-icons">No icons match this category and search. Try
+              another category or search term.</p>
             <button v-if="!loadingIcons && !iconLoadError && hasMoreIcons" type="button" class="load-more-icons"
-              @click="pageSize += PAGE_SIZE">Load more icons ({{ matchingIcons.length }} of {{ categorizedIcons.length }})</button>
+              @click="pageSize += PAGE_SIZE">Load more icons ({{ matchingIcons.length }} of {{ categorizedIcons.length
+              }})</button>
           </section>
         </div>
       </section>
@@ -267,12 +269,66 @@ onBeforeUnmount(() => {
   font-size: 10px
 }
 
-.icon-category-tabs { display: flex; gap: 6px; overflow-x: auto; padding: 0 20px 12px; border-bottom: 1px solid #eef0f2; scrollbar-width: thin }
-.icon-category-tabs button { flex: 0 0 auto; padding: 7px 11px; border: 1px solid #e2e6e9; border-radius: 5px; background: #fff; color: #5f6b75; font-size: 11px; cursor: pointer }
-.icon-category-tabs button:hover { border-color: #bd4daa; color: #93003f }
-.icon-category-tabs button.active { border-color: #93003f; background: rgba(147,0,63,.08); color: #93003f; font-weight: 700 }
-.load-more-icons { display: block; width: 100%; margin-top: 12px; padding: 10px; border: 1px solid #e2e6e9; border-radius: 5px; background: #fff; color: #93003f; font-size: 12px; font-weight: 600; cursor: pointer }
-.load-more-icons:hover { border-color: #93003f; background: #fff4fe }
+nav.icon-category-tabs {
+  display: flex;
+  flex-direction: row;
+  flex-shrink: 0;        /* CRITICAL: Prevents the container from squashing */
+  min-height: 42px;     /* Ensures buttons and padding fit vertically */
+  overflow-x: auto;     /* Allows horizontal scrolling for many tabs */
+  overflow-y: hidden;   /* Prevents broken vertical scrollbars */
+  align-items: center;  /* Vertically centers the buttons */
+  padding: 0 20px 8px;  /* Adjust padding to maintain spacing */
+  column-gap: 7px;
+}
+
+nav.icon-category-tabs button {
+  flex-shrink: 0;       /* Prevents buttons from getting squashed horizontally */
+  white-space: nowrap;  /* Keeps the text on one line */
+  /* Keep your existing button styles (padding, border, etc.) */
+}
+
+.icon-category-tabs button {
+  flex: 0 0 auto;
+  padding: 7px 11px;
+  border: 1px solid #e2e6e9;
+  border-radius: 5px;
+  background: #fff;
+  color: #5f6b75;
+  font-size: 11px;
+  cursor: pointer
+}
+
+.icon-category-tabs button:hover {
+  border-color: #bd4daa;
+  color: #93003f
+}
+
+.icon-category-tabs button.active {
+  border-color: #93003f;
+  background: rgba(147, 0, 63, .08);
+  color: #93003f;
+  font-weight: 700
+}
+
+.load-more-icons {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px;
+  border: 1px solid #e2e6e9;
+  border-radius: 5px;
+  background: #fff;
+  color: #93003f;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer
+}
+
+.load-more-icons:hover {
+  border-color: #93003f;
+  background: #fff4fe
+}
+
 .picker-scroll {
   overflow: auto;
   padding: 0 20px 20px
@@ -370,7 +426,11 @@ onBeforeUnmount(() => {
     max-height: calc(100vh - 16px)
   }
 
-  .icon-category-tabs { padding-left: 12px; padding-right: 12px }
+  .icon-category-tabs {
+    padding-left: 12px;
+    padding-right: 12px
+  }
+
   .picker-header,
   .icon-search,
   .picker-scroll {
