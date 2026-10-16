@@ -32,7 +32,7 @@ const panelStyle = computed(() => ({
   left: `${panelPosition.x}px`,
   top: `${panelPosition.y}px`,
 }));
-const selectedPath = computed(() => getNodeAncestors(selectedNodeId.value).map((node) => node.id).join("\\u0000"));
+const selectedPath = computed(() => getNodeAncestors(selectedNodeId.value).map((node) => node.id).join("\u0000"));
 
 watch(() => props.inspectorOpen, (isOpen) => {
   if (!panelMoved.value) panelPosition.x = isOpen ? 312 : 12;
@@ -40,7 +40,7 @@ watch(() => props.inspectorOpen, (isOpen) => {
 
 watch([selectedNodeId, selectedPath, selectionRevision], ([, path]) => {
   if (!path) return;
-  path.split("\\u0000").forEach((id) => expandedIds.add(id));
+  path.split("\u0000").forEach((id) => expandedIds.add(id));
 }, { immediate: true });
 
 function toggleNode(id) {
