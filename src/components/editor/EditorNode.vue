@@ -1045,13 +1045,17 @@ function openDropAi(event) {
   min-height: 1px;
 }
 
-.editor-node--leaf.editor-node--hovered > .builder-element {
+.editor-node--leaf.editor-node--hovered > .builder-element,
+.editor-node--leaf.editor-node--hovered > .builder-icon-list,
+.editor-node--leaf.editor-node--hovered > .builder-icon-alignment {
   outline: 1px dashed #4791ff !important;
   outline-offset: 2px;
   cursor: pointer;
 }
 
-.editor-node--leaf.editor-node--selected > .builder-element {
+.editor-node--leaf.editor-node--selected > .builder-element,
+.editor-node--leaf.editor-node--selected > .builder-icon-list,
+.editor-node--leaf.editor-node--selected > .builder-icon-alignment {
   outline: 1px solid #c028b3 !important;
   outline-offset: 2px;
   box-shadow: 0 0 0 2px rgba(232, 175, 244, .24);
