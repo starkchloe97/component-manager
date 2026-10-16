@@ -508,6 +508,15 @@ function openDropAi(event) {
       </button>
       <button
         type="button"
+        class="container-handle__button"
+        title="Duplicate container"
+        aria-label="Duplicate container"
+        @click="duplicateNode(node.id)"
+      >
+        <Copy :size="15" />
+      </button>
+      <button
+        type="button"
         class="container-handle__button container-handle__delete"
         title="Delete container"
         aria-label="Delete container"
