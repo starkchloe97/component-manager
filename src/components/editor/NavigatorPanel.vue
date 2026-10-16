@@ -1,9 +1,9 @@
 <script setup>
-import { computed, reactive, ref, watch } from "vue";
+import { computed, onBeforeUnmount, reactive, ref, watch } from "vue";
 import { useEditor } from "@/composables/useEditor";
 import NavigatorTreeItem from "./NavigatorTreeItem.vue";
 
-defineProps({
+const props = defineProps({
   inspectorOpen: { type: Boolean, default: true },
 });
 const emit = defineEmits(["close"]);
@@ -25,11 +25,22 @@ const {
 
 const expandedIds = reactive(new Set());
 const dropTarget = ref(null);
-const selectedPath = computed(() => getNodeAncestors(selectedNodeId.value).map((node) => node.id).join("\u0000"));
+const panelPosition = reactive({ x: props.inspectorOpen ? 312 : 12, y: 62 });
+const panelMoved = ref(false);
+const pointerDrag = ref(null);
+const panelStyle = computed(() => ({
+  left: `${panelPosition.x}px`,
+  top: `${panelPosition.y}px`,
+}));
+const selectedPath = computed(() => getNodeAncestors(selectedNodeId.value).map((node) => node.id).join("\\u0000"));
+
+watch(() => props.inspectorOpen, (isOpen) => {
+  if (!panelMoved.value) panelPosition.x = isOpen ? 312 : 12;
+});
 
 watch([selectedNodeId, selectedPath, selectionRevision], ([, path]) => {
   if (!path) return;
-  path.split("\u0000").forEach((id) => expandedIds.add(id));
+  path.split("\\u0000").forEach((id) => expandedIds.add(id));
 }, { immediate: true });
 
 function toggleNode(id) {
@@ -113,20 +124,69 @@ function handleRootDrop(event, rootKey) {
   dropTarget.value = null;
   endDragging();
 }
+
+function clampPosition(x, y) {
+  const panel = documentPanel.value;
+  const width = panel?.offsetWidth || 286;
+  const height = panel?.offsetHeight || 240;
+  return {
+    x: Math.max(0, Math.min(x, window.innerWidth - Math.min(width, window.innerWidth))),
+    y: Math.max(0, Math.min(y, window.innerHeight - Math.min(height, window.innerHeight))),
+  };
+}
+
+const documentPanel = ref(null);
+
+function handlePointerMove(event) {
+  if (!pointerDrag.value || event.pointerId !== pointerDrag.value.pointerId) return;
+  const next = clampPosition(
+    event.clientX - pointerDrag.value.offsetX,
+    event.clientY - pointerDrag.value.offsetY,
+  );
+  panelPosition.x = next.x;
+  panelPosition.y = next.y;
+}
+
+function stopPanelDrag(event) {
+  if (!pointerDrag.value || (event && event.pointerId !== pointerDrag.value.pointerId)) return;
+  pointerDrag.value = null;
+  window.removeEventListener("pointermove", handlePointerMove);
+  window.removeEventListener("pointerup", stopPanelDrag);
+  window.removeEventListener("pointercancel", stopPanelDrag);
+}
+
+function startPanelDrag(event) {
+  if (event.button !== 0 || event.target.closest("button")) return;
+  const rect = documentPanel.value?.getBoundingClientRect();
+  if (!rect) return;
+  event.preventDefault();
+  panelMoved.value = true;
+  pointerDrag.value = {
+    pointerId: event.pointerId,
+    offsetX: event.clientX - rect.left,
+    offsetY: event.clientY - rect.top,
+  };
+  window.addEventListener("pointermove", handlePointerMove);
+  window.addEventListener("pointerup", stopPanelDrag);
+  window.addEventListener("pointercancel", stopPanelDrag);
+}
+
+onBeforeUnmount(() => stopPanelDrag());
 </script>
 
 <template>
   <aside
+    ref="documentPanel"
     class="navigator-panel"
-    :class="{ 'navigator-panel--inspector-open': inspectorOpen }"
+    :style="panelStyle"
     aria-label="Navigator"
   >
-    <header class="navigator-header">
-      <div>
+    <header class="navigator-header" @pointerdown="startPanelDrag">
+      <div class="navigator-heading">
         <h2>Structure</h2>
         <p>Drag to reorder or nest</p>
       </div>
-      <button type="button" aria-label="Close Structure panel" @click="emit('close')">×</button>
+      <button type="button" aria-label="Close Structure panel" @pointerdown.stop @click="emit('close')">×</button>
     </header>
 
     <div class="navigator-scroll" role="tree" aria-label="Editor structure">
@@ -191,8 +251,6 @@ function handleRootDrop(event, rootKey) {
 .navigator-panel {
   position: fixed;
   z-index: 10030;
-  top: 62px;
-  left: 12px;
   display: flex;
   width: min(286px, calc(100vw - 24px));
   max-height: min(68vh, 680px);
@@ -207,10 +265,6 @@ function handleRootDrop(event, rootKey) {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-.navigator-panel--inspector-open {
-  left: 312px;
-}
-
 .navigator-header {
   display: flex;
   align-items: center;
@@ -218,6 +272,17 @@ function handleRootDrop(event, rootKey) {
   min-height: 53px;
   padding: 7px 12px 8px 14px;
   border-bottom: 1px solid #e8ecf0;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.navigator-header:active {
+  cursor: grabbing;
+}
+
+.navigator-heading {
+  min-width: 0;
 }
 
 .navigator-header h2 {
@@ -234,6 +299,7 @@ function handleRootDrop(event, rootKey) {
 
 .navigator-header button {
   display: grid;
+  flex: 0 0 auto;
   place-items: center;
   width: 25px;
   height: 25px;
@@ -287,9 +353,7 @@ function handleRootDrop(event, rootKey) {
 }
 
 @media (max-width: 700px) {
-  .navigator-panel,
-  .navigator-panel--inspector-open {
-    left: 8px;
+  .navigator-panel {
     width: min(286px, calc(100vw - 16px));
   }
 }
