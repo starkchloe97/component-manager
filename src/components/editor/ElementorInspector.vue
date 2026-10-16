@@ -74,6 +74,21 @@ function addWidget(type) {
 }
 watch(tabs, (nextTabs) => { if (!nextTabs.some((tab) => tab.id === activeTab.value)) activeTab.value = nextTabs[0].id; }, { immediate: true });
 
+// When canvas selection changes, open the settings category that edits the
+// selected node. Layout nodes expose Layout instead of Content; all widgets
+// open Content automatically, even if the user previously had Widgets/Style
+// or Advanced open.
+watch(() => selectedNode.value?.id, (id) => {
+  if (!id) return;
+  activeTab.value = nodeTypes.has(selectedNode.value.type) ? "layout" : "content";
+});
+
+// Legacy component elements are selected through useComponentEditor rather
+// than the builder node tree, so route those selections to Content as well.
+watch(() => selectedElement.value, (element) => {
+  if (element && !selectedNode.value) activeTab.value = "content";
+});
+
 const layoutFields = [
   { key: "display", label: "Display", options: ["", "block", "inline-block", "flex", "grid", "none"] },
   { key: "width", label: "Width", placeholder: "Auto" }, { key: "maxWidth", label: "Max Width", placeholder: "None" },
