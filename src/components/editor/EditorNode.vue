@@ -428,6 +428,9 @@ function openDropAi(event) {
     @dragover="handleDragOver"
     @dragleave="handleDragLeave"
     @drop="handleDrop"
+    :draggable="isSelected"
+    @dragstart="startNodeDrag"
+    @dragend="endNodeDrag"
   >
     <div class="editor-container elementor-container" :style="renderedContentStyles">
       <ContainerStructurePicker
@@ -546,6 +549,9 @@ function openDropAi(event) {
     @dragover="handleDragOver"
     @dragleave="handleDragLeave"
     @drop="handleDrop"
+    :draggable="isSelected"
+    @dragstart="startNodeDrag"
+    @dragend="endNodeDrag"
   >
     <div class="editor-legacy-layout" :style="renderedContentStyles">
       <EditorNode
@@ -578,6 +584,9 @@ function openDropAi(event) {
     @dragover="handleDragOver"
     @dragleave="handleDragLeave"
     @drop="handleDrop"
+    :draggable="isSelected"
+    @dragstart="startNodeDrag"
+    @dragend="endNodeDrag"
   >
     <div class="component-node" :style="renderedContentStyles">
       <div class="component-node-label">{{ componentLabel }}</div>
@@ -605,6 +614,9 @@ function openDropAi(event) {
     @dragover="handleDragOver"
     @dragleave="handleDragLeave"
     @drop="handleDrop"
+    :draggable="isSelected"
+    @dragstart="startNodeDrag"
+    @dragend="endNodeDrag"
   >
     <component
       v-if="node.type === 'heading'"
@@ -722,7 +734,10 @@ function openDropAi(event) {
     @dragenter="handleDragEnter"
     @dragover="handleDragOver"
     @dragleave="handleDragLeave"
-    @drop="handleDrop">
+    @drop="handleDrop"
+    :draggable="isSelected"
+    @dragstart="startNodeDrag"
+    @dragend="endNodeDrag">
     <div class="builder-element" :style="renderedContentStyles">{{ nodeLabel }}</div>
   </div>
 
