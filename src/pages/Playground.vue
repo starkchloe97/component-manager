@@ -19,6 +19,13 @@ function closePlayground() {
 </template>
 
 <style scoped>
+.playground-editor {
+  min-height: 100vh;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
 @media (max-width: 900px) {
   .playground-editor :deep(.navigator-toggle) {
     display: grid;

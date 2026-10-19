@@ -18,13 +18,17 @@ const chartData = [
 onMounted(() => {
   const section = document.querySelector('.benefits-section')
   if (section) {
-    const obs = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) {
-        setTimeout(() => { barsAnimated.value = true }, 300)
-        obs.disconnect()
-      }
-    }, { threshold: 0.15 })
-    obs.observe(section)
+    if (typeof IntersectionObserver !== 'undefined') {
+      const obs = new IntersectionObserver((entries) => {
+        if (entries[0]?.isIntersecting) {
+          setTimeout(() => { barsAnimated.value = true }, 300)
+          obs.disconnect()
+        }
+      }, { threshold: 0.15 })
+      obs.observe(section)
+    } else {
+      barsAnimated.value = true
+    }
   }
 })
 </script>

@@ -35,11 +35,13 @@ function updatePosition() {
 function close() { emit("close"); }
 function select(type) { emit("select", type); }
 function startDrag(type, event) {
-  if (!event.dataTransfer) return;
+  const transfer = event.dataTransfer;
+  if (!transfer) return;
+  event.stopPropagation();
+  transfer.effectAllowed = "copy";
+  transfer.setData("application/x-editor-node-type", type);
+  transfer.setData("text/plain", type);
   startWidgetDragging(type);
-  event.dataTransfer.effectAllowed = "copy";
-  event.dataTransfer.setData("application/x-editor-node-type", type);
-  event.dataTransfer.setData("text/plain", type);
 }
 function handleDragEnd() {
   endDragging();
@@ -140,8 +142,14 @@ onBeforeUnmount(() => {
   font: inherit;
   font-size: 12px;
   text-align: left;
-  cursor: pointer
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none
 }
+
+.add-menu button:active { cursor: grabbing }
+
+.add-menu button > * { pointer-events: none }
 
 .add-menu button:hover,
 .add-menu button:focus-visible {

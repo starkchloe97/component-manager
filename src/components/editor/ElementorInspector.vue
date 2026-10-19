@@ -54,11 +54,15 @@ const widgetItems = computed(() => Object.entries(editorRegistry)
   .map(([type, definition]) => ({ type, label: definition.label })));
 const widgetIcons = { heading: Type, text: Pilcrow, image: Image, button: MousePointer2, icon: Check, "icon-list": List, divider: Minus };
 function startWidgetDrag(type, event) {
-  if (!event.dataTransfer) return;
+  const transfer = event.dataTransfer;
+  if (!transfer) return;
+  // Keep the native drag source on the tile itself. Without this, dragging a
+  // label can begin text selection instead of the tile's drag operation.
+  event.stopPropagation();
+  transfer.effectAllowed = "copy";
+  transfer.setData("application/x-editor-node-type", type);
+  transfer.setData("text/plain", type);
   startWidgetDragging(type);
-  event.dataTransfer.effectAllowed = "copy";
-  event.dataTransfer.setData("application/x-editor-node-type", type);
-  event.dataTransfer.setData("text/plain", type);
 }
 function finishWidgetDrag() { endDragging(); }
 function addWidget(type) {
@@ -199,8 +203,8 @@ function updateStyle(key, value) {
   const nextValue = normalize(key, value);
   if (selectedNode.value) {
     if (isIconNode.value && responsiveDevice.value !== "desktop") {
-      const responsiveStyles = { ...(selectedNode.value.responsiveStyles || {}) };
-      const deviceStyles = { ...(responsiveStyles[responsiveDevice.value] || {}) };
+      const responsiveStyles = { ...selectedNode.value.responsiveStyles };
+      const deviceStyles = { ...responsiveStyles[responsiveDevice.value] };
       if (nextValue) deviceStyles[key] = nextValue;
       else delete deviceStyles[key];
       responsiveStyles[responsiveDevice.value] = deviceStyles;
@@ -534,8 +538,9 @@ const isGrid = computed(() => current("display") === "grid");
           <div v-for="field in appearanceFields" :key="field.key" class="field">
             <label>{{ isIconNode && field.key === 'color' ? 'Icon Color' : field.label }}</label>
             <div v-if="field.color" class="color-control"><input type="color" class="swatch"
-                :value="current(field.key) || '#ffffff'" @input="updateStyle(field.key, $event.target.value)" /><input
-                :value="current(field.key)" placeholder="#ffffff"
+                :class="{ 'swatch--empty': !current(field.key) }"
+                :value="current(field.key) || '#000000'" @input="updateStyle(field.key, $event.target.value)" /><input
+                :value="current(field.key)" placeholder="—"
                 @input="updateStyle(field.key, $event.target.value)" /></div>
             <select v-else-if="field.options" :value="current(field.key)"
               @change="updateStyle(field.key, $event.target.value)">
@@ -612,12 +617,13 @@ const isGrid = computed(() => current("display") === "grid");
 .widget-library-heading span { color: #8b949e; font-size: 10px; font-weight: 400; }
 .widget-layout-heading { margin-top: 20px; }
 .widget-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-.widget-tile { display: flex; min-width: 0; min-height: 76px; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 10px 4px; border: 1px solid #e3e6e9; border-radius: 4px; background: #fff; color: #454c54; font: inherit; font-size: 11px; cursor: grab; }
+.widget-tile { display: flex; min-width: 0; min-height: 76px; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 10px 4px; border: 1px solid #e3e6e9; border-radius: 4px; background: #fff; color: #454c54; font: inherit; font-size: 11px; cursor: grab; user-select: none; -webkit-user-select: none; }
 .widget-tile svg, .widget-layout-tile svg { color: #727c87; }
 .widget-tile:hover, .widget-layout-tile:hover { border-color: #93003f; background: #fff8fb; color: #93003f; }
 .widget-tile:active, .widget-layout-tile:active { cursor: grabbing; }
 .widget-tile span { overflow-wrap: anywhere; text-align: center; }
-.widget-layout-tile { display: flex; width: 100%; align-items: center; gap: 12px; padding: 12px; border: 1px solid #e3e6e9; border-radius: 4px; background: #fff; color: #454c54; text-align: left; font: inherit; cursor: grab; }
+.widget-layout-tile { display: flex; width: 100%; align-items: center; gap: 12px; padding: 12px; border: 1px solid #e3e6e9; border-radius: 4px; background: #fff; color: #454c54; text-align: left; font: inherit; cursor: grab; user-select: none; -webkit-user-select: none; }
+.widget-tile > *, .widget-layout-tile > * { pointer-events: none; }
 .widget-layout-tile span { display: flex; flex-direction: column; gap: 2px; }
 .widget-layout-tile strong { font-size: 12px; font-weight: 600; }
 .widget-layout-tile small { color: #818b96; font-size: 10px; }
@@ -1219,6 +1225,17 @@ const isGrid = computed(() => current("display") === "grid");
 .swatch::-webkit-color-swatch {
   border: 0;
   border-radius: 2px;
+}
+
+/* Color swatch empty state — checkerboard shows "no value" */
+.swatch--empty {
+  background-image:
+    linear-gradient(45deg, #ccc 25%, transparent 25%),
+    linear-gradient(-45deg, #ccc 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #ccc 75%),
+    linear-gradient(-45deg, transparent 75%, #ccc 75%);
+  background-size: 8px 8px;
+  background-position: 0 0, 0 4px, 4px -4px, -4px 0;
 }
 
 .image-upload {

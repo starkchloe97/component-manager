@@ -462,7 +462,7 @@ export function useEditor() {
   }
 
   function createLayoutChildren(layout) {
-    return layout.split("-").map(Number).map((width) => {
+    return layout.split("-").map(Number).map(() => {
       const column = createEditorNode("column");
       column.styles.width = "100%";
       column.styles.minWidth = "0";
@@ -777,7 +777,7 @@ function normalizePageStructure(nodes) {
   }
 
   function flexDefaults(styles = {}, direction = "column") {
-    const nextStyles = { ...(styles || {}) };
+    const nextStyles = { ...styles };
     delete nextStyles.gridTemplateColumns;
     delete nextStyles.gridTemplateRows;
     delete nextStyles.gridAutoColumns;

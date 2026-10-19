@@ -15,7 +15,7 @@ export function resolveResponsiveNodeStyles(node) {
       : viewportWidth.value <= 1024
         ? responsiveStyles.tablet
         : null;
-    const styles = { ...baseStyles, ...(overrides || {}) };
+    const styles = { ...baseStyles, ...overrides };
 
     if (overrides && Object.prototype.hasOwnProperty.call(overrides, "width")) {
       styles.flexBasis = String(styles.width ?? "").trim() || "auto";

@@ -25,7 +25,7 @@
 
                         <div class="card-footer">
                             <div class="stars ">
-                                <Star v-for="i in 5" fill="#f5b942" strokeWidth="0" width="15" height="15"/>
+                                <Star v-for="i in 5" :key="i" fill="#f5b942" strokeWidth="0" width="15" height="15"/>
                             </div>
                             <span class="rating-value">{{ review.rating.toFixed(1) }}</span>
                         </div>

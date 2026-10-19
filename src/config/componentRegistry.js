@@ -56,6 +56,16 @@ import Hero8 from "@/components/HeroSection.vue/Hero8.vue";
 import Hero8Source from "@/components/HeroSection.vue/Hero8.vue?raw";
 import Hero9 from "@/components/HeroSection.vue/Hero9.vue";
 import Hero9Source from "@/components/HeroSection.vue/Hero9.vue?raw";
+import Hero10 from "@/components/HeroSection.vue/Hero10.vue";
+import Hero10Source from "@/components/HeroSection.vue/Hero10.vue?raw";
+import Hero11 from "@/components/HeroSection.vue/Hero11.vue";
+import Hero11Source from "@/components/HeroSection.vue/Hero11.vue?raw";
+import Hero12 from "@/components/HeroSection.vue/Hero12.vue";
+import Hero12Source from "@/components/HeroSection.vue/Hero12.vue?raw";
+import Hero13 from "@/components/HeroSection.vue/Hero13.vue";
+import Hero13Source from "@/components/HeroSection.vue/Hero13.vue?raw";
+import Hero14 from "@/components/HeroSection.vue/Hero14.vue";
+import Hero14Source from "@/components/HeroSection.vue/Hero14.vue?raw";
 
 import Testimonial1Source from "@/components/Testimonials/Testimonial1.vue?raw";
 import Testimonial2Source from "@/components/Testimonials/Testimonial2.vue?raw";
@@ -266,6 +276,11 @@ export const componentRegistry = {
   Hero7: entry("Hero7", "Hero 7", Hero7, Hero7Source),
   Hero8: entry("Hero8", "Hero 8", Hero8, Hero8Source),
   Hero9: entry("Hero9", "Hero 9", Hero9, Hero9Source),
+  Hero10: entry("Hero10", "Hero 10", Hero10, Hero10Source),
+  Hero11: entry("Hero11", "Hero 11", Hero11, Hero11Source),
+  Hero12: entry("Hero12", "Hero 12", Hero12, Hero12Source),
+  Hero13: entry("Hero13", "Hero 13", Hero13, Hero13Source),
+  Hero14: entry("Hero14", "Hero 14", Hero14, Hero14Source),
 
 
   Testimonial1: entry("Testimonial1", "Testimonial 1", Testimonial1, Testimonial1Source),

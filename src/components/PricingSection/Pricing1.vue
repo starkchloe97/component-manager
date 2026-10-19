@@ -126,14 +126,14 @@
 import { inject } from "vue";
 import { Check, X } from "@lucide/vue";
 
-const showToast = inject("showToast");
+const showToast = inject("showToast", () => {});
 
 function handleSelect(plan) {
-    showToast(`${plan} package selected! Redirecting to checkout...`, "success");
+    showToast?.(`${plan} package selected! Redirecting to checkout...`, "success");
 }
 
 function handleContact() {
-    showToast("Our team will contact you within 24 hours!", "info");
+    showToast?.("Our team will contact you within 24 hours!", "info");
 }
 </script>
 

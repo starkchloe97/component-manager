@@ -40,7 +40,6 @@ function persistStorage(key, value) {
 
 function schedulePersistence(kind) {
   if (typeof window === "undefined") return;
-  const timerKey = kind === "content" ? "contentPersistTimer" : "stylePersistTimer";
   const delay = PERSIST_DELAY;
   if (kind === "image") {
     if (imagePersistTimer) window.clearTimeout(imagePersistTimer);
@@ -52,12 +51,12 @@ function schedulePersistence(kind) {
   }
   if (kind === "content") {
     if (contentPersistTimer) window.clearTimeout(contentPersistTimer);
-  if (imagePersistTimer) window.clearTimeout(imagePersistTimer);
+    if (imagePersistTimer) window.clearTimeout(imagePersistTimer);
     contentPersistTimer = window.setTimeout(() => {
       contentPersistTimer = null;
-  imagePersistTimer = null;
+      imagePersistTimer = null;
       persistStorage(CONTENT_STORAGE_KEY, contentOverrides);
-  persistStorage(IMAGE_STORAGE_KEY, imageOverrides);
+      persistStorage(IMAGE_STORAGE_KEY, imageOverrides);
     }, delay);
     return;
   }
@@ -87,6 +86,22 @@ function flushPersistence() {
   persistStorage(IMAGE_STORAGE_KEY, imageOverrides);
 }
 
+function toSelector(selector) {
+  return selector || "";
+}
+
+function matchingElements(root, selector) {
+  const matches = [];
+  if (!root || !selector) return matches;
+  try {
+    if (root.matches?.(toSelector(selector))) matches.push(root);
+    matches.push(...root.querySelectorAll(toSelector(selector)));
+  } catch {
+    return matches;
+  }
+  return matches;
+}
+
 function queueStyleWrite(componentId, selector, property, value) {
   let componentWrites = pendingStyleWrites.get(componentId);
   if (!componentWrites) {
@@ -109,7 +124,7 @@ function flushStyleWrites() {
     const roots = document.querySelectorAll(`[data-editor-component-id="${CSS.escape(componentId)}"]`);
     componentWrites.forEach((styleWrites, selector) => {
       roots.forEach((root) => {
-        root.querySelectorAll(toSelector(selector)).forEach((element) => {
+        matchingElements(root, selector).forEach((element) => {
           styleWrites.forEach((value, property) => {
             if (value === "") element.style.removeProperty(property);
             else element.style[property] = value;
@@ -169,7 +184,7 @@ function flushContentWrites() {
     const roots = document.querySelectorAll(`[data-editor-component-id="${CSS.escape(componentId)}"]`);
     componentWrites.forEach((entry, selector) => {
       roots.forEach((root) => {
-        root.querySelectorAll(toSelector(selector)).forEach((element) => {
+        matchingElements(root, selector).forEach((element) => {
           if (element === entry.skipElement) return;
           setElementTextValue(element, entry.value, entry.textNodeIndex);
         });
@@ -182,23 +197,8 @@ function flushContentWrites() {
 if (typeof window !== "undefined") {
   watch(overrides, () => schedulePersistence("style"), { deep: true });
   watch(contentOverrides, () => schedulePersistence("content"), { deep: true });
+  watch(imageOverrides, () => schedulePersistence("image"), { deep: true });
   window.addEventListener("pagehide", flushPersistence);
-}
-
-function toSelector(selector) {
-  return selector || "";
-}
-
-function matchingElements(root, selector) {
-  const matches = [];
-  if (!root || !selector) return matches;
-  try {
-    if (root.matches?.(toSelector(selector))) matches.push(root);
-    matches.push(...root.querySelectorAll(toSelector(selector)));
-  } catch {
-    return matches;
-  }
-  return matches;
 }
 
 function deepClone(value) {
@@ -253,14 +253,14 @@ export function useComponentEditor() {
       const roots = typeof window !== "undefined"
         ? document.querySelectorAll(`[data-editor-component-id="${CSS.escape(componentId)}"]`)
         : [];
-      const source = roots[0]?.querySelector(toSelector(selector))?.getAttribute("src") ?? "";
+      const source = roots[0] ? (matchingElements(roots[0], selector)[0]?.getAttribute("src") ?? "") : "";
       entry.originalSrc = source;
     }
     entry.src = String(value ?? "");
     const roots = typeof window !== "undefined"
       ? document.querySelectorAll(`[data-editor-component-id="${CSS.escape(componentId)}"]`)
       : [];
-    roots.forEach((root) => root.querySelectorAll(toSelector(selector)).forEach((element) => {
+    roots.forEach((root) => matchingElements(root, selector).forEach((element) => {
       element.setAttribute("src", String(value ?? ""));
     }));
     schedulePersistence("image");
@@ -349,19 +349,19 @@ export function useComponentEditor() {
 
     roots.forEach((root) => {
       Object.entries(oldStyles).forEach(([selector, styles]) => {
-        root.querySelectorAll(toSelector(selector)).forEach((element) => {
+        matchingElements(root, selector).forEach((element) => {
           Object.keys(styles || {}).forEach((property) => element.style.removeProperty(property));
         });
       });
       Object.entries(oldImages).forEach(([selector, entry]) => {
         const originalSrc = entry?.originalSrc;
         if (originalSrc === undefined) return;
-        root.querySelectorAll(toSelector(selector)).forEach((element) => element.setAttribute("src", originalSrc));
+        matchingElements(root, selector).forEach((element) => element.setAttribute("src", originalSrc));
       });
       Object.entries(oldContent).forEach(([selector, entry]) => {
         const original = typeof entry === "string" ? null : entry?.originalText;
         if (original === undefined || original === null) return;
-        root.querySelectorAll(toSelector(selector)).forEach((element) => {
+        matchingElements(root, selector).forEach((element) => {
           setElementTextValue(element, original, entry?.textNodeIndex);
         });
       });
@@ -390,7 +390,7 @@ export function useComponentEditor() {
     const componentStyles = overrides[componentId];
     if (componentStyles) {
       Object.entries(componentStyles).forEach(([selector, styles]) => {
-        root.querySelectorAll(toSelector(selector)).forEach((element) => {
+        matchingElements(root, selector).forEach((element) => {
           Object.entries(styles).forEach(([property, value]) => {
             if (value === "") element.style.removeProperty(property);
             else element.style[property] = value;
@@ -403,7 +403,7 @@ export function useComponentEditor() {
     if (componentImages) {
       Object.entries(componentImages).forEach(([selector, entry]) => {
         if (entry?.src === undefined) return;
-        root.querySelectorAll(toSelector(selector)).forEach((element) => element.setAttribute("src", entry.src));
+        matchingElements(root, selector).forEach((element) => element.setAttribute("src", entry.src));
       });
     }
 
@@ -412,7 +412,7 @@ export function useComponentEditor() {
       Object.entries(componentContent).forEach(([selector, entry]) => {
         const value = typeof entry === "string" ? entry : entry?.text;
         if (value === null || value === undefined) return;
-        root.querySelectorAll(toSelector(selector)).forEach((element) => {
+        matchingElements(root, selector).forEach((element) => {
           setElementTextValue(element, value, typeof entry === "string" ? undefined : entry?.textNodeIndex);
         });
       });
@@ -438,5 +438,7 @@ export function useComponentEditor() {
     restoreComponentState,
     resetComponentState,
     applyOverrides,
+    flushPersistence,
+    matchingElements,
   };
 }

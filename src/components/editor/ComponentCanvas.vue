@@ -1,5 +1,6 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, onUpdated, ref, watch } from "vue";
+import { Copy, Pencil, Trash2 } from "@lucide/vue";
 import EditorNode from "./EditorNode.vue";
 import AddMenu from "./AddMenu.vue";
 import InsertionPoint from "./InsertionPoint.vue";
@@ -20,8 +21,22 @@ const builder = ref(null);
 const hoveredElement = ref(null);
 const selectedDomElement = ref(null);
 const editingElement = ref(null);
-const { selectedElement, selectElement, clearElement, applyOverrides, getContent, setContent } = useComponentEditor();
-const { selectNode, selectedNodeId, document, setHoveredNode, addContainer, addNode, beginFillDraft, draggingNodeType, endDragging } = useEditor();
+const contextMenu = ref(null);
+const { selectedElement, selectElement, clearElement, applyOverrides, getContent, setContent, flushPersistence } = useComponentEditor();
+const {
+  selectNode,
+  selectedNodeId,
+  document,
+  setHoveredNode,
+  addContainer,
+  addNode,
+  beginFillDraft,
+  draggingNodeType,
+  endDragging,
+  deleteNode,
+  duplicateNode,
+  getNodeById,
+} = useEditor();
 const pageAddTrigger = ref(null);
 const showPageAdd = ref(false);
 const componentName = computed(() => props.component?.name || props.component?.id || "Component");
@@ -55,7 +70,8 @@ watch(selectedNodeId, (id) => {
 function elementPath(element) {
   const parts = [];
   let current = element;
-  while (current && current !== stage.value) {
+  const boundary = stage.value?.querySelector(".component-hit-layer") || stage.value;
+  while (current && current !== boundary) {
     const parent = current.parentElement;
     if (!parent) break;
     parts.unshift(Array.from(parent.children).indexOf(current));
@@ -229,6 +245,7 @@ function handleBuilderPointerOut(event) {
 }
 
 function handleBuilderClick(event) {
+  if (contextMenu.value) closeContextMenu();
   if (props.preview || !(event.target instanceof Element)) return;
   if (isEditorChrome(event.target)) {
     event.stopPropagation();
@@ -240,6 +257,40 @@ function handleBuilderClick(event) {
   event.stopPropagation();
   clearElement();
   selectNode(id);
+}
+
+function handleBuilderContextMenu(event) {
+  if (props.preview || !(event.target instanceof Element)) return;
+  if (isEditorChrome(event.target)) return;
+  const id = resolveEditorNodeId(event.target);
+  if (!id) return;
+  event.preventDefault();
+  event.stopPropagation();
+  clearElement();
+  selectNode(id);
+  const node = getNodeById(id);
+  const label = editorRegistry[node?.type]?.label || node?.type || "Element";
+  const x = typeof window !== "undefined" ? Math.min(window.innerWidth - 180, event.clientX) : event.clientX;
+  const y = typeof window !== "undefined" ? Math.min(window.innerHeight - 150, event.clientY) : event.clientY;
+  contextMenu.value = { x, y, nodeId: id, label };
+}
+
+function closeContextMenu() {
+  contextMenu.value = null;
+}
+
+function handleContextMenuDuplicate() {
+  if (contextMenu.value?.nodeId) {
+    duplicateNode(contextMenu.value.nodeId);
+  }
+  closeContextMenu();
+}
+
+function handleContextMenuDelete() {
+  if (contextMenu.value?.nodeId) {
+    deleteNode(contextMenu.value.nodeId);
+  }
+  closeContextMenu();
 }
 
 function handleBuilderDragOver(event) {
@@ -349,6 +400,26 @@ function finishInlineEdit() {
   editingElement.value = null;
 }
 
+function handleInlineEnter(event) {
+  if (!editingElement.value) return;
+  const tag = editingElement.value.tagName?.toLowerCase();
+  if (/^h[1-6]$/i.test(tag) || tag === "button" || tag === "a" || tag === "label") {
+    event.preventDefault();
+    finishInlineEdit();
+  }
+}
+
+function handleHitLayerBlur(event) {
+  // Only finish inline editing if focus left the canvas entirely.
+  // When a user clicks an inspector input, relatedTarget will be that input
+  // (outside the canvas), but we should NOT end the edit yet — the inspector
+  // will re-select the element. Only end when focus goes somewhere truly
+  // outside the editor chrome (e.g., browser address bar, OS focus change).
+  const relatedTarget = event.relatedTarget;
+  if (relatedTarget instanceof Element && canvas.value?.contains(relatedTarget)) return;
+  finishInlineEdit();
+}
+
 // Any click that reaches the stage did not hit a builder node (nodes stop
 // propagation), a hit-layer element (handleClick stops propagation), or an
 // insertion control — so it is an empty-canvas click and clears selection.
@@ -380,18 +451,51 @@ function refreshOverrides() {
   });
 }
 
-onMounted(refreshOverrides);
+function handleWindowPointerDown(event) {
+  if (contextMenu.value && !(event.target instanceof Element && event.target.closest(".canvas-context-menu"))) {
+    closeContextMenu();
+  }
+}
+
+function handleWindowKeyDown(event) {
+  if (event.key === "Escape" && contextMenu.value) {
+    event.preventDefault();
+    closeContextMenu();
+  }
+}
+
+onMounted(() => {
+  refreshOverrides();
+  if (typeof window !== "undefined") {
+    window.addEventListener("pointerdown", handleWindowPointerDown);
+    window.addEventListener("keydown", handleWindowKeyDown);
+  }
+});
+
 onUpdated(refreshOverrides);
+
 watch(() => props.component.id, () => {
   clearVisualState();
+  closeContextMenu();
   refreshOverrides();
 });
+
 watch(() => props.preview, (isPreview) => {
-  if (isPreview) clearVisualState();
+  if (isPreview) {
+    clearVisualState();
+    closeContextMenu();
+  }
 });
+
 onUnmounted(() => {
   clearVisualState();
   clearElement();
+  closeContextMenu();
+  flushPersistence();
+  if (typeof window !== "undefined") {
+    window.removeEventListener("pointerdown", handleWindowPointerDown);
+    window.removeEventListener("keydown", handleWindowKeyDown);
+  }
 });
 </script>
 
@@ -407,7 +511,7 @@ onUnmounted(() => {
       @mouseleave="handleStageMouseLeave">
       <div class="component-hit-layer" :class="{ 'hit-layer--preview': preview }" @mouseover="handleMouseOver"
         @mouseout="handleMouseOut" @click="handleClick" @dblclick="startInlineEdit" @input="handleInlineInput"
-        @blur="finishInlineEdit" @keydown.esc.prevent="finishInlineEdit">
+        @blur.capture="handleHitLayerBlur" @keydown.esc.prevent="finishInlineEdit" @keydown.enter="handleInlineEnter">
         <component :is="component.component" />
       </div>
 
@@ -420,6 +524,7 @@ onUnmounted(() => {
         @pointerover="handleBuilderPointerOver"
         @pointerout="handleBuilderPointerOut"
         @click="handleBuilderClick"
+        @contextmenu="handleBuilderContextMenu"
         @dragover="handleBuilderDragOver"
         @drop="handleBuilderDrop"
       >
@@ -452,6 +557,32 @@ onUnmounted(() => {
              "Add element" control at the bottom of the canvas. -->
       </div>
     </div>
+
+    <!-- Right-click Context Menu (Elementor-style) -->
+    <Teleport to="body">
+      <div
+        v-if="contextMenu"
+        class="canvas-context-menu"
+        :style="{ left: `${contextMenu.x}px`, top: `${contextMenu.y}px` }"
+        @click.stop
+      >
+        <div class="context-menu-header">{{ contextMenu.label }}</div>
+        <button type="button" class="context-menu-item" @click="closeContextMenu">
+          <Pencil :size="13" />
+          <span>Edit</span>
+        </button>
+        <button type="button" class="context-menu-item" @click="handleContextMenuDuplicate">
+          <Copy :size="13" />
+          <span>Duplicate</span>
+          <span class="context-menu-shortcut">Ctrl+D</span>
+        </button>
+        <button type="button" class="context-menu-item context-menu-item--danger" @click="handleContextMenuDelete">
+          <Trash2 :size="13" />
+          <span>Delete</span>
+          <span class="context-menu-shortcut">Del</span>
+        </button>
+      </div>
+    </Teleport>
   </main>
 </template>
 
@@ -627,5 +758,68 @@ onUnmounted(() => {
   outline: 0;
   border-color: #b9159d;
   background: #fff4fe
+}
+
+.canvas-context-menu {
+  position: fixed;
+  z-index: 100000;
+  min-width: 175px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  user-select: none;
+}
+
+.context-menu-header {
+  padding: 5px 10px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  border-bottom: 1px solid #f1f5f9;
+  margin-bottom: 2px;
+}
+
+.context-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.1s ease, color 0.1s ease;
+}
+
+.context-menu-item:hover {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.context-menu-item--danger {
+  color: #e11d48;
+}
+
+.context-menu-item--danger:hover {
+  background: #fff1f2;
+  color: #be123c;
+}
+
+.context-menu-shortcut {
+  margin-left: auto;
+  font-size: 10px;
+  color: #94a3b8;
 }
 </style>

@@ -2,6 +2,7 @@ import { useComponentManager } from "./useComponentManager";
 import { useComponentEditor } from "./useComponentEditor";
 import { componentRegistry } from "@/config/componentRegistry";
 import { useEditor } from "./useEditor";
+import * as siteInfo from "@/config/siteInfo";
 
 export function useComponentCopy() {
   const { components, selectedComponent } = useComponentManager();
@@ -49,9 +50,10 @@ export function useComponentCopy() {
         document.children,
         isPlayground
       );
+      const selfContainedSource = makeSelfContained(finalSource);
 
-      await writeClipboard(finalSource);
-      return { ok: true, source: finalSource };
+      await writeClipboard(selfContainedSource);
+      return { ok: true, source: selfContainedSource };
     } catch (error) {
       console.error("Failed to copy component:", error);
       return {
@@ -81,7 +83,7 @@ async function writeClipboard(text) {
     try {
       await navigator.clipboard.writeText(text);
       return;
-    } catch (_) {
+    } catch {
       // Fall through for insecure origins or denied Clipboard API permissions.
     }
   }
@@ -99,11 +101,13 @@ async function writeClipboard(text) {
   textarea.style.opacity = "0";
   document.body.appendChild(textarea);
 
-  let copied = false;
+  let copied;
   try {
     textarea.focus();
     textarea.select();
     copied = document.execCommand("copy");
+  } catch {
+    copied = false;
   } finally {
     document.body.removeChild(textarea);
   }
@@ -252,7 +256,7 @@ function appendBuilderContent(source, componentChildren, sections, includeAllPag
   iconNames.cssRules = [];
   iconNames.nextClassId = 0;
   const markup = nodes.map((node) => serializeNode(node, 2, iconNames)).join("\n\n");
-  const withIcons = ensureIconResolver(source, iconNames);
+  const withIcons = ensureLucideIcons(source, iconNames);
 
   let output = /<\/template>/i.test(withIcons)
     ? withIcons.replace(/<\/template>/i, "\n\n" + markup + "\n</template>")
@@ -284,16 +288,57 @@ function appendGeneratedStyles(source, rules) {
   if (match) return source.replace(match[0], "<style" + match[1] + ">\n" + [match[2].trim(), css].filter(Boolean).join("\n\n") + "\n</style>");
   return source + "\n\n<style scoped>\n" + css + "\n</style>";
 }
-function ensureIconResolver(source, iconNames) {
+
+function ensureLucideIcons(source, iconNames) {
   if (!iconNames.size) return source;
-  const imports = 'import { resolveIcon } from "@/config/iconLibrary";';
+  const icons = Array.from(iconNames).sort().join(", ");
+  const imports = `import { ${icons} } from "@lucide/vue";`;
   const scriptMatch = source.match(/<script setup\b[^>]*>[\s\S]*?<\/script>/i);
   if (scriptMatch) {
-    if (/\bresolveIcon\b/.test(scriptMatch[0])) return source;
+    const lucideImportMatch = scriptMatch[0].match(/import\s*\{([^}]+)\}\s*from\s*['"]@lucide\/vue['"]/);
+    if (lucideImportMatch) {
+      const existing = lucideImportMatch[1].split(",").map((s) => s.trim()).filter(Boolean);
+      const combined = Array.from(new Set([...existing, ...iconNames])).sort().join(", ");
+      const updatedImport = `import { ${combined} } from "@lucide/vue"`;
+      return source.replace(lucideImportMatch[0], updatedImport);
+    }
     return source.replace(scriptMatch[0], scriptMatch[0].replace(/<script setup\b([^>]*)>/i, `<script setup$1>\n${imports}`));
   }
-  const names = [...iconNames].map((name) => JSON.stringify(name)).join(", ");
   return `<script setup>\n${imports}\n</script>\n\n${source}`;
+}
+
+function makeSelfContained(source) {
+  let result = source;
+
+  // 1. Resolve siteInfo imports to inline constants
+  const siteInfoMatch = result.match(/import\s*\{([^}]+)\}\s*from\s*['"]@\/config\/siteInfo(?:\.js)?['"];?/);
+  if (siteInfoMatch) {
+    const importedIdentifiers = siteInfoMatch[1].split(",").map((s) => s.trim()).filter(Boolean);
+    const constDecls = importedIdentifiers.map((ident) => {
+      const val = siteInfo[ident] !== undefined ? siteInfo[ident] : "";
+      return `const ${ident} = ${JSON.stringify(val)};`;
+    }).join("\n");
+    result = result.replace(siteInfoMatch[0], constDecls);
+  }
+
+  // 2. Resolve useComponentStyles imports to reactive({...})
+  if (result.includes("useComponentStyles")) {
+    result = result.replace(/import\s*\{[^}]*useComponentStyles[^}]*\}\s*from\s*['"]@\/composables\/useComponentStyles(?:\.js)?['"];?\n?/g, "");
+    // Ensure reactive is imported from 'vue'
+    const vueImportMatch = result.match(/import\s*\{([^}]+)\}\s*from\s*['"]vue['"]/);
+    if (vueImportMatch) {
+      if (!/\breactive\b/.test(vueImportMatch[1])) {
+        const nextVueImport = `import { ${vueImportMatch[1].trim()}, reactive } from "vue"`;
+        result = result.replace(vueImportMatch[0], nextVueImport);
+      }
+    } else {
+      result = result.replace(/<script setup\b([^>]*)>/i, `<script setup$1>\nimport { reactive } from "vue";`);
+    }
+    // Replace useComponentStyles("Id", { ... }) with reactive({ ... })
+    result = result.replace(/useComponentStyles\s*\(\s*['"][^'"]+['"]\s*,\s*(\{[\s\S]*?\})\s*(?:,\s*\{[\s\S]*?\}\s*)?\)/g, "reactive($1)");
+  }
+
+  return result;
 }
 
 function serializeNode(node, depth = 0, iconNames = new Set()) {
@@ -330,7 +375,7 @@ function serializeNode(node, depth = 0, iconNames = new Set()) {
         ? ' aria-hidden="true"'
         : ` role="img" aria-label="${escapeAttribute(node.props?.ariaLabel || node.props?.title || name)}"`;
 
-      const svg = `<component :is='resolveIcon(${JSON.stringify(name)})' :size="'100%'" :stroke-width="${Number(node.props?.strokeWidth) || 2}"${aria} focusable="false" />`;
+      const svg = `<${name} :size="'100%'" :stroke-width="${Number(node.props?.strokeWidth) || 2}"${aria} focusable="false" />`;
       if (node.props?.href) {
         const target = node.props?.newTab ? ' target="_blank" rel="noopener noreferrer"' : "";
         return `${indent}<a href="${escapeAttribute(node.props.href)}"${target}${attrs}>${svg}</a>`;
@@ -347,7 +392,7 @@ function serializeNode(node, depth = 0, iconNames = new Set()) {
       const textClass = addGeneratedRule(iconNames, "builder-icon-list__text", "min-width: 0;");
       const rows = items.map((item) => {
         const safeItem = escapeHtml(item);
-        const icon = "<component :is='resolveIcon(" + JSON.stringify(name) + ")' :size=\"16\" aria-hidden=\"true\" class=\"" + iconClass + "\" />";
+        const icon = "<" + name + " :size=\"16\" aria-hidden=\"true\" class=\"" + iconClass + "\" />";
         return " ".repeat(depth + 2) + '<div class="' + itemClass + '">\n' + " ".repeat(depth + 4) + icon + "\n" + " ".repeat(depth + 4) + '<span class="' + textClass + '">' + safeItem + "</span>\n" + " ".repeat(depth + 2) + "</div>";
       }).join("\n");
       return indent + '<div class="' + listClass + (className ? " " + className : "") + '">' + (rows ? "\n" + rows + "\n" + indent : "") + "</div>";

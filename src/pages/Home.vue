@@ -1,5 +1,5 @@
 <script setup>
-import { useRouter } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 import { SITE_NAME, SITE_EMAIL, SITE_PHONE_RAW, SITE_DOMAIN } from '@/config/siteInfo'
 import { componentRegistry } from '@/config/componentRegistry'
 
@@ -9,15 +9,36 @@ function createNewComponent() {
   router.push({ name: 'Playground', params: { componentId: id }, query: { name: 'Untitled component' } })
 }
 
-const sections = [
-  { name: 'TextImage', label: 'Text Image Components', path: '/TextImage', count: Object.keys(componentRegistry).length },
-  { name: 'CTA', label: 'CTA Components', path: '/CTA', count: 8 },
-  { name: 'Testimonial', label: 'Testimonial Components', path: '/Testimonial', count: 5 },
-  { name: 'Hero', label: 'Hero Components', path: '/HEROView', count: 2 },
-  { name: 'FAQ', label: 'FAQ Components', path: '/FAQ', count: 5 },
+const categoryDefinitions = [
+  { name: 'Hero', label: 'Hero Components', path: '/HEROView', prefix: 'Hero' },
+  { name: 'TextImage', label: 'Text Image Components', path: '/TextImage', prefix: 'TextImage' },
+  { name: 'CTA', label: 'CTA Components', path: '/CTA', prefix: 'CtaSection' },
+  { name: 'FAQ', label: 'FAQ Components', path: '/FAQ', prefix: 'Faq' },
+  { name: 'Testimonial', label: 'Testimonial Components', path: '/Testimonial', prefix: 'Testimonial' },
+  { name: 'Pricing', label: 'Pricing Components', path: '/Pricing', prefix: 'Pricing' },
+  { name: 'LLC', label: 'LLC Package Components', path: '/Packges', prefix: 'LLC' },
+  { name: 'BrandRegistration', label: 'Brand Registration', path: '/BrandRegistration', prefix: 'BrandRegistration' },
+  { name: 'WhyFile', label: 'Why File With Us', path: '/whyFile', prefix: 'WhyFile' },
+  { name: 'Process', label: 'Process Components', path: '/ProcessSection', prefix: 'Process' },
+  { name: 'ProtectWhatYours', label: 'Protect What\'s Yours', path: '/ProtectWhatYours', prefix: 'ProtectWhat' },
+  { name: 'WhyWorkWithUs', label: 'Why Work With Us', path: '/WhyWorkWithUs', prefix: 'WhyWork' },
+  { name: 'WhyRegisterCopyRight', label: 'Copyright Registration', path: '/WhyRegisterCopyRight', prefix: 'WhyRegister' },
+  { name: 'Boxes', label: 'Boxes Components', path: '/Boxes', prefix: 'Box' },
+  { name: 'Features', label: 'Feature Components', path: '/FeatureSection', prefix: 'Feature' },
+  { name: 'Content', label: 'Content Components', path: '/ContentSection', prefix: 'Content' },
+  { name: 'Marquee', label: 'Marquee Components', path: '/Marquee', prefix: 'Marquee' },
+  { name: 'Tabs', label: 'Tab Components', path: '/TabSection', prefix: 'Tab' },
+  { name: 'DoAndDont', label: 'Do & Don\'t Components', path: '/DoAndDontView', prefix: 'DoAndDont' },
 ]
 
-const totalComponents = sections.reduce((sum, s) => sum + s.count, 0)
+const registryKeys = Object.keys(componentRegistry)
+
+const sections = categoryDefinitions.map((def) => {
+  const count = registryKeys.filter((k) => k.startsWith(def.prefix)).length
+  return { ...def, count }
+})
+
+const totalComponents = registryKeys.length
 </script>
 
 <template>
@@ -67,17 +88,18 @@ const totalComponents = sections.reduce((sum, s) => sum + s.count, 0)
         </header>
 
         <div class="catalogue__grid">
-          <article
+          <RouterLink
             v-for="section in sections"
             :key="section.path"
+            :to="section.path"
             class="catalogue__card"
           >
             <div class="catalogue__card-body">
               <h3 class="catalogue__card-title">{{ section.label }}</h3>
-              <p class="catalogue__card-count">{{ section.count }} components</p>
+              <p class="catalogue__card-count">{{ section.count }} {{ section.count === 1 ? 'component' : 'components' }}</p>
             </div>
             <span class="catalogue__route">{{ section.path }}</span>
-          </article>
+          </RouterLink>
         </div>
       </section>
 
@@ -276,6 +298,9 @@ const totalComponents = sections.reduce((sum, s) => sum + s.count, 0)
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   background: #ffffff;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
   transition: all 0.16s ease;
 }
 

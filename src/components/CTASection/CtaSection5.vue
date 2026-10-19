@@ -63,14 +63,14 @@ import {
   Calendar,
 } from "@lucide/vue";
 
-const showToast = inject("showToast");
+const showToast = inject("showToast", () => {});
 
 function handleSearch() {
-  showToast("Redirecting to trademark search tool...", "success");
+  showToast?.("Redirecting to trademark search tool...", "success");
 }
 
 function handleConsult() {
-  showToast("Scheduling a free consultation...", "info");
+  showToast?.("Scheduling a free consultation...", "info");
 }
 
 const styles = useComponentStyles("CtaSection5", {

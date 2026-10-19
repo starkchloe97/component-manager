@@ -22,6 +22,11 @@ import TabSectionView from '@/pages/TabSectionView.vue'
 import WhyWorkWithUsView from '@/pages/WhyWorkWithUsView.vue'
 import WhyRegisterCopyRightView from '@/pages/WhyRegisterCopyRightView.vue'
 import Test from '@/pages/test.vue'
+import Test1 from '@/components/HeroSection.vue/Hero10.vue'
+import Test2 from '@/components/HeroSection.vue/Hero11.vue'
+import Test3 from '@/components/HeroSection.vue/Hero12.vue'
+import Test4 from '@/components/HeroSection.vue/Hero13.vue'
+import Test5 from '@/components/HeroSection.vue/Hero14.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -47,6 +52,31 @@ const router = createRouter({
       path: '/test',
       name: 'Test',
       component: Test,
+    },
+    {
+      path: '/test1',
+      name: 'Test1',
+      component: Test1,
+    },
+    {
+      path: '/test2',
+      name: 'Test2',
+      component: Test2,
+    },
+    {
+      path: '/test3',
+      name: 'Test3',
+      component: Test3,
+    },
+    {
+      path: '/test4',
+      name: 'Test4',
+      component: Test4,
+    },
+    {
+      path: '/test5',
+      name: 'Test5',
+      component: Test5,
     },
     {
       path: '/CTA',

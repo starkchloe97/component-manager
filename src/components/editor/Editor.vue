@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, ref, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { Box, Check, Copy, Eye, EyeOff, Menu, Redo2, RotateCcw, Undo2, X } from "@lucide/vue";
 import ComponentCanvas from "./ComponentCanvas.vue";
 import ElementorInspector from "./ElementorInspector.vue";
@@ -27,7 +27,17 @@ const copyState = ref("idle");
 const { clearElement, getComponentState, restoreComponentState, resetComponentState } = useComponentEditor();
 const { registerComponent, selectComponent } = useComponentManager();
 const { copySelectedComponent } = useComponentCopy();
-const { document, activeComponentId, setActiveComponent, resetActiveComponent, clearActiveComponent, getDocumentSnapshot, restoreDocumentSnapshot } = useEditor();
+const {
+  activeComponentId,
+  setActiveComponent,
+  resetActiveComponent,
+  clearActiveComponent,
+  getDocumentSnapshot,
+  restoreDocumentSnapshot,
+  selectedNodeId,
+  deleteNode,
+  duplicateNode,
+} = useEditor();
 
 registry.forEach((entry) => {
   const config = { name: entry.name, component: entry.component, source: entry.source, styles: {} };
@@ -109,25 +119,118 @@ configureHistory();
 function closeEditor() { clearElement(); history.clear(); clearActiveComponent(); emit("close"); }
 function togglePreview() { preview.value = !preview.value; if (preview.value) clearElement(); }
 function handleElementSelected() { /* Selection must not change inspector visibility. */ }
+
+const copyMessage = ref("");
 async function copyComponent() {
   if (copyState.value === "copying") return;
   copyState.value = "copying";
+  copyMessage.value = "";
   const result = await copySelectedComponent(activeId.value);
-  copyState.value = result.ok ? "copied" : "error";
-  window.setTimeout(() => { copyState.value = "idle"; }, 1800);
+  if (result.ok) {
+    copyState.value = "copied";
+    copyMessage.value = "Copied component to clipboard";
+  } else {
+    copyState.value = "error";
+    copyMessage.value = result.error || "Failed to copy";
+  }
+  window.setTimeout(() => {
+    copyState.value = "idle";
+    copyMessage.value = "";
+  }, 2200);
 }
+
+function handleEditorKeydown(event) {
+  if (event.key === "Escape") {
+    const tag = document.activeElement?.tagName?.toLowerCase();
+    if (tag !== "input" && tag !== "textarea" && !document.activeElement?.isContentEditable) {
+      event.preventDefault();
+      closeEditor();
+    }
+    return;
+  }
+
+  // Delete or Backspace to delete the currently selected builder node
+  if (event.key === "Delete" || event.key === "Backspace") {
+    const tag = document.activeElement?.tagName?.toLowerCase();
+    if (tag !== "input" && tag !== "textarea" && !document.activeElement?.isContentEditable) {
+      if (selectedNodeId.value && !preview.value) {
+        event.preventDefault();
+        deleteNode(selectedNodeId.value);
+      }
+    }
+    return;
+  }
+
+  // Ctrl+D or Cmd+D to duplicate the currently selected builder node
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "d") {
+    const tag = document.activeElement?.tagName?.toLowerCase();
+    if (tag !== "input" && tag !== "textarea" && !document.activeElement?.isContentEditable) {
+      if (selectedNodeId.value && !preview.value) {
+        event.preventDefault();
+        duplicateNode(selectedNodeId.value);
+      }
+    }
+    return;
+  }
+
+  // Ctrl+Z or Cmd+Z for undo
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "z" && !event.shiftKey) {
+    const tag = document.activeElement?.tagName?.toLowerCase();
+    if (tag !== "input" && tag !== "textarea" && !document.activeElement?.isContentEditable) {
+      if (history.canUndo.value && !preview.value) {
+        event.preventDefault();
+        history.undo();
+      }
+    }
+    return;
+  }
+
+  // Ctrl+Y or Ctrl+Shift+Z or Cmd+Shift+Z for redo
+  if (
+    ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "y") ||
+    ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === "z")
+  ) {
+    const tag = document.activeElement?.tagName?.toLowerCase();
+    if (tag !== "input" && tag !== "textarea" && !document.activeElement?.isContentEditable) {
+      if (history.canRedo.value && !preview.value) {
+        event.preventDefault();
+        history.redo();
+      }
+    }
+    return;
+  }
+}
+
+onMounted(() => {
+  if (typeof window !== "undefined") {
+    window.addEventListener("keydown", handleEditorKeydown);
+  }
+});
+
+onBeforeUnmount(() => {
+  if (typeof window !== "undefined") {
+    window.removeEventListener("keydown", handleEditorKeydown);
+  }
+});
 </script>
 
 <template>
   <div class="editor" :class="{ 'editor--preview': preview, 'inspector-open': inspectorOpen }">
-    <section class="editor-shell" role="dialog" aria-modal="true"
+    <div v-if="!activeComponent" class="editor-not-found">
+      <Box :size="36" />
+      <h2>Component not found</h2>
+      <p>The requested component could not be loaded from the registry.</p>
+      <button type="button" class="btn-close-not-found" @click="closeEditor">Close editor</button>
+    </div>
+
+    <section v-else class="editor-shell" role="dialog" aria-modal="true"
       :aria-label="`Edit ${activeComponent?.name || 'component'}`">
       <div v-if="!preview" class="editor-inspector" :class="{ closed: !inspectorOpen }">
         <ElementorInspector :enable-builder="enableBuilder" />
       </div>
       <main class="editor-workspace">
         <header class="workspace-bar">
-          <button class="brand-button" type="button" title="Close editor" aria-label="Close editor"
+          <button class="brand-button" type="button" title="Close editor (Esc)" aria-label="Close editor"
             @click="closeEditor">
             <X :size="21" />
           </button>
@@ -149,19 +252,23 @@ async function copyComponent() {
               @click="navigatorOpen = !navigatorOpen">
               <Menu :size="17" />
             </button>
-            <button type="button" title="Undo" aria-label="Undo" :disabled="preview || !history.canUndo.value" @click="history.undo">
+            <button type="button" title="Undo (Ctrl+Z)" aria-label="Undo" :disabled="preview || !history.canUndo.value" @click="history.undo">
               <Undo2 :size="18" />
             </button>
-            <button type="button" title="Redo" aria-label="Redo" :disabled="preview || !history.canRedo.value" @click="history.redo">
+            <button type="button" title="Redo (Ctrl+Y)" aria-label="Redo" :disabled="preview || !history.canRedo.value" @click="history.redo">
               <Redo2 :size="18" />
             </button>
             <button type="button" title="Reset component" aria-label="Reset component" :disabled="preview"
               @click="resetComponent">
               <RotateCcw :size="18" />
             </button>
-            <button type="button" :title="copyState === 'copied' ? 'Copied' : 'Copy Vue'" aria-label="Copy Vue"
+            <button type="button"
+              :class="{ 'btn--copied': copyState === 'copied', 'btn--error': copyState === 'error' }"
+              :title="copyMessage || (copyState === 'copied' ? 'Copied' : copyState === 'error' ? 'Copy error' : 'Copy Vue')"
+              :aria-label="copyMessage || (copyState === 'copied' ? 'Copied' : copyState === 'error' ? 'Copy error' : 'Copy Vue')"
               @click="copyComponent">
               <Check v-if="copyState === 'copied'" :size="18" />
+              <X v-else-if="copyState === 'error'" :size="18" />
               <Copy v-else :size="18" />
             </button>
             <button type="button" :title="preview ? 'Exit preview' : 'Preview'"
@@ -183,12 +290,53 @@ async function copyComponent() {
 
 <style scoped>
 .editor {
-  position: fixed;
-  inset: 0;
-  z-index: 10000;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  flex: 1 1 auto;
   background: #eef1f5;
   color: #20252b;
-  font-family: Arial, Helvetica, sans-serif
+  font-family: Arial, Helvetica, sans-serif;
+  overflow: hidden;
+}
+
+.editor-not-found {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 60vh;
+  padding: 40px;
+  text-align: center;
+  color: #64748b;
+}
+
+.editor-not-found h2 {
+  margin: 16px 0 8px;
+  color: #111827;
+  font-size: 20px;
+}
+
+.editor-not-found p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.btn-close-not-found {
+  margin-top: 20px;
+  padding: 8px 18px;
+  background: #111827;
+  color: #fff;
+  border: 0;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-close-not-found:hover {
+  background: #374151;
 }
 
 .editor-shell {
@@ -197,7 +345,7 @@ async function copyComponent() {
   display: flex;
   min-width: 0;
   overflow: hidden;
-  background: #fff
+  background: #fff;
 }
 
 .editor-inspector {

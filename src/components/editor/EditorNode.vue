@@ -115,6 +115,10 @@ function clearDropIndicators() {
 onMounted(() => {
   window.addEventListener("dragend", clearDropIndicators, true);
   window.addEventListener("drop", clearDropIndicators, true);
+  // A newly added widget is selected before its EditorNode mounts. The
+  // selection watcher has already run by then, so position its fixed toolbar
+  // after the leaf element ref is available.
+  if (isSelected.value) nextTick(updateLeafToolbarPosition);
 });
 
 onBeforeUnmount(() => {
@@ -242,11 +246,12 @@ function canAcceptDrag(event) {
 
 function startNodeDrag(event) {
   event.stopPropagation();
-  if (!event.dataTransfer) return;
+  const transfer = event.dataTransfer;
+  if (!transfer) return;
+  transfer.effectAllowed = "move";
+  transfer.setData("application/x-editor-node-id", props.node.id);
+  transfer.setData("text/plain", props.node.id);
   startDragging(props.node.id);
-  event.dataTransfer.effectAllowed = "move";
-  event.dataTransfer.setData("application/x-editor-node-id", props.node.id);
-  event.dataTransfer.setData("text/plain", props.node.id);
 }
 
 function endNodeDrag() {
@@ -560,7 +565,7 @@ function openDropAi(event) {
     <div v-if="isSelected" class="node-toolbar legacy-toolbar" data-editor-chrome="true" @click.stop>
       <button v-if="hasParentNode" type="button" @click="selectParentNode" title="Select parent" aria-label="Select parent"><ChevronUp :size="15" /></button>
       <span>{{ nodeLabel }}</span>
-      <GripVertical class="drag-grip" :size="15" draggable="true" title="Drag to move" aria-label="Drag to move" @dragstart="startNodeDrag" @dragend="endNodeDrag" />
+      <button type="button" class="drag-grip" draggable="true" title="Drag to move" aria-label="Drag to move" @dragstart="startNodeDrag" @dragend="endNodeDrag"><GripVertical :size="15" /></button>
       <button type="button" @click="openAdd($event, 'inside')" title="Add inside"><Plus :size="15" /></button>
       <button type="button" @click="duplicateNode(node.id)" title="Duplicate"><Copy :size="15" /></button>
       <button type="button" class="toolbar-icon-danger" @click="removeNode" title="Delete"><Trash2 :size="15" /></button>
@@ -587,7 +592,7 @@ function openDropAi(event) {
     <div v-if="isSelected" class="node-toolbar" data-editor-chrome="true" @click.stop>
       <button v-if="hasParentNode" type="button" class="toolbar-icon-button" aria-label="Select parent" title="Select parent" @click="selectParentNode"><ChevronUp :size="15" /></button>
       <span class="node-toolbar-label">{{ nodeLabel }}</span>
-      <GripVertical :size="15" class="drag-grip" draggable="true" @dragstart="startNodeDrag" @dragend="endNodeDrag" />
+      <button type="button" class="drag-grip" draggable="true" title="Drag to move" aria-label="Drag to move" @dragstart="startNodeDrag" @dragend="endNodeDrag"><GripVertical :size="15" /></button>
       <button type="button" class="toolbar-icon-button" aria-label="Add after component" @click="openAdd($event, 'after')"><Plus :size="15" /></button>
       <button type="button" class="toolbar-icon-button" aria-label="Duplicate component" @click="duplicateNode(node.id)"><Copy :size="15" /></button>
       <button type="button" class="toolbar-icon-button toolbar-icon-danger" aria-label="Delete component" @click="removeNode"><Trash2 :size="15" /></button>
@@ -707,7 +712,7 @@ function openDropAi(event) {
     <div v-if="isSelected" class="node-toolbar node-toolbar--leaf" data-editor-chrome="true" :style="leafToolbarStyle" @click.stop>
       <button v-if="hasParentNode" type="button" class="toolbar-icon-button" aria-label="Select parent" title="Select parent" @click="selectParentNode"><ChevronUp :size="15" /></button>
       <span class="node-toolbar-label">{{ nodeLabel }}</span>
-      <GripVertical :size="15" class="drag-grip" draggable="true" @dragstart="startNodeDrag" @dragend="endNodeDrag" />
+      <button type="button" class="drag-grip" draggable="true" title="Drag to move" aria-label="Drag to move" @dragstart="startNodeDrag" @dragend="endNodeDrag"><GripVertical :size="15" /></button>
       <button type="button" class="toolbar-icon-button" aria-label="Add after element" @click="openAdd($event, 'after')"><Plus :size="15" /></button>
       <button type="button" class="toolbar-icon-button" aria-label="Duplicate" @click="duplicateNode(node.id)"><Copy :size="15" /></button>
       <button type="button" class="toolbar-icon-button toolbar-icon-danger" aria-label="Delete" @click="removeNode"><Trash2 :size="15" /></button>
@@ -985,17 +990,23 @@ function openDropAi(event) {
 }
 
 .context-drop-zone {
-  position: relative;
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  left: 12px;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 4px;
+  height: 76px;
   min-height: 76px;
-  margin: 10px 12px 4px;
+  margin: 0;
   border: 1px dashed #c7cdd5;
   background: rgba(255,255,255,.78);
-  pointer-events: auto;
+  pointer-events: none;
+  transform: translateY(-50%);
 }
 
 .context-drop-line {
@@ -1155,7 +1166,25 @@ function openDropAi(event) {
 }
 
 .drag-grip {
+  display: grid;
+  place-items: center;
+  width: 23px;
+  height: 23px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
   cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.drag-grip:active {
+  cursor: grabbing;
+}
+
+.drag-grip > * {
+  pointer-events: none;
 }
 
 .toolbar-icon-button {
